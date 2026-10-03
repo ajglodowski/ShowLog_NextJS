@@ -4,6 +4,7 @@ import ClientShowTile from "../show/ShowTile/ClientShowTile";
 import { ShowTileBadgeProps } from "../show/ShowTile/ShowTileContent";
 import ShowTileSkeleton from "../show/ShowTile/ShowTileSkeleton";
 import { getStaleShows } from "./HomeService";
+import { homeEmpty } from "./homeStyles";
 
 export async function LoadingStaleShowsRow() {
     return (
@@ -25,8 +26,8 @@ export default async function StaleShowsRow({ userId }: { userId: string }) {
 
     if (!shows || shows.length === 0) {
         return (
-            <div className="py-4 text-center text-sm text-white/40">
-                No stale shows found. Great job keeping up!
+            <div className={homeEmpty}>
+                No stale shows. You&apos;re keeping up.
             </div>
         );
     }

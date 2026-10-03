@@ -2,6 +2,8 @@ import Link from "next/link";
 import { getActorsForShow } from "../ShowService";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Suspense } from "react";
+import { ActorAvatar } from "@/app/components/actor/ActorAvatar";
+import { TvmazeCredit } from "@/app/components/actor/TvmazeCredit";
 
 export default async function ActorsSection ({ showId }: { showId: number }) {
     return (
@@ -11,6 +13,8 @@ export default async function ActorsSection ({ showId }: { showId: number }) {
     );
 };
 
+const gridClass = "grid grid-cols-[repeat(auto-fill,minmax(112px,1fr))] gap-2";
+
 const ActorsSectionContent = async ({showId}: {showId: number}) => {
     const actors = await getActorsForShow(showId);
 
@@ -18,31 +22,34 @@ const ActorsSectionContent = async ({showId}: {showId: number}) => {
 
     if (actors.length === 0) return (<div>No Actors</div>);
 
+    // Photographed cast first, so the grid doesn't open on a run of initials
+    const sorted = [...actors].sort((a, b) => Number(Boolean(b.pictureUrl)) - Number(Boolean(a.pictureUrl)));
+
     return (
-        <ul className="flex flex-col space-y-2">
-            {actors.map((actor, index) => (
-                <li key={index}>
-                    <Link href={`/actor/${actor.id}`}>
-                        <div className="p-2 border border-white rounded-full">
-                            <span>
-                                {actor.name}
-                            </span>
-                        </div>
-                    </Link>
-                </li>
-            ))}
-        </ul>
+        <div className="grid gap-3">
+            <ul className={gridClass}>
+                {sorted.map((actor) => (
+                    <li key={actor.id}>
+                        <Link
+                            href={`/actor/${actor.id}`}
+                            className="glass flex h-full flex-col items-center gap-2 rounded-2xl px-2 pb-3 pt-3.5 text-center transition-colors hover:bg-white/10"
+                        >
+                            <ActorAvatar actor={actor} size={80} />
+                            <span className="text-[13.5px] font-semibold leading-tight text-balance">{actor.name}</span>
+                        </Link>
+                    </li>
+                ))}
+            </ul>
+            {actors.some((actor) => actor.pictureUrl) && <TvmazeCredit />}
+        </div>
     );
-    
 }
 
 const LoadingActorsSection = () => {
     return (
-        <div className="flex flex-col space-y-2">
-            {Array.from({ length: 5 }).map((_, index) => (
-                <div key={index} className="">
-                    <Skeleton className="w-full h-8" />
-                </div>
+        <div className={gridClass}>
+            {Array.from({ length: 6 }).map((_, index) => (
+                <Skeleton key={index} className="h-[136px] w-full rounded-2xl" />
             ))}
         </div>
     );

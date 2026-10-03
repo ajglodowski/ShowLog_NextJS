@@ -1,12 +1,6 @@
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
-import { Button } from '@/components/ui/button'
-import { Separator } from '@/components/ui/separator'
-import { ArrowRight, Tv2, AtSign } from 'lucide-react'
-import Link from 'next/link'
-import { backdropBackground } from '@/app/utils/stylingConstants'
+import { AuthMessage, AuthShell, authHint, authInput, authLabel, authLink, authPrimaryButton } from '@/app/components/auth/AuthShell'
 import { signUp } from '@/app/utils/supabase/AuthService'
+import Link from 'next/link'
 
 export default async function Signup({
   searchParams,
@@ -17,196 +11,88 @@ export default async function Signup({
   const message = (await searchParams)?.message
 
   return (
-    <div className="fixed inset-0 w-full flex bg-[radial-gradient(circle_at_0%_0%,rgb(120,60,20)_0%,rgb(60,25,5)_50%,rgb(5,5,5)_100%)]">
-      {/* Left side - decorative */}
-      <div className="hidden lg:flex lg:w-1/2 relative items-center justify-center">
-        {/* Diagonal lines pattern */}
-        <div className="absolute inset-0 opacity-[0.04]">
-          {[...Array(20)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute h-px bg-white origin-left"
-              style={{
-                width: '200%',
-                top: `${i * 8}%`,
-                left: '-50%',
-                transform: 'rotate(-12deg)',
-              }}
+    <AuthShell
+      title="Create account"
+      subtitle="Start keeping track of everything you watch."
+      footer={<>Already have an account? <Link href="/login" className={authLink}>Sign in</Link></>}
+    >
+      <form action={signUpFunction} className="grid gap-3">
+        <div className="grid gap-1.5">
+          <label htmlFor="username" className={authLabel}>Username</label>
+          <div className="relative">
+            <span aria-hidden="true" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-[14.5px] text-dim">@</span>
+            <input
+              id="username"
+              name="username"
+              type="text"
+              autoComplete="username"
+              autoCapitalize="none"
+              placeholder="yourusername"
+              required
+              className={`${authInput} pl-8`}
             />
-          ))}
-        </div>
-        
-        {/* Center content */}
-        <div className="relative z-10 max-w-md px-12">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-primary text-primary-foreground">
-              <Tv2 className="w-6 h-6" />
-            </div>
-            <span className="text-2xl font-bold tracking-tight text-white">ShowLog</span>
-          </div>
-          
-          <h2 className="text-4xl font-bold tracking-tight text-white mb-4 leading-tight">
-            Join the<br />
-            <span className="text-primary">community.</span>
-          </h2>
-          
-          <p className="text-white/60 text-lg leading-relaxed">
-            Create your account and start tracking your favorite shows, sharing with friends, and discovering new content.
-          </p>
-          
-          {/* Stats or features */}
-          <div className="mt-10 grid grid-cols-3 gap-6">
-            <div>
-              <div className="text-2xl font-bold text-white">Track</div>
-              <div className="text-sm text-white/50">Your progress</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-white">Rate</div>
-              <div className="text-sm text-white/50">What you watch</div>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-white">Share</div>
-              <div className="text-sm text-white/50">With friends</div>
-            </div>
           </div>
         </div>
-        
-        {/* Corner accent */}
-        <div className="absolute bottom-0 right-0 w-64 h-64 border-l border-t border-white/10 rounded-tl-[100px]" />
-      </div>
 
-      {/* Right side - form */}
-      <div className={`flex-1 flex items-center justify-center p-6 lg:p-12 ${backdropBackground} overflow-y-auto`}>
-        <div className="w-full max-w-sm animate-in my-auto">
-          {/* Mobile header - only shows on smaller screens */}
-          <div className="flex items-center gap-3 mb-6 lg:hidden">
-            <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary text-primary-foreground">
-              <Tv2 className="w-5 h-5" />
-            </div>
-            <div>
-              <h1 className="text-lg font-semibold text-white tracking-tight">
-                ShowLog
-              </h1>
-              <p className="text-xs text-white/60">
-                Create your account
-              </p>
-            </div>
+        <div className="grid gap-1.5">
+          <div className="flex items-baseline justify-between gap-3">
+            <label htmlFor="name" className={authLabel}>Name</label>
+            <span className={authHint}>Optional</span>
           </div>
-
-          {/* Signup Card */}
-          <Card className="border-white/10 bg-white/5 backdrop-blur-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-xl text-white">Create account</CardTitle>
-              <CardDescription className="text-white/60">
-                Enter your details to get started
-              </CardDescription>
-            </CardHeader>
-            
-            <CardContent>
-              <form action={signUpFunction} className="space-y-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="username" className="text-white/80">Username</Label>
-                  <div className="relative">
-                    <AtSign className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                    <Input
-                      id="username"
-                      name="username"
-                      type="text"
-                      placeholder="yourusername"
-                      required
-                      className="h-10 pl-9 bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                    />
-                  </div>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="name" className="text-white/80">Name</Label>
-                    <span className="text-xs text-white/40">Optional</span>
-                  </div>
-                  <Input
-                    id="name"
-                    name="name"
-                    type="text"
-                    placeholder="Your name"
-                    className="h-10 bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  />
-                </div>
-                
-                <div className="space-y-1.5">
-                  <Label htmlFor="email" className="text-white/80">Email</Label>
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="you@example.com"
-                    required
-                    className="h-10 bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  />
-                </div>
-                
-                <div className="space-y-1.5">
-                  <Label htmlFor="password" className="text-white/80">Password</Label>
-                  <Input
-                    id="password"
-                    name="password"
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                    className="h-10 bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  />
-                  <p className="text-xs text-white/40">At least 8 characters</p>
-                </div>
-                
-                <div className="space-y-1.5">
-                  <Label htmlFor="confirmPassword" className="text-white/80">Confirm password</Label>
-                  <Input
-                    id="confirmPassword"
-                    name="confirmPassword"
-                    type="password"
-                    placeholder="••••••••"
-                    required
-                    className="h-10 bg-white/5 border-white/10 text-white placeholder:text-white/40"
-                  />
-                </div>
-
-                <Button type="submit" className="w-full h-11 mt-2">
-                  Create account
-                  <ArrowRight className="w-4 h-4" />
-                </Button>
-              </form>
-
-              {message && (
-                <div className="mt-4 p-3 rounded-md bg-destructive/20 border border-destructive/30 text-destructive text-sm text-center">
-                  {message}
-                </div>
-              )}
-            </CardContent>
-
-            <div className="px-6">
-              <Separator className="bg-white/10" />
-            </div>
-
-            <CardFooter className="pt-3 pb-5">
-              <Link href="/login" className="w-full">
-                <Button 
-                  variant="outline" 
-                  className="w-full h-10 border-white/20 bg-transparent hover:border-primary hover:bg-primary/5 transition-all duration-200"
-                >
-                  <span className="text-white/70">Already have an account?</span>
-                  <span className="ml-1 text-primary font-medium">Sign in</span>
-                  <ArrowRight className="w-4 h-4 ml-1 text-primary" />
-                </Button>
-              </Link>
-            </CardFooter>
-          </Card>
-
-          {/* Footer */}
-          <p className="text-center text-xs text-white/30 mt-4">
-            By creating an account, you agree to our Terms and Privacy Policy
-          </p>
+          <input
+            id="name"
+            name="name"
+            type="text"
+            autoComplete="name"
+            placeholder="Your name"
+            className={authInput}
+          />
         </div>
-      </div>
-    </div>
+
+        <div className="grid gap-1.5">
+          <label htmlFor="email" className={authLabel}>Email</label>
+          <input
+            id="email"
+            name="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            required
+            className={authInput}
+          />
+        </div>
+
+        <div className="grid gap-1.5">
+          <div className="flex items-baseline justify-between gap-3">
+            <label htmlFor="password" className={authLabel}>Password</label>
+            <span className={authHint}>At least 8 characters</span>
+          </div>
+          <input
+            id="password"
+            name="password"
+            type="password"
+            autoComplete="new-password"
+            required
+            className={authInput}
+          />
+        </div>
+
+        <div className="grid gap-1.5">
+          <label htmlFor="confirmPassword" className={authLabel}>Confirm password</label>
+          <input
+            id="confirmPassword"
+            name="confirmPassword"
+            type="password"
+            autoComplete="new-password"
+            required
+            className={authInput}
+          />
+        </div>
+
+        <AuthMessage message={message} />
+
+        <button type="submit" className={`${authPrimaryButton} mt-1`}>Create account</button>
+      </form>
+    </AuthShell>
   )
 }

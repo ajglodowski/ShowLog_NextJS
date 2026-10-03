@@ -4,12 +4,8 @@
  * Creates fixed-size (256-dim) feature vectors from show properties using
  * feature hashing (FNV-1a). No external APIs or ML models required.
  * 
- * Weights are calibrated to match the existing `get_similar_show_ids` SQL function:
- * - Tags: strongest signal (1.0)
- * - Length: medium signal (0.6)
- * - Service: medium signal (0.4)
- * - Actors: small signal (0.3) - intentionally low to avoid dominating
- * - Extras (booleans/seasons/year): tie-breakers only (0.05-0.10)
+ * Tags (IDF-weighted) carry the signal; see WEIGHTS below. Vectors are
+ * mean-centered across the catalog before storage (centerEmbeddings).
  */
 
 import { ShowLength } from "@/app/models/showLength";
@@ -119,67 +115,121 @@ export function normalizeVector(vec: number[]): number[] {
 }
 
 /**
+ * Feature weights. Tags carry the signal; everything else is secondary.
+ *
+ * Features that every show has one value of (length, limitedSeries, running,
+ * seasons, year) are kept small: at a high weight they give every pair of
+ * shows the same shared component, inflating all similarity scores regardless
+ * of taste. Mean-centering (`centerEmbeddings`) removes most of what's left.
+ * `currentlyAiring` was dropped because it is false for every show.
+ */
+const WEIGHTS = {
+  tag: 1.0, // multiplied by the tag's IDF (see computeTagIdf)
+  service: 0.4,
+  actor: 0.5,
+  length: 0.1,
+  limitedSeries: 0.1,
+  running: 0.1,
+  seasons: 0.06,
+  year: 0.05,
+};
+
+/**
+ * Smoothed inverse document frequency for each tag, rescaled so the average
+ * tag occurrence has weight 1.0. A tag on half the catalog ends up at roughly
+ * 0.5 and a rare tag at roughly 1.7, so shared niche tags count for more than
+ * shared generic ones.
+ *
+ * @param tagIdsPerShow One array of tag IDs per show in the catalog
+ */
+export function computeTagIdf(tagIdsPerShow: number[][]): Map<number, number> {
+  const showCount = tagIdsPerShow.length;
+  const docFreq = new Map<number, number>();
+  for (const tagIds of tagIdsPerShow) {
+    for (const tagId of new Set(tagIds)) {
+      docFreq.set(tagId, (docFreq.get(tagId) ?? 0) + 1);
+    }
+  }
+
+  const idf = new Map<number, number>();
+  let occurrenceWeightSum = 0;
+  let occurrences = 0;
+  docFreq.forEach((df, tagId) => {
+    const value = Math.log((1 + showCount) / (1 + df)) + 1;
+    idf.set(tagId, value);
+    occurrenceWeightSum += value * df;
+    occurrences += df;
+  });
+
+  const mean = occurrences > 0 ? occurrenceWeightSum / occurrences : 1;
+  idf.forEach((value, tagId) => idf.set(tagId, value / mean));
+  return idf;
+}
+
+/**
  * Compute a deterministic embedding for a show based on its properties.
- * 
- * Weights are calibrated to match the existing `get_similar_show_ids` SQL function:
- * - Tags: strongest signal (SQL: +5 per tag)
- * - Length: medium signal (SQL: +3)
- * - Service: medium signal (SQL: +2)
- * - Actors: small signal (SQL: +3, but we halve it intentionally)
- * - Extras: tie-breakers only
- * 
- * Features used:
- * - tag:<tagId> for each tag (weight: 1.0 - baseline/strongest)
- * - length:<value> for show episode length (weight: 0.6)
- * - service:<serviceId> for each service (weight: 0.4)
- * - actor:<actorId> for each actor (weight: 0.3 - intentionally small)
- * - running/limitedSeries/currentlyAiring booleans (weight: 0.08 - tie-breakers)
- * - seasons:<bucket> for total seasons (weight: 0.06 - tie-breaker)
- * - year:<bucket> for release year (weight: 0.05 - tie-breaker)
- * 
+ *
+ * Features used (weights in WEIGHTS):
+ * - tag:<tagId> for each tag, scaled by the tag's IDF
+ * - service:<serviceId> for each service
+ * - actor:<actorId> for each actor
+ * - length:<value>, limitedSeries:<bool>, running:<bool>, seasons:<bucket>,
+ *   year:<bucket> as small tie-breakers
+ *
+ * The result is only comparable to other shows after `centerEmbeddings` has
+ * been applied across the whole catalog; see buildShowEmbeddings.ts.
+ *
  * @param input Show properties needed for embedding
+ * @param tagIdf Per-tag IDF from computeTagIdf; tags missing from it get 1.0
  * @returns Normalized 256-dimensional embedding vector
  */
-export function computeShowEmbedding(input: ShowEmbeddingInput): number[] {
-  // Initialize zero vector
+export function computeShowEmbedding(
+  input: ShowEmbeddingInput,
+  tagIdf?: Map<number, number>
+): number[] {
   const embedding = new Array(EMBEDDING_DIM).fill(0);
 
-  // === CORE FEATURES (match SQL behavior) ===
-
-  // Tag features (weight: 1.0 - strongest signal, baseline)
   for (const tagId of input.tagIds) {
-    addFeature(embedding, `tag:${tagId}`, 1.0);
+    addFeature(embedding, `tag:${tagId}`, WEIGHTS.tag * (tagIdf?.get(tagId) ?? 1.0));
   }
 
-  // Length feature (weight: 0.6 - ≈3/5 of tags, matches SQL ratio)
-  const lengthValue = input.length ?? ShowLength.NONE;
-  addFeature(embedding, `length:${lengthValue}`, 0.4);
-
-  // Service features (weight: 0.4 - ≈2/5 of tags, matches SQL ratio)
   for (const serviceId of input.serviceIds) {
-    addFeature(embedding, `service:${serviceId}`, 0.4);
+    addFeature(embedding, `service:${serviceId}`, WEIGHTS.service);
   }
 
-  // Actor features (weight: 0.3 - small impact as requested)
   for (const actorId of input.actorIds) {
-    addFeature(embedding, `actor:${actorId}`, 0.5);
+    addFeature(embedding, `actor:${actorId}`, WEIGHTS.actor);
   }
 
-  // === EXTRA FEATURES (tie-breakers only) ===
+  const lengthValue = input.length ?? ShowLength.NONE;
+  addFeature(embedding, `length:${lengthValue}`, WEIGHTS.length);
+  addFeature(embedding, `limitedSeries:${input.limitedSeries}`, WEIGHTS.limitedSeries);
+  addFeature(embedding, `running:${input.running}`, WEIGHTS.running);
+  addFeature(embedding, seasonsBucket(input.totalSeasons), WEIGHTS.seasons);
+  addFeature(embedding, yearBucket(input.releaseYear), WEIGHTS.year);
 
-  // Boolean features (weight: 0.08 - very low, just tie-breakers)
-  addFeature(embedding, `running:${input.running}`, 0.1);
-  addFeature(embedding, `limitedSeries:${input.limitedSeries}`, 0.7);
-  addFeature(embedding, `currentlyAiring:${input.currentlyAiring}`, 0.08);
-
-  // Seasons bucket (weight: 0.06 - tie-breaker)
-  addFeature(embedding, seasonsBucket(input.totalSeasons), 0.06);
-
-  // Year bucket (weight: 0.05 - tie-breaker)
-  addFeature(embedding, yearBucket(input.releaseYear), 0.01);
-
-  // Normalize to unit vector for cosine similarity
   return normalizeVector(embedding);
+}
+
+/**
+ * Subtract the catalog mean from every embedding and re-normalize.
+ *
+ * Without this, whatever most shows have in common (popular tags, the common
+ * length, not being a limited series) dominates both show vectors and the
+ * user vector built from them, so every show looks like a decent match.
+ * After centering, cosine similarity measures how a show differs from a
+ * typical show, which is the part that reflects taste.
+ */
+export function centerEmbeddings(embeddings: number[][]): number[][] {
+  if (embeddings.length === 0) return [];
+  const mean = new Array(EMBEDDING_DIM).fill(0);
+  for (const embedding of embeddings) {
+    for (let i = 0; i < EMBEDDING_DIM; i++) mean[i] += embedding[i];
+  }
+  for (let i = 0; i < EMBEDDING_DIM; i++) mean[i] /= embeddings.length;
+  return embeddings.map((embedding) =>
+    normalizeVector(embedding.map((v, i) => v - mean[i]))
+  );
 }
 
 /**

@@ -93,6 +93,36 @@ export async function getShowMatchForCurrentUser(showId: number): Promise<ShowMa
 }
 
 /**
+ * Get match scores between the current (logged-in) user and many shows at once.
+ *
+ * Shows with no embedding (or every show, when the user has no embedding) are
+ * absent from the returned map.
+ *
+ * @param showIds The shows' bigint ids
+ * @returns Map of showId to similarity score in [0, 1]
+ */
+export async function getShowMatchesForCurrentUser(showIds: number[]): Promise<Map<number, number>> {
+  const matches = new Map<number, number>();
+  if (showIds.length === 0) return matches;
+
+  const supabase = await createClient();
+
+  const { data, error } = await supabase.rpc("get_show_matches", {
+    p_show_ids: showIds,
+  });
+
+  if (error) {
+    console.error("Error fetching show matches:", error);
+    return matches;
+  }
+
+  (data as { showId: number; similarity_score: number }[] | null)?.forEach((row) => {
+    matches.set(Number(row.showId), row.similarity_score);
+  });
+  return matches;
+}
+
+/**
  * Refresh a user's embedding based on their current ratings.
  * Call this after a user rates/unrates a show.
  * 

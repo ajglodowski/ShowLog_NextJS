@@ -3,7 +3,7 @@ import ShowTile from "../show/ShowTile/ShowTile";
 import { ShowTileBadgeProps } from "../show/ShowTile/ShowTileContent";
 import ShowTileSkeleton from "../show/ShowTile/ShowTileSkeleton";
 import { getRecommendationsForUser, userHasEmbedding } from "@/app/utils/recommendations/RecommendationService";
-import { Star, Sparkles } from "lucide-react";
+import { homeEmpty, homeNote } from "./homeStyles";
 
 type RecommendationsRowProps = {
     userId: string;
@@ -15,15 +15,10 @@ export default async function RecommendationsRow({ userId }: RecommendationsRowP
 
     if (!recommendations || recommendations.length === 0) {
         return (
-            <div className="py-4">
-                <div className="flex flex-col items-center justify-center text-center gap-2">
-                    <Star className="w-5 h-5 text-white/20" />
-                    <p className="text-xs text-white/40">
-                        {hasEmbedding 
-                            ? "No new recommendations available."
-                            : "Rate some shows to get personalized recommendations!"}
-                    </p>
-                </div>
+            <div className={homeEmpty}>
+                {hasEmbedding
+                    ? "No new recommendations right now"
+                    : "Rate some shows to get recommendations"}
             </div>
         );
     }
@@ -39,10 +34,7 @@ export default async function RecommendationsRow({ userId }: RecommendationsRowP
     return (
         <div className="w-full">
             {!hasEmbedding && (
-                <div className="pb-2 text-xs text-white/40 flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" />
-                    <span>Trending shows — rate to personalize</span>
-                </div>
+                <p className={homeNote}>Trending shows. Rate a few to make these yours.</p>
             )}
             <ScrollArea className="w-full whitespace-nowrap">
                 <div className="flex gap-3">

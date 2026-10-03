@@ -6,6 +6,7 @@ import ShowTileSkeleton from "../show/ShowTile/ShowTileSkeleton";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { LocalizedDaysAway, LocalizedReleaseDate } from "../LocalizedDate";
 import { currentUserShowDetailsStateTag } from "@/app/utils/cacheTags";
+import { homeEmpty } from "./homeStyles";
 
 export type ComingSoonDTO = {
     showId: string
@@ -26,8 +27,8 @@ export default async function ComingSoonRow ({userId}: {userId: string}) {
 
     const shows = await getComingSoon({userId: userId});
 
-    if (shows === null) return (<div className="py-4 text-center text-sm text-white/40">Error loading coming soon shows</div>);
-    if (shows.length === 0) return (<div className="py-4 text-center text-sm text-white/40">No shows marked as coming soon</div>);
+    if (shows === null) return (<div className={homeEmpty}>Couldn&apos;t load coming soon shows</div>);
+    if (shows.length === 0) return (<div className={homeEmpty}>No shows marked as coming soon</div>);
 
     const tileBadge = (date: Date): ShowTileBadgeProps => {
         return { text: <LocalizedDaysAway date={date} />, iconName: 'Clock' };

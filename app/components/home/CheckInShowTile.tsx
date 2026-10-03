@@ -2,7 +2,6 @@
 
 import { updateUserShowData } from "@/app/(main)/show/[showId]/UserShowDataService";
 import { UserUpdateCategory } from "@/app/models/userUpdateType";
-import { Button } from "@/components/ui/button";
 import { Check, Plus } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -10,6 +9,7 @@ import { LocalizedDaysAgo } from "../LocalizedDate";
 import ClientShowTile from "../show/ShowTile/ClientShowTile";
 import { ShowTileBadgeProps } from "../show/ShowTile/ShowTileContent";
 import { CheckInShowDTO } from "./HomeService";
+import { homeGlassButton } from "./homeStyles";
 
 export default function CheckInShowTile({ checkInShow, userId }: { checkInShow: CheckInShowDTO, userId: string }) {
     const [isVisible, setIsVisible] = useState(true);
@@ -73,40 +73,33 @@ export default function CheckInShowTile({ checkInShow, userId }: { checkInShow: 
     ];
 
     return (
-        <div className="relative group flex flex-col gap-2 m-2 w-48">
+        <div className="flex w-48 flex-col gap-2">
             <ClientShowTile 
                 showDto={checkInShow.show} 
                 badges={badges}
             />
-            
-            <div className="flex flex-col gap-2 mt-1 opacity-100 transition-opacity w-full">
-                {/* Suggested Resolutions */}
-                <div className="flex flex-col gap-2 w-full">
-                    <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="h-9 text-sm w-full bg-black/60 border-white/20 text-white hover:border-primary hover:bg-primary/10 hover:text-primary font-medium transition-all duration-200"
-                        onClick={handlePlusOne}
-                        disabled={isLoading}
-                        aria-label={`Move to season ${checkInShow.currentSeason + 1} of ${checkInShow.show.name}`}
-                    >
-                        <Plus className="w-4 h-4" />
-                        Season {checkInShow.currentSeason + 1}
-                    </Button>
-                    
-                    <Button 
-                        size="sm" 
-                        variant="outline" 
-                        className="h-9 text-sm w-full bg-black/60 border-white/20 text-white hover:border-primary hover:bg-primary/10 hover:text-primary font-medium transition-all duration-200"
-                        onClick={handleCaughtUp}
-                        disabled={isLoading}
-                        aria-label={`Mark ${checkInShow.show.name} as caught up to season ${checkInShow.show.totalSeasons}`}
-                    >
-                        <Check className="w-4 h-4" />
-                        Caught Up
-                    </Button>
-                </div>
-            </div>
+
+            {/* Suggested resolutions */}
+            <button
+                type="button"
+                className={homeGlassButton}
+                onClick={handlePlusOne}
+                disabled={isLoading}
+                aria-label={`Move to season ${checkInShow.currentSeason + 1} of ${checkInShow.show.name}`}
+            >
+                <Plus className="h-[15px] w-[15px]" strokeWidth={1.8} aria-hidden="true" />
+                Season {checkInShow.currentSeason + 1}
+            </button>
+            <button
+                type="button"
+                className={homeGlassButton}
+                onClick={handleCaughtUp}
+                disabled={isLoading}
+                aria-label={`Mark ${checkInShow.show.name} as caught up to season ${checkInShow.show.totalSeasons}`}
+            >
+                <Check className="h-[15px] w-[15px]" strokeWidth={1.8} aria-hidden="true" />
+                Caught up
+            </button>
         </div>
     );
 }

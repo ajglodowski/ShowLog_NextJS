@@ -1,0 +1,714 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- ShowLog brand guide. Open directly in a browser. Source of truth for web (globals.css) and iOS (Theme.swift) styling. -->
+<title>ShowLog Brand Guide</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Geist:wght@300..900&display=swap">
+<style>
+:root{
+  color-scheme: dark;
+  --f:"Geist",ui-sans-serif,system-ui,-apple-system,sans-serif;
+  --code:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+  --graphite:#0C0B0A; --raised:#161412; --chalk:#F5F1EC; --stone:#A39B93; --dim:#6F6861;
+  --line:rgba(255,255,255,.08); --orange:#F2A13A; --orange-ink:#231300;
+}
+*{box-sizing:border-box}
+body{margin:0}
+img{max-width:100%}
+html{scroll-behavior:smooth}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}}
+body{background:var(--graphite);color:var(--chalk);font:15px/1.55 var(--f);-webkit-font-smoothing:antialiased;overflow-x:hidden;font-variant-numeric:tabular-nums}
+h1,h2,h3,h4,h5{margin:0;text-wrap:balance}
+p{margin:0}
+:focus-visible{outline:2px solid var(--orange);outline-offset:2px}
+.wrap{max-width:1240px;margin:0 auto;padding-inline:clamp(16px,4vw,44px)}
+.ic{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+.ic.fill{fill:currentColor;stroke:none}
+.lbl{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--stone)}
+.muted{color:var(--stone)}
+
+/* ================= brand primitives ================= */
+.glass{background:rgba(255,255,255,.06);backdrop-filter:blur(26px) saturate(1.4);-webkit-backdrop-filter:blur(26px) saturate(1.4);border:1px solid var(--line);box-shadow:inset 0 1px 0 rgba(255,255,255,.13)}
+.glass.deep{background:rgba(20,18,16,.5)}
+.well{background:rgba(0,0,0,.24);border:1px solid var(--line)}
+.search{height:46px;border-radius:12px;display:flex;align-items:center;gap:11px;padding:0 14px;color:var(--stone);font-size:14px}
+.search .ic{width:17px;height:17px;color:var(--chalk)}
+.search kbd{margin-left:auto;font:500 11px var(--f);padding:3px 7px;border-radius:6px;border:1px solid var(--line)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.chip{height:30px;border-radius:999px;padding:0 12px;display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:500;color:#DCD4CC;border:1px solid var(--line);background:rgba(255,255,255,.04);white-space:nowrap}
+.chip.on{background:var(--chalk);color:#14110E;border-color:transparent}
+.chip .ic{width:13px;height:13px}
+.sort{margin-left:auto;font-size:12.5px;color:var(--stone);display:flex;gap:6px;align-items:center}
+.sort .ic{width:14px;height:14px}
+.rows{display:grid;gap:2px}
+.row{display:grid;grid-template-columns:46px minmax(0,1fr) auto 128px 64px;gap:14px;align-items:center;padding:7px 8px;border-radius:12px}
+.row.hl{background:linear-gradient(90deg,var(--wash,rgba(255,255,255,.07)) 0%,rgba(255,255,255,.05) 62%);box-shadow:inset 0 1px 0 rgba(255,255,255,.1)}
+.row .poster{width:46px;height:46px;border-radius:9px}
+.row h5{font-size:15px;font-weight:650;letter-spacing:-.015em;line-height:1.25;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.meta{display:flex;align-items:center;gap:6px;font-size:12.5px;color:var(--stone);margin-top:2px;white-space:nowrap;overflow:hidden}
+.st{display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:550;color:var(--orange);white-space:nowrap}
+.st .ic{width:14px;height:14px}
+.st.off{color:var(--stone)}
+.rt{display:flex;align-items:center;gap:5px;justify-self:end;font-size:12.5px;color:var(--chalk);white-space:nowrap}
+.rt .ic{width:13px;height:13px}
+.rt.soft{color:var(--stone)}
+.rt.none{color:var(--dim)}
+.seg{display:grid;grid-template-columns:1fr 1fr;border-radius:14px;overflow:hidden}
+.seg>div{padding:9px 12px;min-width:0}
+.seg>div+div{border-left:1px solid var(--line)}
+.seg small{display:block;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--stone);margin-bottom:4px}
+.seg b{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;white-space:nowrap}
+.seg b .ic{width:14px;height:14px}
+.btn{height:38px;padding:0 16px;border-radius:11px;display:inline-flex;align-items:center;gap:7px;font:600 13.5px var(--f);border:0;color:var(--chalk);background:transparent}
+.btn.pri{background:var(--orange);color:var(--orange-ink)}
+.btn .ic{width:15px;height:15px}
+.hero-title{font-weight:900;letter-spacing:-.065em;line-height:.86;color:var(--chalk)}
+.scrim{position:absolute;inset:0;background:linear-gradient(180deg,transparent 45%,rgba(0,0,0,.55));pointer-events:none;border-radius:inherit}
+.tabs{display:flex;gap:18px;font-size:13px;color:var(--stone);border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap}
+.tabs span{padding-bottom:8px;border-bottom:2px solid transparent;margin-bottom:-1px}
+.tabs .on{color:var(--chalk);border-color:var(--orange)}
+.tabbar{display:flex;gap:2px;padding:5px;border-radius:999px}
+.tabbar span{width:54px;height:42px;border-radius:999px;display:grid;place-items:center;color:var(--stone)}
+.tabbar span.on{color:var(--chalk);background:rgba(255,255,255,.1)}
+.tabbar .ic{width:20px;height:20px}
+
+/* service tiles */
+.svc{--s:22px;display:inline-grid;place-items:center;width:var(--s);height:var(--s);border-radius:calc(var(--s)*.24);background:var(--sb);color:var(--sf);flex:none;box-shadow:inset 0 0 0 1px rgba(255,255,255,.14)}
+.svc svg{width:70%;height:70%;fill:currentColor}
+.svc.fb{background:rgba(255,255,255,.1);color:var(--chalk)}
+.svc.fb b{font:800 calc(var(--s)*.34)/1 var(--f);letter-spacing:-.03em}
+.t-hbomax{--sb:#000;--sf:#fff}.t-appletv{--sb:#000;--sf:#fff}.t-hulu{--sb:#1CE783;--sf:#0B0C0F}.t-netflix{--sb:#000;--sf:#E50914}
+.t-primevideo{--sb:#1F2E3E;--sf:#fff}.t-paramountplus{--sb:#0064FF;--sf:#fff}.t-showtime{--sb:#B10000;--sf:#fff}.t-nbc{--sb:#fff;--sf:#222}.t-fox{--sb:#000;--sf:#fff}
+
+/* posters (stand-ins for real key art) */
+.poster{position:relative;overflow:hidden;background:var(--pbg);container-type:inline-size;flex:none}
+.poster::after{content:attr(data-t);position:absolute;left:9%;right:9%;bottom:9%;color:var(--pfg,#fff);font:var(--pfont);letter-spacing:var(--pls,.02em);line-height:.95;font-size:var(--pfs,13cqw);text-transform:var(--ptt,uppercase)}
+.poster.bare::after{display:none}
+.p-sev{--pbg:radial-gradient(90% 55% at 50% 12%,rgba(160,240,240,.55),transparent 60%),linear-gradient(90deg,transparent 22%,rgba(255,255,255,.12) 22% 23%,transparent 23% 77%,rgba(255,255,255,.12) 77% 78%,transparent 78%),linear-gradient(180deg,#136070 0%,#0A2B36 55%,#040B10 100%);--pfont:600 1em var(--f);--pls:.2em;--pfs:9.5cqw}
+.p-bear{--pbg:linear-gradient(0deg,#FF6A2B 0 20%,transparent 20%),repeating-linear-gradient(0deg,transparent 0 18%,rgba(255,255,255,.08) 18% 19%),repeating-linear-gradient(90deg,transparent 0 18%,rgba(255,255,255,.08) 18% 19%),linear-gradient(160deg,#2553A0,#0F2248);--pfont:900 1em var(--f);--pfs:14cqw;--pls:-.04em;--pfg:#FFF4E8}
+.p-bear::after{bottom:27%}
+.p-shog{--pbg:radial-gradient(circle at 62% 36%,#D42A3A 0 21%,transparent 21.5%),linear-gradient(180deg,#1B0E0E,#080505);--pfont:300 1em var(--f);--pfs:14cqw;--pls:.2em;--pfg:#F3E7DA}
+.p-ind{--pbg:linear-gradient(180deg,transparent 64%,#C9A24A 64% 64.8%,transparent 65%),linear-gradient(200deg,#3A4658,#151B24 60%,#0A0D12);--pfont:600 1em var(--f);--pls:.22em;--pfs:10cqw;--pfg:#E9DDBF}
+.p-slow{--pbg:radial-gradient(80% 60% at 30% 20%,rgba(220,210,160,.35),transparent 60%),linear-gradient(180deg,#56573A,#26271A 70%,#141409);--pfont:800 1em var(--f);--pfs:12cqw;--pfg:#F1EAD2}
+.p-pitt{--pbg:linear-gradient(90deg,transparent 44%,#E0343F 44% 56%,transparent 56%) center 10%/100% 34% no-repeat,linear-gradient(180deg,transparent 12%,#E0343F 12% 22%,transparent 22%),linear-gradient(180deg,#127068,#06231F);--pfont:800 1em var(--f);--pfs:14cqw}
+.p-hacks{--pbg:radial-gradient(70% 50% at 70% 25%,#FFB3CF,transparent 60%),linear-gradient(170deg,#FF5C9A,#7B1850);--pfont:900 1em var(--f);--pfs:21cqw;--pls:-.05em}
+
+.av{width:22px;height:22px;border-radius:50%;flex:none;background:var(--c);display:grid;place-items:center;font:600 9px/1 var(--f);color:rgba(0,0,0,.6)}
+.av1{--c:linear-gradient(135deg,#F7C59F,#E0875A)}.av2{--c:linear-gradient(135deg,#B8D4FF,#6C8FD8)}.av3{--c:linear-gradient(135deg,#C7F0D8,#5DB68A)}.av4{--c:linear-gradient(135deg,#F3C4F0,#B06BB8)}.av5{--c:linear-gradient(135deg,#FFE29A,#D8A93A)}
+.stack{display:flex}.stack .av+.av{margin-left:-7px}
+
+/* ================= guide chrome ================= */
+.cover{padding-block:64px 44px;background:linear-gradient(180deg,#17505A 0%,#113038 30%,var(--graphite) 78%);border-bottom:1px solid var(--line)}
+.wordmark{font-size:clamp(72px,14vw,176px);font-weight:900;letter-spacing:-.07em;line-height:.82}
+.cover .sub{display:flex;flex-wrap:wrap;gap:6px 18px;margin-top:22px;font-size:13px;color:#CFC6BD}
+.cover .sub b{color:var(--chalk);font-weight:600}
+.thesis{font-size:clamp(20px,2.4vw,26px);font-weight:650;letter-spacing:-.025em;line-height:1.25;max-width:30ch;margin-top:34px}
+.principles{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-top:32px}
+.principles div{padding:16px 18px;border-radius:18px}
+.principles h3{font-size:15px;font-weight:700;letter-spacing:-.015em}
+.principles p{font-size:13.5px;color:#D5CEC6;margin-top:5px;line-height:1.5}
+.jump{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:rgba(12,11,10,.8);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--line)}
+.jump .wrap{display:flex;gap:4px;padding-block:9px;overflow-x:auto;scrollbar-width:none}
+.jump a{flex:none;text-decoration:none;color:#CDC6BE;font-size:13px;font-weight:500;padding:8px 13px;border-radius:999px}
+.jump a:hover{background:rgba(255,255,255,.07)}
+section{padding-block:68px;border-bottom:1px solid var(--line)}
+.sh{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px 56px;align-items:end;margin-bottom:28px}
+.sh h2{font-size:clamp(44px,6.5vw,80px);font-weight:900;letter-spacing:-.065em;line-height:.88}
+.sh p{font-size:15.5px;color:#D5CEC6;max-width:54ch}
+.grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.grid3{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px}
+.card{border-radius:18px;padding:18px 20px;background:rgba(255,255,255,.035);border:1px solid var(--line)}
+.card h4{margin-bottom:12px}
+.card .body{font-size:14px;line-height:1.55;color:#D8D1C9}
+.card .body p+p{margin-top:8px}
+.card .body b{color:var(--chalk);font-weight:600}
+.span2{grid-column:span 2}.span3{grid-column:1/-1}
+.note{font-size:12.5px;color:var(--stone);margin-top:10px;line-height:1.5}
+.do{display:grid;gap:7px;margin:0;padding:0;list-style:none;font-size:13.5px;color:#D8D1C9}
+.do li{display:grid;grid-template-columns:16px 1fr;gap:6px}
+.do li::before{content:"";width:8px;height:8px;border-radius:50%;margin-top:6px;background:var(--mk,var(--orange))}
+.do li.no{--mk:#5C5650}
+code.i{font:500 12.5px var(--code);background:rgba(255,255,255,.08);padding:1px 5px;border-radius:5px;color:#F6D3A6}
+
+/* frames */
+.browser{border-radius:14px;overflow:hidden;box-shadow:0 40px 80px -30px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.07)}
+.browser-bar{height:32px;display:flex;align-items:center;gap:7px;padding:0 12px;background:#1A1918}
+.browser-bar i{width:10px;height:10px;border-radius:50%;background:#383532}
+.browser-bar span{margin-left:14px;flex:1;max-width:340px;height:20px;border-radius:6px;background:#282624;font-size:11px;line-height:20px;color:#948D86;padding-left:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.web{position:relative;background:var(--graphite);overflow:hidden;container-type:inline-size}
+.nav{display:flex;align-items:stretch;gap:20px;height:50px;padding:0 20px;position:relative;z-index:3;border-bottom:1px solid var(--line);background:rgba(12,11,10,.4);backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px)}
+.logo{display:flex;align-items:center;font-size:18px;font-weight:850;letter-spacing:-.05em}
+.nav nav{display:flex;gap:18px;font-size:13px;color:var(--stone)}
+.nav nav span{display:flex;align-items:center;border-bottom:2px solid transparent;margin-bottom:-1px}
+.nav nav .on{color:var(--chalk);border-color:var(--orange)}
+.nav .av{margin:auto 0 auto auto;width:28px;height:28px}
+.page{padding:22px 20px 22px;position:relative;z-index:2}
+.ptitle{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.ptitle h3{font-size:44px;font-weight:900;letter-spacing:-.065em;line-height:.9}
+.ptitle span{font-size:12.5px;color:var(--stone)}
+.panel{border-radius:20px;padding:12px;margin-top:16px}
+.phone{width:316px;height:648px;max-width:100%;border-radius:52px;padding:10px;background:#141312;box-shadow:0 0 0 1.5px #2B2927,0 40px 80px -24px rgba(0,0,0,.7);position:relative;justify-self:center}
+.screen{position:relative;height:100%;border-radius:42px;overflow:hidden;container-type:inline-size;background:linear-gradient(180deg,#17505A 0%,#113038 42%,#0C0B0A 88%)}
+.island{position:absolute;top:10px;left:50%;translate:-50% 0;width:96px;height:28px;border-radius:20px;background:#000;z-index:40}
+.sbar{position:absolute;top:0;left:0;right:0;height:48px;display:flex;justify-content:space-between;align-items:center;padding:4px 30px 0;font:600 14px/1 -apple-system,system-ui,sans-serif;z-index:35}
+.sbar .dots{display:flex;gap:4px;align-items:center}
+.sbar .dots i{display:block;width:16px;height:9px;border-radius:2.5px;border:1.2px solid currentColor;position:relative}
+.sbar .dots i::after{content:"";position:absolute;inset:1.2px 4px 1.2px 1.2px;background:currentColor;border-radius:1px}
+.sbar .dots s{display:block;width:14px;height:9px;background:linear-gradient(90deg,currentColor 0 2.5px,transparent 2.5px 4px,currentColor 4px 6.5px,transparent 6.5px 8px,currentColor 8px 10.5px,transparent 10.5px 12px,currentColor 12px 14px);clip-path:polygon(0 100%,100% 0,100% 100%)}
+.ptop{position:absolute;top:52px;left:16px;right:16px;display:flex;justify-content:space-between;z-index:6}
+.cbtn{width:36px;height:36px;border-radius:50%;display:grid;place-items:center}
+.i-card{position:absolute;top:62px;left:50%;translate:-50% 0;width:228px;height:228px;border-radius:20px;box-shadow:0 24px 40px -16px rgba(0,0,0,.6)}
+.i-title{position:absolute;left:10px;right:10px;top:252px;text-align:center;font-size:17.5cqw;z-index:3}
+.pbody{position:absolute;left:14px;right:14px;top:306px;display:grid;gap:10px;z-index:4}
+.pmeta{font-size:12px;color:#CFC6BD;display:flex;align-items:center;justify-content:center;gap:6px}
+.box{border-radius:16px;padding:10px 12px;display:grid;gap:9px}
+.box hr{border:0;height:1px;background:var(--line);margin:0}
+.match{font-size:12.5px;color:var(--stone)}
+.match b{color:var(--chalk);font-weight:650}
+.watch{display:flex;align-items:center;gap:10px;font-size:13px}
+.watch .grow{flex:1;min-width:0}
+.watch b{display:block;font-weight:600;font-size:13.5px}
+.watch small{display:block;font-size:11.5px;color:var(--stone)}
+.watch>.ic{color:var(--stone)}
+.phone .tabbar{position:absolute;left:50%;translate:-50% 0;bottom:16px;z-index:6}
+.screens{display:grid;gap:28px}
+.pair{display:grid;grid-template-columns:minmax(0,1fr) 316px;gap:28px;align-items:start}
+.cap{display:flex;justify-content:space-between;gap:12px;margin-bottom:10px;font-size:13px;color:var(--stone)}
+.cap b{color:var(--chalk);font-weight:600}
+
+/* web show page */
+.sp{background:linear-gradient(180deg,#17505A 0%,#113038 34%,#0C0B0A 78%)}
+.sp-in{max-width:620px;margin:0 auto;padding:26px 20px 24px;display:grid;gap:14px}
+.sp-card{position:relative;width:250px;max-width:70%;aspect-ratio:1;margin:0 auto;border-radius:20px;box-shadow:0 30px 50px -18px rgba(0,0,0,.6)}
+.sp-title{text-align:center;font-size:clamp(52px,12cqw,96px);margin-top:-54px;position:relative;z-index:2}
+.sp-stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border-radius:16px;overflow:hidden}
+.sp-stats>div{padding:10px 12px;min-width:0}
+.sp-stats>div+div{border-left:1px solid var(--line)}
+.sp-stats small{display:block;font-size:10.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--stone);margin-bottom:4px}
+.sp-stats b{display:flex;align-items:center;gap:6px;font-weight:600;font-size:14px;white-space:nowrap}
+.sp-stats b .ic{width:14px;height:14px}
+.sp-info{border-radius:18px;padding:14px;display:grid;gap:10px;font-size:14px;color:#D8D1C9}
+
+/* color */
+.sw-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.sw{display:grid;gap:6px}
+.sw i{display:block;height:64px;border-radius:12px;background:var(--c);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.sw b{font-size:13.5px;font-weight:650}
+.sw span{font-size:12px;color:var(--stone);line-height:1.4}
+.washes{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.wash{border-radius:16px;overflow:hidden;border:1px solid var(--line)}
+.wash .top{height:120px;background:linear-gradient(180deg,var(--w) 0%,var(--graphite) 95%);display:flex;align-items:flex-end;gap:10px;padding:12px}
+.wash .top .poster{width:52px;height:52px;border-radius:10px}
+.wash .top h5{font-size:22px;font-weight:900;letter-spacing:-.06em;line-height:.9}
+.wash p{padding:10px 12px;font-size:12px;color:var(--stone);line-height:1.45}
+.wash p b{color:var(--chalk);font-weight:600}
+
+/* type */
+.tscale{display:grid;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
+.tscale>div{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr) minmax(0,1fr);gap:16px;align-items:baseline;padding:14px 18px;border-top:1px solid var(--line)}
+.tscale>div:first-child{border-top:0}
+.tscale small{font-size:12.5px;color:var(--stone)}
+.tscale .s{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.demo-img{position:relative;height:170px;border-radius:14px;overflow:hidden}
+.demo-img .poster{position:absolute;inset:0 0 24px 0;border-radius:14px}
+.demo-img h5{position:absolute;left:14px;bottom:12px;font-size:48px;z-index:2}
+
+/* surfaces */
+.surfaces{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;position:relative;border-radius:18px;overflow:hidden;padding:14px}
+.surfaces>.poster{position:absolute;inset:0}
+.surf{position:relative;border-radius:14px;padding:12px;min-height:150px;display:flex;flex-direction:column;justify-content:space-between;gap:10px;font-size:12.5px}
+.surf b{font-size:13.5px;font-weight:650}
+.surf span{color:#E4DDD5;line-height:1.5}
+
+/* components */
+.statuses{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px 16px}
+.statuses div{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:12px;color:var(--dim)}
+.ratings{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+.ratings div{display:grid;justify-items:center;gap:6px;padding:12px 6px;border-radius:12px;font-size:12.5px;font-weight:600}
+.ratings .ic{width:20px;height:20px}
+.ratings small{font-size:11px;color:var(--stone);font-weight:500}
+
+/* services */
+.svc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:10px}
+.svc-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:14px;background:rgba(255,255,255,.035);border:1px solid var(--line);min-width:0}
+.svc-item div{min-width:0}
+.svc-item b{display:block;font-size:13.5px;font-weight:650;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.svc-item span{display:block;font-size:11.5px;color:var(--stone)}
+.svc-item.pending{border-style:dashed}
+.sizes{display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap}
+.sizes div{display:grid;justify-items:center;gap:6px;font-size:11.5px;color:var(--stone)}
+
+/* build */
+pre{margin:0;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.35);border:1px solid var(--line);overflow-x:auto;font:12.5px/1.6 var(--code);color:#E4DDD5}
+pre .c{color:var(--dim)}
+pre .k{color:#F6D3A6}
+
+@media (max-width:1060px){
+  .pair{grid-template-columns:1fr}
+  .principles{grid-template-columns:1fr 1fr}
+  .washes,.surfaces{grid-template-columns:1fr 1fr}
+}
+@media (max-width:820px){
+  .sh,.grid2,.grid3{grid-template-columns:1fr}
+  .span2{grid-column:auto}
+  .sw-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .nav nav{display:none}
+  .row{grid-template-columns:46px minmax(0,1fr) auto 64px}
+  .row .stack{display:none}
+  .tscale>div{grid-template-columns:1fr}
+  .sp-stats{grid-template-columns:1fr 1fr}
+  .sp-stats>div:nth-child(3){border-left:0;border-top:1px solid var(--line)}
+  .sp-stats>div:nth-child(4){border-top:1px solid var(--line)}
+}
+@media (max-width:560px){
+  .principles,.washes,.surfaces{grid-template-columns:1fr}
+  .row{grid-template-columns:40px minmax(0,1fr) auto;gap:10px}
+  .row .poster{width:40px;height:40px}
+  .rt,.sort{display:none}
+  .page{padding-inline:12px}
+  .panel{padding:8px}
+  .ptitle h3{font-size:34px}
+  .statuses,.ratings{grid-template-columns:1fr 1fr}
+}
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></symbol>
+  <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
+  <symbol id="i-checklist" viewBox="0 0 24 24"><path d="M3.5 6.5l1.8 1.8L8.5 5M3.5 13.5l1.8 1.8 3.2-3.3M12 7h8.5M12 14h8.5M12 20h8.5"/></symbol>
+  <symbol id="i-air" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1.6"/><path d="M8.6 8.6a4.8 4.8 0 000 6.8M15.4 8.6a4.8 4.8 0 010 6.8M5.6 5.6a9 9 0 000 12.8M18.4 5.6a9 9 0 010 12.8"/></symbol>
+  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M11 3l1.9 5.1L18 10l-5.1 1.9L11 17l-1.9-5.1L4 10l5.1-1.9z"/><path d="M18.5 15.5l.7 1.8 1.8.7-1.8.7-.7 1.8-.7-1.8-1.8-.7 1.8-.7z"/></symbol>
+  <symbol id="i-alarm" viewBox="0 0 24 24"><circle cx="12" cy="13" r="7.5"/><path d="M12 9.5V13l2.5 2M4 5l3-2.5M20 5l-3-2.5"/></symbol>
+  <symbol id="i-rewatch" viewBox="0 0 24 24"><path d="M20 12a8 8 0 11-2.4-5.7"/><path d="M20 4v5h-5"/></symbol>
+  <symbol id="i-trend" viewBox="0 0 24 24"><path d="M3 17l6-6 4 4 8-8"/><path d="M15 7h6v6"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-heart" viewBox="0 0 24 24"><path d="M12 20s-7.5-4.6-9.2-9.3C1.7 7.4 3.9 4.5 7 4.5c2 0 3.6 1.1 5 3 1.4-1.9 3-3 5-3 3.1 0 5.3 2.9 4.2 6.2C19.5 15.4 12 20 12 20z"/></symbol>
+  <symbol id="i-minus" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12h8"/></symbol>
+  <symbol id="i-down-thumb" viewBox="0 0 24 24"><path d="M17 4v10M17 14l-3.5 6.5a2 2 0 01-2-2V15H6.4a2 2 0 01-2-2.4l1.3-6.7A2.3 2.3 0 018 4h9h3v10h-3"/></symbol>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="M4 10.5L12 4l8 6.5V20h-5v-6H9v6H4z"/></symbol>
+  <symbol id="i-disc" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M15.5 8.5l-2 5-5 2 2-5z"/></symbol>
+  <symbol id="i-list" viewBox="0 0 24 24"><path d="M9 6h11M9 12h11M9 18h11"/><path d="M4.5 6h.01M4.5 12h.01M4.5 18h.01" stroke-width="2.6"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></symbol>
+  <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+  <symbol id="i-sort" viewBox="0 0 24 24"><path d="M7 4v16M3 16l4 4 4-4M17 20V4M13 8l4-4 4 4"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 3v12M7.5 7.5L12 3l4.5 4.5"/><path d="M5 12v7a2 2 0 002 2h10a2 2 0 002-2v-7"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="svc-hbomax" viewBox="0 0 24 24"><path d="M3.784 8.716c-.655 0-1.32.29-2.173.946v-.78H0v6.236h1.715V11.24c.749-.592 1.091-.78 1.372-.78.333 0 .551.209.551.729v3.928h1.715V11.23c.748-.582 1.081-.769 1.372-.769.333 0 .55.208.55.728v3.928H8.99v-4.53c0-1.403-.8-1.871-1.57-1.871-.654 0-1.32.27-2.192.936-.28-.697-.894-.936-1.444-.936zm8.689 0c-1.705 0-3.118 1.466-3.118 3.284 0 1.82 1.413 3.285 3.118 3.285.842 0 1.57-.312 2.131-.988v.82h1.632V8.883h-1.632v.822c-.561-.676-1.29-.988-2.131-.988zm4.064.166c.707 1.102 1.507 2.09 2.443 3.077a26.593 26.593 0 0 0-2.443 3.16h2.069a13.603 13.603 0 0 1 1.673-2.183 14.067 14.067 0 0 1 1.632 2.182H24a25.142 25.142 0 0 0-2.432-3.16A23.918 23.918 0 0 0 24 8.883h-2.047a14.65 14.65 0 0 1-1.674 2.11 13.357 13.357 0 0 1-1.674-2.11zm-3.804 1.279c1.018 0 1.84.82 1.84 1.84a1.837 1.837 0 0 1-1.84 1.839c-1.019 0-1.84-.82-1.84-1.84 0-1.018.821-1.84 1.84-1.84zm0 .415c-.78 0-1.414.633-1.414 1.423s.634 1.424 1.413 1.424c.78 0 1.414-.634 1.414-1.424s-.634-1.424-1.414-1.424z"/></symbol>
+<symbol id="svc-appletv" viewBox="0 0 24 24"><path d="M20.57 17.735h-1.815l-3.34-9.203h1.633l2.02 5.987c.075.231.273.9.586 2.012l.297-.997.33-1.006 2.094-6.004H24zm-5.344-.066a5.76 5.76 0 0 1-1.55.207c-1.23 0-1.84-.693-1.84-2.087V9.646h-1.063V8.532h1.121V7.081l1.476-.602v2.062h1.707v1.113H13.38v5.805c0 .446.074.75.214.932.14.182.396.264.75.264.207 0 .495-.041.883-.115zm-7.29-5.343c.017 1.764 1.55 2.358 1.567 2.366-.017.042-.248.842-.808 1.658-.487.71-.99 1.418-1.79 1.435-.783.016-1.03-.462-1.93-.462-.89 0-1.17.445-1.913.478-.758.025-1.344-.775-1.838-1.484-.998-1.451-1.765-4.098-.734-5.88.51-.89 1.426-1.451 2.416-1.46.75-.016 1.468.512 1.93.512.461 0 1.327-.627 2.234-.536.38.016 1.452.157 2.136 1.154-.058.033-1.278.743-1.27 2.219M6.468 7.988c.404-.495.685-1.18.61-1.864-.585.025-1.294.388-1.723.883-.38.437-.71 1.138-.619 1.806.652.05 1.328-.338 1.732-.825Z"/></symbol>
+<symbol id="svc-hulu" viewBox="0 0 24 24"><path d="M14.707 15.957h1.912V8.043h-1.912zm-3.357-2.256a.517.517 0 01-.512.511H9.727a.517.517 0 01-.512-.511v-3.19H7.303v3.345c0 1.368.879 2.09 2.168 2.09h1.868c1.189 0 1.912-.856 1.912-2.09V10.51h-1.912c.01 0 .01 3.09.01 3.19zm10.75-3.19v3.19a.517.517 0 01-.512.511h-1.112a.517.517 0 01-.511-.511v-3.19h-1.912v3.345c0 1.368.878 2.09 2.167 2.09h1.868c1.19 0 1.912-.856 1.912-2.09V10.51zm-18.32 0H2.557c-.434 0-.645.11-.645.11V8.044H0v7.903h1.9v-3.179c0-.278.234-.511.512-.511h1.112c.278 0 .511.233.511.511v3.19h1.912v-3.446c0-1.445-.967-2-2.167-2Z"/></symbol>
+<symbol id="svc-netflix" viewBox="0 0 24 24"><path d="m5.398 0 8.348 23.602c2.346.059 4.856.398 4.856.398L10.113 0H5.398zm8.489 0v9.172l4.715 13.33V0h-4.715zM5.398 1.5V24c1.873-.225 2.81-.312 4.715-.398V14.83L5.398 1.5z"/></symbol>
+<symbol id="svc-primevideo" viewBox="0 0 24 24"><path d="M0 9.508c0-.043.01-.073.028-.09.018-.017.047-.025.086-.025h.329c.07 0 .112.034.127.101l.032.119c.091-.088.202-.159.33-.21a1.04 1.04 0 0 1 .396-.079c.294 0 .528.109.7.326.171.217.257.51.257.88 0 .254-.042.475-.127.665-.086.19-.201.335-.347.437a.85.85 0 0 1-.502.154c-.125 0-.243-.02-.355-.06a.857.857 0 0 1-.288-.164v1.003c0 .043-.008.073-.025.09-.017.016-.046.025-.09.025H.115c-.04 0-.068-.009-.086-.025-.019-.017-.028-.047-.028-.09zm1.113.32a.868.868 0 0 0-.447.124v1.206a.834.834 0 0 0 .447.124c.17 0 .296-.058.376-.174.081-.117.121-.3.121-.55 0-.254-.04-.439-.118-.555-.08-.116-.206-.174-.379-.174zm2.248-.087c.121-.134.236-.23.344-.286a.733.733 0 0 1 .345-.085h.063c.043 0 .073.009.092.025.018.017.027.047.027.09v.385c0 .04-.008.068-.025.087-.017.018-.046.027-.089.027a.923.923 0 0 1-.082-.004 1.369 1.369 0 0 0-.383.025c-.1.02-.186.045-.256.076v1.54c0 .04-.008.069-.025.087-.016.018-.046.028-.089.028h-.437c-.04 0-.069-.01-.087-.028-.018-.018-.028-.047-.028-.087V9.508c0-.043.01-.073.028-.09.018-.017.047-.025.087-.025h.328c.07 0 .112.034.128.1zm1.526-.71a.396.396 0 0 1-.278-.096.338.338 0 0 1-.105-.262c0-.11.035-.197.105-.26a.395.395 0 0 1 .278-.097c.116 0 .208.032.278.096.07.064.105.151.105.261a.34.34 0 0 1-.105.262.396.396 0 0 1-.278.096zm-.333.477c0-.043.01-.073.027-.09.019-.017.048-.025.087-.025h.438c.043 0 .072.008.089.025s.025.047.025.09v2.113c0 .04-.008.069-.025.087-.017.018-.046.028-.09.028h-.437c-.04 0-.068-.01-.087-.028-.018-.018-.027-.047-.027-.087zm1.837.11c.161-.107.306-.183.435-.227.13-.045.263-.067.4-.067.273 0 .466.098.579.294.155-.104.3-.18.438-.225.137-.046.278-.069.424-.069.213 0 .377.06.495.179.117.12.175.286.175.5v1.618c0 .04-.008.069-.025.087-.017.019-.046.027-.089.027h-.438c-.04 0-.068-.008-.086-.027-.018-.018-.028-.047-.028-.087V10.15c0-.208-.092-.312-.278-.312-.164 0-.33.04-.497.119v1.664c0 .04-.008.069-.025.087-.017.019-.046.027-.09.027h-.437c-.04 0-.068-.008-.086-.027-.019-.018-.028-.047-.028-.087V10.15c0-.208-.093-.312-.278-.312-.17 0-.337.04-.502.123v1.66c0 .04-.008.069-.025.087-.017.019-.046.027-.089.027h-.438c-.039 0-.068-.008-.086-.027-.018-.018-.027-.047-.027-.087V9.508c0-.043.009-.073.027-.09.018-.017.047-.025.086-.025h.329c.07 0 .112.034.128.101zm4.387 1.16a1.81 1.81 0 0 1-.451-.05c.018.204.08.35.185.44.105.088.263.132.476.132.085 0 .168-.005.249-.016a3.08 3.08 0 0 0 .362-.078.143.143 0 0 1 .023-.002c.052 0 .078.035.078.105v.211c0 .049-.007.083-.02.103a.169.169 0 0 1-.08.053 1.953 1.953 0 0 1-.708.128c-.377 0-.666-.103-.868-.312-.203-.207-.304-.505-.304-.893 0-.398.104-.71.31-.935.207-.227.494-.34.862-.34.283 0 .504.069.664.206a.69.69 0 0 1 .24.55c0 .23-.087.403-.258.52-.172.119-.425.177-.76.177zm.064-.99c-.292 0-.46.18-.506.54.122.025.257.037.406.037.155 0 .267-.024.337-.071.07-.047.105-.12.105-.218 0-.193-.114-.289-.342-.289zm2.948 1.946a.21.21 0 0 1-.075-.011.119.119 0 0 1-.05-.037.274.274 0 0 1-.038-.071l-.777-2.04a1.863 1.863 0 0 1-.023-.063.162.162 0 0 1-.009-.05c0-.047.03-.07.091-.07h.454c.049 0 .084.01.107.028.023.018.04.049.052.092l.468 1.622.477-1.622a.175.175 0 0 1 .052-.092c.023-.018.058-.027.107-.027h.44c.061 0 .091.022.091.068a.16.16 0 0 1-.009.05l-.022.065-.777 2.039a.274.274 0 0 1-.039.07.122.122 0 0 1-.047.038.207.207 0 0 1-.078.01zm2.02-2.703a.393.393 0 0 1-.277-.097.338.338 0 0 1-.105-.26c0-.11.035-.198.105-.262a.393.393 0 0 1 .277-.096c.115 0 .207.032.277.096.07.064.104.151.104.261 0 .11-.034.197-.104.261a.393.393 0 0 1-.277.097zm-.218 2.703c-.04 0-.068-.01-.086-.028-.019-.018-.028-.047-.028-.087V9.507c0-.043.01-.072.028-.09.018-.016.047-.024.086-.024h.436c.042 0 .072.008.089.025.016.017.024.046.024.09v2.111c0 .04-.008.07-.024.087-.017.019-.047.028-.09.028zm1.948.05a.869.869 0 0 1-.513-.153.97.97 0 0 1-.334-.426 1.6 1.6 0 0 1-.116-.63c0-.38.09-.682.268-.91a.856.856 0 0 1 .709-.341.98.98 0 0 1 .622.206V8.458c0-.043.01-.073.027-.09.018-.016.047-.025.087-.025h.436c.042 0 .071.009.088.025.017.017.025.047.025.09v3.161c0 .04-.008.07-.025.087-.017.019-.046.028-.088.028h-.364a.135.135 0 0 1-.084-.023.137.137 0 0 1-.043-.078l-.027-.105a.958.958 0 0 1-.668.256zm.218-.504a.762.762 0 0 0 .418-.128v-1.21a.872.872 0 0 0-.45-.114c-.16 0-.28.06-.358.18-.08.121-.118.304-.118.548 0 .245.041.426.124.546.084.119.212.178.384.178zm2.588-.51c-.169 0-.315-.016-.44-.05.018.201.078.345.18.432.103.087.257.13.465.13.083 0 .164-.005.242-.016a2.997 2.997 0 0 0 .354-.076.135.135 0 0 1 .022-.002c.05 0 .075.035.075.103v.207c0 .048-.007.082-.02.101a.165.165 0 0 1-.077.052 1.895 1.895 0 0 1-.69.126c-.367 0-.65-.102-.846-.306-.197-.204-.296-.496-.296-.876 0-.39.1-.695.302-.917.202-.222.482-.333.84-.333.276 0 .492.068.647.203a.678.678 0 0 1 .234.539c0 .225-.084.395-.251.51-.168.115-.415.173-.74.173zm.063-.97c-.285 0-.45.176-.494.53.119.024.25.036.396.036.15 0 .26-.024.329-.07.068-.046.102-.117.102-.213 0-.19-.111-.284-.333-.284zm2.442 2.003c-.36 0-.642-.11-.845-.328-.203-.218-.304-.523-.304-.914 0-.388.101-.691.304-.91.203-.218.485-.327.845-.327s.642.109.845.327c.203.219.304.522.304.91 0 .39-.101.696-.304.914-.203.218-.485.328-.845.328zm0-.514c.318 0 .477-.242.477-.728 0-.483-.16-.724-.477-.724-.318 0-.477.241-.477.724 0 .486.16.728.477.728zm-6.844 1.886c.405-.306.944-.408 1.39-.408.418 0 .756.09.828.185.15.2-.039 1.584-.775 2.244-.112.102-.22.047-.17-.087.166-.442.536-1.436.36-1.677-.175-.242-1.158-.115-1.6-.058-.068.008-.107-.02-.112-.061v-.023c.004-.036.03-.078.079-.115zm-10.184-.172a.105.105 0 0 1 .106-.091c.027 0 .057.009.089.028a11.778 11.778 0 0 0 6.194 1.772c1.52 0 3.19-.34 4.726-1.043.232-.105.426.164.2.346-1.371 1.09-3.359 1.67-5.07 1.67-2.397 0-4.557-.956-6.191-2.547a.173.173 0 0 1-.054-.097Z"/></symbol>
+<symbol id="svc-paramountplus" viewBox="0 0 24 24"><path d="M16.347 21.373c.057-.084.151-.314-.025-.74l-.53-1.428c-.073-.182.084-.293.19-.173 0 0 1.004 1.157 1.264 1.64l.495.822c.425.028 1.6.06 2.732.06a3.26 3.26 0 0 1-.316-.364c-1.93-2.392-3.154-3.724-3.166-3.737-.391-.426-.572-.508-.87-.643a4.82 4.82 0 0 1-.138-.065v.364c0 .047-.057.073-.086.022l-2.846-5.001a1.598 1.598 0 0 0-.508-.587l-.277-.194-1.354 3.123c.212 0 .354.216.27.409l-1.25 2.893h1.147c.443 0 .883.087 1.294.255l.302.125s-.913 1.878-.913 2.867c0 .181.028.362.075.534h2.104l-.096-.595s1.266.294 2.502.413M12 2.437c-6.627 0-12 5.373-12 12 0 2.669.873 5.133 2.346 7.126.503-.218.783-.542.983-.791l2.234-2.858a.467.467 0 0 1 .179-.138l.336-.146 3.674-4.659.534-.417 1.094-1.524a.482.482 0 0 1 .101-.102l.478-.347a.34.34 0 0 1 .398-.004l.578.407c.308.216.557.504.726.84l2.322 4.077c.051.09.09.129.182.174.454.227.732.268 1.33.913.277.304 1.495 1.666 3.203 3.784.236.318.538.588.963.783A11.948 11.948 0 0 0 24 14.437c0-6.627-5.373-12-12-12M3.236 15.1l-.778-.253-.48.662v-.818l-.778-.253.778-.253v-.818l.48.662.778-.253-.48.662Zm-.185 2.676-.252.778-.253-.778h-.818l.661-.481-.253-.777.663.48.66-.48-.252.777.662.481Zm.156-6.195.253.778-.661-.48-.663.48.253-.778-.66-.48h.817l.253-.778.252.777h.818Zm1.314-1.76L4.04 9.16l-.778.253.48-.661-.48-.663.778.254.48-.662v.818l.778.253-.777.252Zm2.045-2.862-.253.777-.252-.777h-.818l.662-.48-.253-.778.661.48.661-.48-.252.777.662.48Zm2.577-1.313-.48.661V5.49l-.779-.254.778-.253v-.817l.48.66.78-.253-.481.663.48.66zm3.265-.75.253.778-.661-.48-.662.48.252-.777-.66-.481h.818L12 3.637l.252.778h.818zm2.93.595v.816l-.481-.661-.777.252.48-.662-.48-.662.777.253.48-.66v.817l.779.252zm5.426 8.285.778.253.48-.662v.818l.778.253-.778.253v.818l-.48-.662-.778.253.48-.662zm-3.077-6.04-.253-.777h-.818l.662-.48-.253-.778.662.48.662-.48-.254.778.662.48h-.818zm1.792 2.086v-.818l-.777-.252.777-.253V7.68l.481.662.777-.254-.48.663.48.66-.777-.252zm1.469 1.278.253-.777.254.777h.816l-.66.481.252.778-.662-.48-.661.48.253-.778-.662-.48zm.506 6.676-.253.778-.253-.778h-.817l.662-.481-.253-.777.66.48.663-.48-.253.777.661.481zm-12.08-.615.76-1.588c.024-.048-.032-.108-.067-.067l-.664.668c-.313.329-.847 1.25-.95 1.421l-.808 1.335a.109.109 0 0 1 .1.162l-.739 1.238c-.18.309.145.523.189.452 1.157-1.868 1.832-1.719 1.832-1.719l.387-.897c.022-.047-.001-.1-.05-.12-.12-.05-.316-.27.01-.885z"/></symbol>
+<symbol id="svc-showtime" viewBox="0 0 24 24"><path d="M16.99 12.167c0-4.808 1.779-7.84 3.903-8.16C18.769 1.397 15.221 0 11.999 0 8.451 0 5.265 1.54 3.07 3.985c2.094.416 2.806 2.174 2.806 4.892H3.314c0-1.605-.334-2.436-1.284-2.436-.427 0-.758.217-.954.587-.027.06-.057.122-.084.184a2.115 2.115 0 0 0-.114.71c0 3.324 5.46 3.159 5.46 8.27 0 1.995-1.53 3.855-3.252 3.855C5.35 22.52 8.441 24 12 24c3.46 0 6.577-1.464 8.766-3.808-2.018-.509-3.776-3.413-3.776-8.025zm-1.142 7.921h-2.746V13.26h-2.967v6.83H7.384V4.327h2.746v6.348h2.972V4.327h2.746v15.761zM2.372 17.58c-1.32 0-2.399-2.32-2.372-5.8 1.905 1.72 3.681 2.11 3.681 4.145 0 .981-.543 1.655-1.309 1.655zM24 12.002c0 2.844-.896 5.409-2.1 5.409-1.445 0-2.181-2.703-2.181-5.498 0-2.654.771-5.308 2.181-5.308 1.676 0 2.1 4.102 2.1 5.397z"/></symbol>
+<symbol id="svc-nbc" viewBox="0 0 24 24"><path d="M14.8281 4.6055c-1.4058.0067-2.5666 1.2083-2.416 2.7851h1.08s.5026-.0062.6485.338c0 0-1.594.6128-1.4668 1.6093l.9922 7.3281 3.4727-8.4316c.5296-1.279-.0616-3.1668-1.6973-3.5567a2.5497 2.5497 0 0 0-.6133-.0722zm-5.6426.002a2.5551 2.5551 0 0 0-.627.0722c-1.6356.3878-2.2268 2.2757-1.6972 3.5566l3.4727 8.4317 1.2422-9.1582c.2194-1.629-.9564-2.8876-2.3907-2.9024zM4.293 8.3104c-.5719.0213-1.1298.2465-1.5586.6583-.803.7737-1.4275 2.8792.371 4.1562l6.9532 4.9258-3.334-8.0762c-.4878-1.1698-1.4785-1.6994-2.4316-1.664zm15.2715 0c-.9075.0203-1.8246.5528-2.2891 1.6641l-3.332 8.0762 6.953-4.9258c1.7987-1.275 1.172-3.3825.3692-4.1563-.4638-.446-1.0802-.672-1.7011-.6582zm1.9394 5.7872c-.4523.0075-.9351.1573-1.42.502l-6.7694 4.7948h8.0253c1.8734 0 3.0648-1.5828 2.5332-3.4843-.2595-.9264-1.2131-1.8318-2.369-1.8125zm-19.0078.002C1.3405 14.081.3879 14.9851.127 15.9101c-.5316 1.9015.6597 3.4843 2.5332 3.4843h8.0253L3.916 14.5996c-.4848-.344-.9677-.4927-1.42-.5z"/></symbol>
+<symbol id="svc-fox" viewBox="0 0 24 24"><path d="M3.069 9.7h3.42L6.3 6.932H0v10.136h3.069V13.8h2.789v-2.778H3.069ZM24 6.932h-3.291L19.48 9.1l-1.231-2.168h-3.292l2.871 5.076-2.871 5.06h3.308l1.215-2.142 1.213 2.142H24l-2.871-5.06Zm-12.592 0A5.067 5.067 0 1 0 16.475 12a5.067 5.067 0 0 0-5.067-5.065Zm.888 7.146a.867.867 0 0 1-.873.847.847.847 0 0 1-.837-.858V9.919a.882.882 0 0 1 .837-.9.913.913 0 0 1 .873.9Z"/></symbol>
+
+</svg>
+
+<header class="cover">
+  <div class="wrap">
+    <p class="lbl" style="color:#CFE3E5">Brand guide · v1 · September 2026</p>
+    <h1 class="wordmark" style="margin-top:18px">ShowLog</h1>
+    <p class="sub"><span><b>showlog.tv</b> web</span><span><b>tv.showlog.app</b> iOS &amp; macOS</span><span>One system, both apps</span></p>
+    <p class="thesis">A dark room with glass on top, where every show brings its own color.</p>
+    <div class="principles">
+      <div class="glass"><h3>The show brings the color</h3><p>The interface is graphite. Color comes from the poster's wash and the services' own logos, never from decoration.</p></div>
+      <div class="glass"><h3>Glass holds everything</h3><p>Panels, rows, bars, and controls sit on one glass recipe with a lit top edge. There are no glows.</p></div>
+      <div class="glass"><h3>Titles sit on the art</h3><p>Heavy Geist titles overlap the poster in solid chalk, today's signature made consistent.</p></div>
+      <div class="glass"><h3>Orange is yours</h3><p>#F2A13A marks your status and the one primary action per screen. Nothing else is orange.</p></div>
+    </div>
+  </div>
+</header>
+
+<nav class="jump" aria-label="Sections">
+  <div class="wrap">
+    <a href="#look">The look</a><a href="#color">Color</a><a href="#type">Type</a><a href="#surfaces">Surfaces</a><a href="#components">Components</a><a href="#services">Services</a><a href="#build">Build it</a>
+  </div>
+</nav>
+
+<!-- ============================ LOOK ============================ -->
+<section id="look">
+  <div class="wrap">
+    <div class="sh"><h2>The look</h2><p>Three reference screens. Discover is a single full-width list: the highlighted row carries its show's wash, and there's no side panel. The show page is the same design on web and iOS.</p></div>
+    <div class="screens">
+      <div>
+        <p class="cap"><b>Discover · web</b><span>showlog.tv/search</span></p>
+        <div class="browser">
+          <div class="browser-bar"><i></i><i></i><i></i><span>showlog.tv/search?tags=Drama&amp;watchlist=true</span></div>
+          <div class="web">
+            <div class="nav"><span class="logo">ShowLog</span><nav><span>Home</span><span class="on">Discover</span><span>Watchlist</span><span>Lists</span></nav><span class="av av1">AJ</span></div>
+            <div class="page">
+              <div class="ptitle"><h3>Discover</h3><span>24 shows</span></div>
+              <div class="panel glass">
+                <div class="search well"><svg class="ic"><use href="#i-search"/></svg>Search shows, people, tags…<kbd>⌘K</kbd></div>
+                <div class="chips" style="margin-top:10px">
+                  <span class="chip on">On my watchlist <svg class="ic"><use href="#i-close"/></svg></span>
+                  <span class="chip on">Drama <svg class="ic"><use href="#i-close"/></svg></span>
+                  <span class="chip"><svg class="ic"><use href="#i-sliders"/></svg>Service</span>
+                  <span class="chip">Status</span>
+                  <span class="chip">Rating</span>
+                  <span class="chip">Length</span>
+                  <span class="sort"><svg class="ic"><use href="#i-sort"/></svg>Recently updated</span>
+                </div>
+                <div class="rows" style="margin-top:8px">
+                  <div class="row"><div class="poster p-ind" data-t="Industry"></div><div><h5>Industry</h5><p class="meta"><span class="svc t-hbomax" style="--s:16px"><svg><use href="#svc-hbomax"/></svg></span>HBO Max · 4 seasons</p></div><div class="stack"><span class="av av2"></span><span class="av av3"></span></div><span class="st"><svg class="ic"><use href="#i-air"/></svg>Currently Airing</span><span class="rt"><svg class="ic fill"><use href="#i-heart"/></svg>Loved</span></div>
+                  <div class="row hl" style="--wash:rgba(23,80,90,.75)"><div class="poster p-sev" data-t="Severance"></div><div><h5>Severance</h5><p class="meta"><span class="svc t-appletv" style="--s:16px"><svg><use href="#svc-appletv"/></svg></span>Apple TV+ · 2 seasons</p></div><div class="stack"><span class="av av1"></span><span class="av av4"></span><span class="av av5"></span></div><span class="st"><svg class="ic"><use href="#i-check"/></svg>Up to Date</span><span class="rt"><svg class="ic fill"><use href="#i-heart"/></svg>Loved</span></div>
+                  <div class="row"><div class="poster p-bear" data-t="The Bear"></div><div><h5>The Bear</h5><p class="meta"><span class="svc t-hulu" style="--s:16px"><svg><use href="#svc-hulu"/></svg></span>Hulu · 4 seasons</p></div><div class="stack"><span class="av av3"></span></div><span class="st"><svg class="ic"><use href="#i-trend"/></svg>Catching Up</span><span class="rt"><svg class="ic"><use href="#i-heart"/></svg>Liked</span></div>
+                  <div class="row"><div class="poster p-shog" data-t="Shōgun"></div><div><h5>Shōgun</h5><p class="meta"><span class="svc fb" style="--s:16px"><b>FX</b></span>FX · 1 season</p></div><div class="stack"><span class="av av2"></span><span class="av av5"></span></div><span class="st"><svg class="ic"><use href="#i-eye"/></svg>Needs Watched</span><span class="rt none">Not rated</span></div>
+                  <div class="row"><div class="poster p-slow" data-t="Slow Horses"></div><div><h5>Slow Horses</h5><p class="meta"><span class="svc t-appletv" style="--s:16px"><svg><use href="#svc-appletv"/></svg></span>Apple TV+ · 5 seasons</p></div><div class="stack"><span class="av av4"></span></div><span class="st"><svg class="ic"><use href="#i-alarm"/></svg>New Season</span><span class="rt"><svg class="ic fill"><use href="#i-heart"/></svg>Loved</span></div>
+                  <div class="row"><div class="poster p-hacks" data-t="Hacks"></div><div><h5>Hacks</h5><p class="meta"><span class="svc t-hbomax" style="--s:16px"><svg><use href="#svc-hbomax"/></svg></span>HBO Max · 4 seasons</p></div><div class="stack"><span class="av av1"></span></div><span class="st off"><svg class="ic"><use href="#i-x"/></svg>Seen Enough</span><span class="rt soft"><svg class="ic"><use href="#i-minus"/></svg>Meh</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="pair">
+        <div>
+          <p class="cap"><b>Show page · web</b><span>showlog.tv/show/[id]</span></p>
+          <div class="browser">
+            <div class="browser-bar"><i></i><i></i><i></i><span>showlog.tv/show/412</span></div>
+            <div class="web sp">
+              <div class="nav" style="background:rgba(12,11,10,.2)"><span class="logo">ShowLog</span><nav><span>Home</span><span class="on">Discover</span><span>Watchlist</span><span>Lists</span></nav><span class="av av1">AJ</span></div>
+              <div class="sp-in">
+                <div class="poster p-sev bare sp-card"><div class="scrim"></div></div>
+                <h3 class="hero-title sp-title">Severance</h3>
+                <p class="pmeta"><span class="svc t-appletv" style="--s:18px"><svg><use href="#svc-appletv"/></svg></span>Apple TV+ · Drama · 2 seasons · 19 episodes · 50 min</p>
+                <div class="sp-stats glass">
+                  <div><small>Status</small><b style="color:var(--orange)"><svg class="ic"><use href="#i-check"/></svg>Up to Date</b></div>
+                  <div><small>Rating</small><b><svg class="ic fill"><use href="#i-heart"/></svg>Loved</b></div>
+                  <div><small>Match</small><b>94%</b></div>
+                  <div><small>Watch on</small><b><span class="svc t-appletv" style="--s:18px"><svg><use href="#svc-appletv"/></svg></span>Apple TV+</b></div>
+                </div>
+                <div class="tabs"><span class="on">Show Info</span><span>Actors</span><span>Similar Shows</span><span>Your Updates</span><span>Friends' Updates</span><span>Stats</span></div>
+                <div class="sp-info glass">
+                  <p>Mark leads a team of office workers whose memories have been surgically divided between their work and personal lives.</p>
+                  <div class="chips"><span class="chip">Workplace</span><span class="chip">Sci-Fi</span><span class="chip">Mystery</span><span class="chip">Thriller</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div>
+          <p class="cap"><b>Show page · iOS</b><span>ShowDetail</span></p>
+          <div class="phone"><div class="screen">
+            <div class="island"></div>
+            <div class="sbar"><span>9:41</span><span class="dots"><s></s><i></i></span></div>
+            <div class="ptop"><span class="cbtn glass"><svg class="ic"><use href="#i-back"/></svg></span><span class="cbtn glass"><svg class="ic"><use href="#i-share"/></svg></span></div>
+            <div class="poster p-sev bare i-card"><div class="scrim"></div></div>
+            <h3 class="hero-title i-title">Severance</h3>
+            <div class="pbody">
+              <p class="pmeta">Drama · 2 seasons · 19 episodes</p>
+              <div class="box glass">
+                <div class="seg" style="border-radius:0;margin:-2px -4px"><div><small>Status</small><b style="color:var(--orange)"><svg class="ic"><use href="#i-check"/></svg>Up to Date</b></div><div><small>Rating</small><b><svg class="ic fill"><use href="#i-heart"/></svg>Loved</b></div></div>
+                <hr>
+                <p class="match"><b>94% match</b> · because you loved Industry</p>
+                <hr>
+                <div class="watch"><span class="svc t-appletv" style="--s:30px"><svg><use href="#svc-appletv"/></svg></span><span class="grow"><b>Watch on Apple TV+</b><small>All episodes streaming</small></span><svg class="ic"><use href="#i-chev"/></svg></div>
+              </div>
+              <div class="tabs"><span class="on">Info</span><span>Seasons</span><span>Friends</span><span>Stats</span></div>
+            </div>
+            <div class="tabbar glass deep"><span><svg class="ic"><use href="#i-home"/></svg></span><span class="on"><svg class="ic"><use href="#i-disc"/></svg></span><span><svg class="ic"><use href="#i-list"/></svg></span><span><svg class="ic"><use href="#i-user"/></svg></span></div>
+          </div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COLOR ============================ -->
+<section id="color">
+  <div class="wrap">
+    <div class="sh"><h2>Color</h2><p>A small fixed palette for the interface, plus one variable color per show: the wash. Service colors appear only inside service tiles.</p></div>
+    <div class="sw-grid">
+      <div class="sw" style="--c:#0C0B0A"><i></i><b>Graphite</b><span>#0C0B0A · page ground</span></div>
+      <div class="sw" style="--c:#161412"><i></i><b>Raised</b><span>#161412 · menus, sheets without blur</span></div>
+      <div class="sw" style="--c:#F5F1EC"><i></i><b>Chalk</b><span>#F5F1EC · text, active chips</span></div>
+      <div class="sw" style="--c:#A39B93"><i></i><b>Stone</b><span>#A39B93 · secondary text</span></div>
+      <div class="sw" style="--c:#6F6861"><i></i><b>Dim</b><span>#6F6861 · empty values, hints</span></div>
+      <div class="sw" style="--c:rgba(255,255,255,.08)"><i></i><b>Line</b><span>white 8% · borders, dividers</span></div>
+      <div class="sw" style="--c:#F2A13A"><i></i><b>Orange</b><span>#F2A13A · your status, primary action</span></div>
+      <div class="sw" style="--c:#231300"><i></i><b>Orange ink</b><span>#231300 · text on orange</span></div>
+    </div>
+
+    <h3 class="lbl" style="margin:40px 0 14px">The wash</h3>
+    <div class="washes">
+      <div class="wash" style="--w:#17505A"><div class="top"><div class="poster p-sev bare"></div><h5>Severance</h5></div><p><b>oklch(0.36 0.06 205)</b><br>Cool poster, kept as is</p></div>
+      <div class="wash" style="--w:#1E3A68"><div class="top"><div class="poster p-bear bare"></div><h5>The Bear</h5></div><p><b>oklch(0.34 0.08 262)</b><br>Blue dominates the orange stripe</p></div>
+      <div class="wash" style="--w:#5A1E24"><div class="top"><div class="poster p-shog bare"></div><h5>Shōgun</h5></div><p><b>oklch(0.31 0.09 20)</b><br>Near-black poster, lifted to 31%</p></div>
+      <div class="wash" style="--w:#5E2641"><div class="top"><div class="poster p-hacks bare"></div><h5>Hacks</h5></div><p><b>oklch(0.33 0.09 355)</b><br>Neon pink, clamped down</p></div>
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="card"><h4 class="lbl">How a wash is made</h4><div class="body">
+        <p>Start from the poster's average color (<code class="i">fetchAverageShowColor</code> already exists). Convert to OKLCH, <b>clamp lightness to 0.30–0.36 and chroma to 0.09 or below</b>, and keep the hue.</p>
+        <p>Show pages fade from the wash to graphite by 90% of the first screen. On Discover, the wash appears only inside the highlighted row, fading left to right.</p>
+      </div></div>
+      <div class="card"><h4 class="lbl">Orange rules</h4>
+        <ul class="do">
+          <li>Your status, as text and icon</li>
+          <li>The primary button: one per screen</li>
+          <li>The active tab and nav underline, 2px</li>
+          <li class="no">Never as a background tint, glow, or wash</li>
+          <li class="no">Never for ratings. Ratings are chalk and stone.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ TYPE ============================ -->
+<section id="type">
+  <div class="wrap">
+    <div class="sh"><h2>Type</h2><p>Geist, one family, no second face and no mono. Weight and tracking do all the work. On iOS, SF Pro takes the same sizes and weights.</p></div>
+    <div class="tscale">
+      <div><span class="s" style="font-size:72px;font-weight:900;letter-spacing:-.065em;line-height:.9">Severance</span><small>Hero · 96 web / 50 iOS · 900 · −6.5%</small><small>Show titles over art</small></div>
+      <div><span class="s" style="font-size:44px;font-weight:900;letter-spacing:-.065em;line-height:.95">Discover</span><small>Page · 44 · 900 · −6.5%</small><small>Page names</small></div>
+      <div><span class="s" style="font-size:20px;font-weight:650;letter-spacing:-.02em">Up next on your watchlist</span><small>Section · 20 · 650 · −2%</small><small>Section headers</small></div>
+      <div><span class="s" style="font-size:15px;font-weight:650;letter-spacing:-.015em">The White Lotus</span><small>Row title · 15 · 650</small><small>Rows, cards</small></div>
+      <div><span class="s" style="font-size:14.5px">Mark leads a team of office workers…</span><small>Body · 14.5 · 400</small><small>Descriptions, reading</small></div>
+      <div><span class="s" style="font-size:12.5px;color:var(--stone)">Apple TV+ · 2 seasons</span><small>Meta · 12.5 · 400 · stone</small><small>Supporting lines</small></div>
+      <div><span class="s lbl">Status</span><small>Label · 11 · 600 · caps · +8%</small><small>Field labels only</small></div>
+      <div><span class="s" style="font-size:15px;font-weight:600">94% · 1,284 logged · S2E10</span><small>Numbers · tabular figures</small><small>Anything that lines up</small></div>
+    </div>
+    <div class="grid2" style="margin-top:16px">
+      <div class="card"><h4 class="lbl">Title over image</h4>
+        <div class="demo-img"><div class="poster p-bear bare"></div><div class="scrim" style="bottom:24px"></div><h5 class="hero-title">The Bear</h5></div>
+      </div>
+      <div class="card"><h4 class="lbl">The rule</h4>
+        <ul class="do">
+          <li>Solid chalk, always. Never filled with the poster.</li>
+          <li>Overlaps the image by about 40% of its line height</li>
+          <li>A black 0→55% scrim on the lower half of the image</li>
+          <li>Long names wrap to two lines, then scale down. Never truncate a show title.</li>
+          <li class="no">No text shadows, no glow, no outline</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SURFACES ============================ -->
+<section id="surfaces">
+  <div class="wrap">
+    <div class="sh"><h2>Surfaces</h2><p>Four surfaces, all built from the same glass. Depth comes from blur and the lit top edge, never from colored shadows.</p></div>
+    <div class="surfaces">
+      <div class="poster p-sev bare"></div>
+      <div class="surf glass"><b>Glass</b><span>White 6% · blur 26 · saturate 140% · 1px line · 1px lit top edge at 13%. Panels, cards, nav.</span></div>
+      <div class="surf glass deep"><b>Deep glass</b><span>Graphite 50%, same edge. For anything over busy imagery: tab bar, buttons on posters.</span></div>
+      <div class="surf well"><b>Well</b><span>Black 24% inside glass. Search fields, text inputs.</span></div>
+      <div class="surf glass" style="background:linear-gradient(90deg,rgba(23,80,90,.75),rgba(255,255,255,.05) 62%)"><b>Highlighted row</b><span>Glass plus its show's wash, left to right. Hover, focus, and keyboard selection.</span></div>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><h4 class="lbl">Radius</h4><div class="body"><p><b>20</b> panels and sheets · <b>16</b> cards · <b>12</b> rows, inputs, segments · <b>999</b> chips and tab bar. Posters take 9–20 based on size.</p></div></div>
+      <div class="card"><h4 class="lbl">Spacing</h4><div class="body"><p><b>4</b> icon to label · <b>8</b> row padding, chip gap · <b>12</b> panel padding · <b>16</b> between blocks · <b>24</b> between sections. Rows have no dividers.</p></div></div>
+      <div class="card"><h4 class="lbl">Shadow</h4><div class="body"><p>Only under poster cards: <b>0 24 40 −16 black 60%</b>. Nothing else casts a shadow.</p></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ COMPONENTS ============================ -->
+<section id="components">
+  <div class="wrap">
+    <div class="sh"><h2>Components</h2><p>The parts every screen is assembled from, with the real statuses and ratings from the data.</p></div>
+    <div class="grid3">
+      <div class="card span2"><h4 class="lbl">Show row</h4>
+        <div class="glass" style="border-radius:16px;padding:6px">
+          <div class="rows">
+            <div class="row" style="grid-template-columns:46px minmax(0,1fr) auto 64px"><div class="poster p-pitt" data-t="The Pitt"></div><div><h5>The Pitt</h5><p class="meta"><span class="svc t-hbomax" style="--s:16px"><svg><use href="#svc-hbomax"/></svg></span>HBO Max · 2 seasons</p></div><span class="st"><svg class="ic"><use href="#i-check"/></svg>Up to Date</span><span class="rt"><svg class="ic"><use href="#i-heart"/></svg>Liked</span></div>
+            <div class="row hl" style="grid-template-columns:46px minmax(0,1fr) auto 64px;--wash:rgba(90,30,36,.8)"><div class="poster p-shog" data-t="Shōgun"></div><div><h5>Shōgun</h5><p class="meta"><span class="svc fb" style="--s:16px"><b>FX</b></span>FX · 1 season</p></div><span class="st"><svg class="ic"><use href="#i-eye"/></svg>Needs Watched</span><span class="rt none">Not rated</span></div>
+            <div class="row" style="grid-template-columns:46px minmax(0,1fr) auto 64px"><div class="poster p-bear" data-t="The Bear"></div><div><h5>The Bear</h5><p class="meta"><span class="svc t-hulu" style="--s:16px"><svg><use href="#svc-hulu"/></svg></span>Hulu · 4 seasons</p></div><span class="chip" style="height:28px"><svg class="ic"><use href="#i-plus"/></svg>Add</span><span class="rt none">—</span></div>
+          </div>
+        </div>
+        <p class="note">Default, highlighted (with wash), and not on your watchlist. Poster 46, title 15/650, meta line leads with the service tile.</p>
+      </div>
+      <div class="card"><h4 class="lbl">Search and filters</h4>
+        <div class="search well glass" style="background:rgba(0,0,0,.24)"><svg class="ic"><use href="#i-search"/></svg>Search shows…<kbd>⌘K</kbd></div>
+        <div class="chips" style="margin-top:10px">
+          <span class="chip on">Drama <svg class="ic"><use href="#i-close"/></svg></span>
+          <span class="chip on"><span class="svc t-netflix" style="--s:16px"><svg><use href="#svc-netflix"/></svg></span>Netflix <svg class="ic"><use href="#i-close"/></svg></span>
+          <span class="chip">Status</span>
+        </div>
+        <p class="note">Active filters are solid chalk. Service filters carry the service's tile.</p>
+      </div>
+      <div class="card span2"><h4 class="lbl">Statuses</h4>
+        <div class="statuses">
+          <div><span class="st"><svg class="ic"><use href="#i-check"/></svg>Up to Date</span>checkmark.arrow…</div>
+          <div><span class="st"><svg class="ic"><use href="#i-air"/></svg>Currently Airing</span>dot.radiowaves…</div>
+          <div><span class="st"><svg class="ic"><use href="#i-trend"/></svg>Catching Up</span>chart.line.uptrend</div>
+          <div><span class="st"><svg class="ic"><use href="#i-eye"/></svg>Needs Watched</span>eye</div>
+          <div><span class="st"><svg class="ic"><use href="#i-alarm"/></svg>New Season</span>alarm</div>
+          <div><span class="st"><svg class="ic"><use href="#i-spark"/></svg>New Release</span>sparkles</div>
+          <div><span class="st"><svg class="ic"><use href="#i-cal"/></svg>Coming Soon</span>calendar</div>
+          <div><span class="st"><svg class="ic"><use href="#i-rewatch"/></svg>Rewatching</span>arrow.clockwise</div>
+          <div><span class="st off"><svg class="ic"><use href="#i-checklist"/></svg>Show Ended</span>checklist.checked</div>
+          <div><span class="st off"><svg class="ic"><use href="#i-x"/></svg>Seen Enough</span>xmark.circle</div>
+        </div>
+        <p class="note">Active statuses are orange. The two finished ones (Show Ended, Seen Enough) drop to stone. The icons match the SF Symbols already in <code class="i">Status.swift</code>.</p>
+      </div>
+      <div class="card"><h4 class="lbl">Ratings</h4>
+        <div class="ratings">
+          <div class="glass" style="color:var(--chalk)"><svg class="ic fill"><use href="#i-heart"/></svg>Loved<small>+3</small></div>
+          <div style="color:var(--chalk)"><svg class="ic"><use href="#i-heart"/></svg>Liked<small>+1</small></div>
+          <div style="color:var(--stone)"><svg class="ic"><use href="#i-minus"/></svg>Meh<small>0</small></div>
+          <div style="color:var(--stone)"><svg class="ic"><use href="#i-down-thumb"/></svg>Disliked<small>−2</small></div>
+        </div>
+        <p class="note">No traffic-light colors. Intensity comes from fill and from chalk vs. stone.</p>
+      </div>
+      <div class="card"><h4 class="lbl">Status and rating</h4>
+        <div class="seg glass"><div><small>Status</small><b style="color:var(--orange)"><svg class="ic"><use href="#i-air"/></svg>Airing</b></div><div><small>Rating</small><b><svg class="ic fill"><use href="#i-heart"/></svg>Loved</b></div></div>
+        <p class="note">Tap either half to open a menu. It's the same control on web and iOS.</p>
+      </div>
+      <div class="card"><h4 class="lbl">Buttons</h4>
+        <div class="chips" style="gap:8px"><button class="btn pri" type="button"><svg class="ic"><use href="#i-plus"/></svg>Add to Watchlist</button><button class="btn glass" type="button">Log update</button><button class="btn" type="button" style="color:var(--stone)">Cancel</button></div>
+        <p class="note">Primary is orange, secondary is glass, tertiary is plain text.</p>
+      </div>
+      <div class="card"><h4 class="lbl">Navigation</h4>
+        <div class="tabs"><span class="on">Info</span><span>Seasons</span><span>Friends</span><span>Stats</span></div>
+        <div style="margin-top:14px;display:flex;justify-content:center"><div class="tabbar glass deep"><span><svg class="ic"><use href="#i-home"/></svg></span><span class="on"><svg class="ic"><use href="#i-disc"/></svg></span><span><svg class="ic"><use href="#i-list"/></svg></span><span><svg class="ic"><use href="#i-user"/></svg></span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ SERVICES ============================ -->
+<section id="services">
+  <div class="wrap">
+    <div class="sh"><h2>Services</h2><p>Every service appears as its official mark on its official color, shaped like its app icon. They're the most colorful thing in the product, and they're never recolored.</p></div>
+    <h3 class="lbl" style="margin-bottom:12px">Official mark on file · 9 of 19</h3>
+    <div class="svc-grid">
+      <div class="svc-item"><span class="svc t-hbomax" style="--s:40px"><svg><use href="#svc-hbomax"/></svg></span><div><b>HBO Max</b><span>#000000 · row “HBO”</span></div></div>
+      <div class="svc-item"><span class="svc t-appletv" style="--s:40px"><svg><use href="#svc-appletv"/></svg></span><div><b>Apple TV+</b><span>#000000</span></div></div>
+      <div class="svc-item"><span class="svc t-netflix" style="--s:40px"><svg><use href="#svc-netflix"/></svg></span><div><b>Netflix</b><span>#E50914 on black</span></div></div>
+      <div class="svc-item"><span class="svc t-hulu" style="--s:40px"><svg><use href="#svc-hulu"/></svg></span><div><b>Hulu</b><span>#1CE783</span></div></div>
+      <div class="svc-item"><span class="svc t-primevideo" style="--s:40px"><svg><use href="#svc-primevideo"/></svg></span><div><b>Prime Video</b><span>#1F2E3E · row “Amazon”</span></div></div>
+      <div class="svc-item"><span class="svc t-paramountplus" style="--s:40px"><svg><use href="#svc-paramountplus"/></svg></span><div><b>Paramount+</b><span>#0064FF</span></div></div>
+      <div class="svc-item"><span class="svc t-showtime" style="--s:40px"><svg><use href="#svc-showtime"/></svg></span><div><b>Showtime</b><span>#B10000</span></div></div>
+      <div class="svc-item"><span class="svc t-nbc" style="--s:40px"><svg><use href="#svc-nbc"/></svg></span><div><b>NBC</b><span>#222222 on white</span></div></div>
+      <div class="svc-item"><span class="svc t-fox" style="--s:40px"><svg><use href="#svc-fox"/></svg></span><div><b>Fox</b><span>#000000</span></div></div>
+    </div>
+    <h3 class="lbl" style="margin:28px 0 12px">Needs the official mark · fallback tile until then</h3>
+    <div class="svc-grid">
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>D+</b></span><div><b>Disney+</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>FX</b></span><div><b>FX</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>P</b></span><div><b>Peacock</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>abc</b></span><div><b>ABC</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>AMC</b></span><div><b>AMC</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>CW</b></span><div><b>The CW</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>USA</b></span><div><b>USA</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>B</b></span><div><b>Bravo</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>V</b></span><div><b>Viceland</b><span>brand kit</span></div></div>
+      <div class="svc-item pending"><span class="svc fb" style="--s:40px"><b>•••</b></span><div><b>Other</b><span>stays a fallback</span></div></div>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><h4 class="lbl">Sizes</h4>
+        <div class="sizes">
+          <div><span class="svc t-netflix" style="--s:16px"><svg><use href="#svc-netflix"/></svg></span>16 · meta</div>
+          <div><span class="svc t-netflix" style="--s:22px"><svg><use href="#svc-netflix"/></svg></span>22 · chips</div>
+          <div><span class="svc t-netflix" style="--s:30px"><svg><use href="#svc-netflix"/></svg></span>30 · watch on</div>
+          <div><span class="svc t-netflix" style="--s:40px"><svg><use href="#svc-netflix"/></svg></span>40 · pickers</div>
+        </div>
+        <p class="note">Corner radius is 24% of the tile. Inner edge is white at 14%, so black tiles separate from graphite.</p>
+      </div>
+      <div class="card"><h4 class="lbl">Rules</h4>
+        <ul class="do">
+          <li>Official SVG on the official color, like the app icon</li>
+          <li>The tile always comes before the name</li>
+          <li class="no">Never recolor, outline, or tint a mark</li>
+          <li class="no">Never place a mark on orange or on a wash</li>
+        </ul>
+      </div>
+      <div class="card"><h4 class="lbl">Sources</h4><div class="body">
+        <p>The marks and hex values shown are from <b>Simple Icons</b> (CC0 artwork; the trademarks belong to their owners). Hulu and Prime Video come from its archive, because the owners asked for removal from the current set.</p>
+        <p>For production, take each mark from the service's own press kit. The two naming mismatches to fix: the data says <b>HBO</b> (the product is HBO Max) and <b>Amazon</b> (the product is Prime Video).</p>
+      </div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ BUILD ============================ -->
+<section id="build" style="border-bottom:0">
+  <div class="wrap">
+    <div class="sh"><h2>Build it</h2><p>The guide maps onto what's already in both repos: shadcn tokens in <code class="i">globals.css</code>, <code class="i">.glassEffect</code> in SwiftUI, and the existing <code class="i">service</code> table.</p></div>
+    <div class="grid2">
+      <div class="card"><h4 class="lbl">Web · app/globals.css</h4>
+<pre><span class="c">/* replaces the current dark :root values */</span>
+:root {
+  <span class="k">--background</span>: #0C0B0A;   <span class="c">/* graphite */</span>
+  <span class="k">--foreground</span>: #F5F1EC;   <span class="c">/* chalk */</span>
+  <span class="k">--muted-foreground</span>: #A39B93;
+  <span class="k">--primary</span>: #F2A13A;
+  <span class="k">--primary-foreground</span>: #231300;
+  <span class="k">--border</span>: rgb(255 255 255 / 8%);
+  <span class="k">--popover</span>: #161412;   <span class="c">/* raised */</span>
+  <span class="c">/* replaces --backdrop-surface */</span>
+  <span class="k">--glass</span>: rgb(255 255 255 / 6%);
+  <span class="k">--glass-deep</span>: rgb(20 18 16 / 50%);
+  <span class="k">--glass-edge</span>: rgb(255 255 255 / 13%);
+  <span class="k">--well</span>: rgb(0 0 0 / 24%);
+  <span class="k">--radius</span>: 12px;
+}</pre>
+      </div>
+      <div class="card"><h4 class="lbl">iOS · Theme.swift</h4>
+<pre>enum Theme {
+  static let graphite = Color(hex: 0x0C0B0A)
+  static let chalk    = Color(hex: 0xF5F1EC)
+  static let stone    = Color(hex: 0xA39B93)
+  static let orange   = Color(hex: 0xF2A13A)
+}
+
+extension View {
+  <span class="c">// glass container</span>
+  func showlogGlass(_ r: CGFloat = 20) -> some View {
+    glassEffect(in: .rect(cornerRadius: r))
+  }
+}
+
+<span class="c">// hero title over the poster</span>
+Text(show.name)
+  .font(.system(size: 50, weight: .black))
+  .tracking(-3)
+  .padding(.top, -44)</pre>
+      </div>
+      <div class="card"><h4 class="lbl">Wash · shared rule</h4>
+<pre><span class="c">// same math in TS and Swift; store the result
+// on the show row so both apps read one value</span>
+function wash(avg: Oklch): Oklch {
+  return {
+    l: clamp(avg.l, 0.30, 0.36),
+    c: Math.min(avg.c, 0.09),
+    h: avg.h,
+  };
+}</pre>
+      </div>
+      <div class="card"><h4 class="lbl">Data · service table</h4>
+<pre><span class="c">-- color column exists, empty on all 19 rows
+-- logo follows the pictureUrl pattern:
+-- uuid → R2 services/{uuid}.svg</span>
+alter table service add column logo text;
+
+update service set color = '#E50914' where name = 'Netflix';
+update service set color = '#1CE783' where name = 'Hulu';
+update service set color = '#0064FF' where name = 'Paramount+';
+update service set color = '#B10000' where name = 'Showtime';
+update service set color = '#1F2E3E' where name = 'Amazon';
+<span class="c">-- …black for HBO, Apple TV+, Fox</span></pre>
+      </div>
+    </div>
+    <p class="note" style="margin-top:18px">Poster art in this guide is drawn with CSS as a stand-in for real show images. Service marks are the real artwork.</p>
+  </div>
+</section>
+</body>
+</html>

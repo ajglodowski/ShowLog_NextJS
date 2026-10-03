@@ -6,108 +6,29 @@
  */
 
 import { createClient } from "@/app/utils/supabase/server";
-import {
-  computeShowEmbedding,
-  embeddingToPostgresVector,
-  type ShowEmbeddingInput,
-} from "./embedding";
+import { computeAllShowEmbeddings, upsertShowEmbeddings } from "./buildShowEmbeddings";
 
 /**
- * Refresh/compute the embedding for a single show.
- * Fetches the show's current tags, services, and actors, computes the embedding,
- * and upserts it into ShowEmbedding.
- * 
- * @param showId The show ID to refresh embedding for
+ * Refresh embeddings after a show changes.
+ *
+ * Tag IDF and mean-centering are catalog-wide, so a change to one show shifts
+ * every show's vector; this rebuilds the whole catalog rather than just
+ * `showId`. See buildShowEmbeddings.ts.
+ *
+ * @param showId The show that changed (kept for call-site clarity)
  * @returns true if successful, false otherwise
  */
 export async function refreshShowEmbedding(showId: number): Promise<boolean> {
   try {
     const supabase = await createClient();
-
-    // Fetch show with services, tags, and actors
-    const { data: show, error: showError } = await supabase
-      .from("show")
-      .select(`
-        id,
-        name,
-        running,
-        limitedSeries,
-        currentlyAiring,
-        length,
-        totalSeasons,
-        releaseDate,
-        ShowServiceRelationship(serviceId),
-        ShowTagRelationship(tagId),
-        ActorShowRelationship(actorId)
-      `)
-      .eq("id", showId)
-      .single();
-
-    if (showError || !show) {
-      console.error("Error fetching show for embedding:", showError);
+    const { failed } = await upsertShowEmbeddings(
+      supabase,
+      await computeAllShowEmbeddings(supabase)
+    );
+    if (failed > 0) {
+      console.error(`Failed to upsert ${failed} show embeddings after change to show ${showId}`);
       return false;
     }
-
-    // Extract service IDs
-    const serviceIds = (show.ShowServiceRelationship || []).map(
-      (rel: { serviceId: number }) => rel.serviceId
-    );
-
-    // Extract tag IDs
-    const tagIds = (show.ShowTagRelationship || []).map(
-      (rel: { tagId: number }) => rel.tagId
-    );
-
-    // Extract actor IDs
-    const actorIds = (show.ActorShowRelationship || []).map(
-      (rel: { actorId: number }) => rel.actorId
-    );
-
-    // Extract release year
-    let releaseYear: number | null = null;
-    if (show.releaseDate) {
-      const date = new Date(show.releaseDate);
-      if (!isNaN(date.getTime())) {
-        releaseYear = date.getFullYear();
-      }
-    }
-
-    // Build embedding input
-    const input: ShowEmbeddingInput = {
-      showId: show.id,
-      name: show.name,
-      serviceIds,
-      tagIds,
-      actorIds,
-      running: show.running ?? false,
-      limitedSeries: show.limitedSeries ?? false,
-      currentlyAiring: show.currentlyAiring ?? false,
-      length: show.length,
-      totalSeasons: show.totalSeasons ?? 1,
-      releaseYear,
-    };
-
-    // Compute embedding
-    const embedding = computeShowEmbedding(input);
-    const pgVector = embeddingToPostgresVector(embedding);
-
-    // Upsert into ShowEmbedding
-    const { error: upsertError } = await supabase
-      .from("ShowEmbedding")
-      .upsert(
-        {
-          showId: show.id,
-          embedding: pgVector,
-          updated_at: new Date().toISOString(),
-        },
-        { onConflict: "showId" }
-      );
-
-    if (upsertError) {
-      console.error("Error upserting show embedding:", upsertError);
-      return false;
-    }
-
     return true;
   } catch (error) {
     console.error("Error refreshing show embedding:", error);
@@ -116,27 +37,21 @@ export async function refreshShowEmbedding(showId: number): Promise<boolean> {
 }
 
 /**
- * Refresh embeddings for multiple shows.
- * Useful for batch operations.
- * 
- * @param showIds Array of show IDs to refresh
+ * Refresh embeddings after several shows change.
+ * Performs a single catalog-wide rebuild regardless of how many IDs are passed.
+ *
+ * @param showIds Array of show IDs that changed
  * @returns Object with counts of successes and failures
  */
 export async function refreshShowEmbeddings(
   showIds: number[]
 ): Promise<{ success: number; failed: number }> {
-  let success = 0;
-  let failed = 0;
-
-  for (const showId of showIds) {
-    const result = await refreshShowEmbedding(showId);
-    if (result) {
-      success++;
-    } else {
-      failed++;
-    }
+  if (showIds.length === 0) return { success: 0, failed: 0 };
+  try {
+    const supabase = await createClient();
+    return await upsertShowEmbeddings(supabase, await computeAllShowEmbeddings(supabase));
+  } catch (error) {
+    console.error("Error refreshing show embeddings:", error);
+    return { success: 0, failed: showIds.length };
   }
-
-  return { success, failed };
 }
-

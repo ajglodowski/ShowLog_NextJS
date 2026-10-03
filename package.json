@@ -7,6 +7,8 @@
     "lint": "eslint .",
     "backfill:embeddings": "npx tsx scripts/backfillShowEmbeddings.ts",
     "backfill:embeddings:all": "npx tsx scripts/backfillShowEmbeddings.ts --include-users",
+    "backfill:appletv": "npx tsx scripts/backfillAppleTvRefs.ts",
+    "backfill:actors": "npx tsx scripts/backfillActorRefs.ts",
     "postinstall": "node scripts/link-eslint-typescript.mjs"
   },
   "dependencies": {

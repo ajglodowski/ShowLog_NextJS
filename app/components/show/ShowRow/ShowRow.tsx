@@ -15,10 +15,12 @@ type ShowRowProps = {
     otherUsersInfo?: UserShowDataWithUserInfo[] | undefined;
     fetchCurrentUsersInfo?: boolean;
     fetchFriendsInfo?: boolean;
+    // Current user's match (0-100), shown on the meta line when a list is sorted by match
+    matchPercent?: number;
 }
 
 
-export default async function ShowRow({ show, currentUserId, currentUserInfo, otherUsersInfo, fetchCurrentUsersInfo, fetchFriendsInfo }: ShowRowProps) {
+export default async function ShowRow({ show, currentUserId, currentUserInfo, otherUsersInfo, fetchCurrentUsersInfo, fetchFriendsInfo, matchPercent }: ShowRowProps) {
 
     'use cache'
     const showData = show;
@@ -49,7 +51,7 @@ export default async function ShowRow({ show, currentUserId, currentUserInfo, ot
     return (
         <div className="flex flex-nowrap justify-between w-full">
             <Link href={`/show/${showData.id}`} className="flex-1 min-w-0 block">
-                <ShowRowInfo showData={showData} />
+                <ShowRowInfo showData={showData} matchPercent={matchPercent} />
             </Link>
             {currentUserInfo && <UserDetailsDropdown currentUserInfo={currentUserInfo} otherUsersInfo={otherUsersInfo || []}/>}
         </div>

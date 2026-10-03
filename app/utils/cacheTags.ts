@@ -1,4 +1,4 @@
-import { revalidateTag } from 'next/cache';
+import { revalidateTag, updateTag } from 'next/cache';
 
 /**
  * Cache tag helpers for UserShowDetails-related caching.
@@ -33,3 +33,19 @@ export function revalidateCurrentUserShowDetails(userId: string, showId: string 
     revalidateTag(currentUserShowDetailsTag(userId, showId), 'minutes');
 }
 
+
+
+/**
+ * Returns the cache tag for a user's pinned shows.
+ */
+export const userPinnedShowsTag = (userId: string): string => {
+    return `userPinnedShows:${userId}`;
+}
+
+/**
+ * Expires a user's pinned shows so the next read is fresh.
+ * Server Actions only: call this after any mutation to UserPinnedShow.
+ */
+export function updateUserPinnedShows(userId: string): void {
+    updateTag(userPinnedShowsTag(userId));
+}

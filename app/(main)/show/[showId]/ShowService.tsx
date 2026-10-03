@@ -8,6 +8,7 @@ import { ShowTag } from "@/app/models/showTag";
 import { Status } from "@/app/models/status";
 import { StatusCount } from "@/app/models/statusCount";
 import { TagCategory } from "@/app/models/tagCategory";
+import { APPLE_TV_SOURCE, getAppleTvShowUrl } from "@/app/utils/appleTv";
 import { createClient, publicClient } from '@/app/utils/supabase/server';
 import { cacheLife } from 'next/dist/server/use-cache/cache-life';
 import { cache } from 'react';
@@ -109,6 +110,23 @@ export const getAllTagCategories = async function (): Promise<TagCategory[] | nu
   return categories;
 };
 
+export async function getAppleTvUrl(showId: string): Promise<string | null> {
+  'use cache'
+  cacheLife('days');
+  const supabase = await publicClient();
+  const { data, error } = await supabase
+    .from("ShowExternalReference")
+    .select('externalId')
+    .match({ showId: showId, source: APPLE_TV_SOURCE })
+    .maybeSingle();
+
+  if (error) {
+    console.error("Error fetching Apple TV reference:", error);
+    return null;
+  }
+  return data ? getAppleTvShowUrl(data.externalId) : null;
+}
+
 export const fetchAverageShowColor = async (imageId: string): Promise<string> => {
   'use cache';
   cacheLife('days');
@@ -155,7 +173,7 @@ export async function getStatusCounts(showId: string): Promise<StatusCount[] | n
 
 export async function getActorsForShow(showId: number): Promise<Actor[] | null> {
   const supabase = await createClient();
-  const { data: actorData } = await supabase.from("ActorShowRelationship").select('actor: actorId (id, name)').match({showId: showId});
+  const { data: actorData } = await supabase.from("ActorShowRelationship").select('actor: actorId (id, name, pictureUrl)').match({showId: showId});
   if (!actorData) return null;
   const actors = actorData.map((obj) => obj.actor) as unknown as Actor[];
   return actors;

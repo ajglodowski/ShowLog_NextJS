@@ -20,6 +20,7 @@ import { LoadingYourInfoSection, YourInfoSection } from './YourInfoSection/YourI
 import { getShowImageUrl } from "@/app/utils/imageUrls";
 import { fetchAverageShowColor } from '../ShowService';
 import { ShowMatchBadge, ShowMatchBadgeLoading } from './ShowMatchBadge';
+import { OpenInAppleTvButton } from './OpenInAppleTvButton';
 
 interface ShowPageContentProps {
   show: Show;
@@ -92,6 +93,9 @@ export default async function ShowPageContent({
           <ShowMatchBadge showId={parseInt(showId)} />
         </Suspense>
       )}
+      <Suspense fallback={null}>
+        <OpenInAppleTvButton showId={showId} />
+      </Suspense>
       
       <div className='flex flex-wrap md:flex-nowrap w-full px-4'>
         <Suspense fallback={<LoadingYourInfoSection />}>

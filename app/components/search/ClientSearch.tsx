@@ -11,6 +11,7 @@ import { hoverBackdropBackground, backdropBackground } from '@/app/utils/styling
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getProfilePicUrl, getShowImageUrl } from '@/app/utils/imageUrls';
+import { ActorAvatar } from '../actor/ActorAvatar';
 
 export const ClientSearch = ({ onResultClick, usePortal = true }: { onResultClick?: () => void; usePortal?: boolean } = {}) => {
     const [searchQuery, setSearchQuery] = useState('');
@@ -204,6 +205,7 @@ export const ClientSearch = ({ onResultClick, usePortal = true }: { onResultClic
                                 <div className="text-purple-400">{icon}</div>
                                 <span className="text-xs text-white/60 font-medium">{label}</span>
                             </div>
+                            <ActorAvatar actor={actor} size={48} />
                             <div className="flex-1 min-w-0">
                                 <p className="text-white font-medium truncate">{actor.name}</p>
                             </div>

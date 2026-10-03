@@ -98,10 +98,10 @@ export async function parseFiltersFromSearchParams(
     // Parse sortBy
     if (sortBy) {
         // Check if it matches our expected format (field-direction)
-        const sortMatch = sortBy.match(/^(alphabetical|weekly_popularity|monthly_popularity|yearly_popularity|rating|avg_rating)-(asc|desc)$/);
+        const sortMatch = sortBy.match(/^(alphabetical|weekly_popularity|monthly_popularity|yearly_popularity|rating|avg_rating|match)-(asc|desc)$/);
         if (sortMatch) {
             filters.sortBy = sortBy as SortOption;
-        } else if (["alphabetical", "weekly_popularity", "monthly_popularity", "yearly_popularity", "rating", "avg_rating"].includes(sortBy)) {
+        } else if (["alphabetical", "weekly_popularity", "monthly_popularity", "yearly_popularity", "rating", "avg_rating", "match"].includes(sortBy)) {
             // Handle legacy format for backward compatibility
             // Default to ascending for alphabetical, descending for others
             const direction = sortBy === "alphabetical" ? "asc" : "desc";

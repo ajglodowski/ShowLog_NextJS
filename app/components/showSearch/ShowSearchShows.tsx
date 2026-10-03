@@ -2,6 +2,7 @@ import { Rating, RatingPoints } from '@/app/models/rating';
 import { ShowWithAnalytics } from '@/app/models/show';
 import { ShowSearchType } from '@/app/models/showSearchType';
 import { UserShowDataWithUserInfo } from '@/app/models/userShowData';
+import { getShowMatchesForCurrentUser } from '@/app/utils/recommendations/RecommendationService';
 import { Skeleton } from '@/components/ui/skeleton';
 import Divider from '../Divider';
 import ShowRow from '../show/ShowRow/ShowRow';
@@ -11,6 +12,12 @@ import { ShowSearchShowsProps } from './types';
 
 // Number of items per page
 const ITEMS_PER_PAGE = 20;
+
+// Same rounding as the show page's match badge: 0.936 → 94
+function getMatchPercent(matchScore: number | undefined): number | undefined {
+    if (matchScore === undefined || matchScore === null) return undefined;
+    return Math.max(0, Math.min(100, Math.round(matchScore * 100)));
+}
 
 export default async function ShowSearchShows({ 
     filters, 
@@ -272,7 +279,27 @@ export default async function ShowSearchShows({
             }
         }
     }
-    
+
+    // Sort by the current user's match score (needs the full filtered list, so done after filtering)
+    // The scores are kept so each row can show its match percentage, like the iOS app
+    let matchScores: Map<number, number> = new Map();
+    if (filteredShows && currentUserId && filters.sortBy?.split('-')[0] === 'match') {
+        const sortDirection = filters.sortBy.split('-')[1] || 'desc';
+        matchScores = await getShowMatchesForCurrentUser(filteredShows.map((show) => show.id));
+        filteredShows = [...filteredShows].sort((a, b) => {
+            const aScore = matchScores.get(a.id);
+            const bScore = matchScores.get(b.id);
+
+            // Shows without a match score go to the end
+            if (aScore === undefined && bScore === undefined) return a.name.localeCompare(b.name);
+            if (aScore === undefined) return 1;
+            if (bScore === undefined) return -1;
+            if (aScore === bScore) return a.name.localeCompare(b.name);
+
+            return sortDirection === 'desc' ? bScore - aScore : aScore - bScore;
+        });
+    }
+
     // Calculate total shows and pages
     const totalShowsCount = (filteredShows || []).length;
     const _totalPages = Math.ceil(totalShowsCount / ITEMS_PER_PAGE);
@@ -312,6 +339,7 @@ export default async function ShowSearchShows({
                                     otherUsersInfo={otherUsersInfoMap.get(show.id)}
                                     fetchCurrentUsersInfo={(searchType !== ShowSearchType.OTHER_USER_WATCHLIST)}
                                     fetchFriendsInfo={true} 
+                                    matchPercent={getMatchPercent(matchScores.get(show.id))}
                                 />
                             <Divider />
                         </div>

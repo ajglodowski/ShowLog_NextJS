@@ -9,12 +9,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { ArrowDownAZ, ArrowUpAZ, Calendar, Clock, Heart, Loader2, ThumbsDown, ThumbsUp, TrendingUp } from "lucide-react";
+import { ArrowDownAZ, ArrowUpAZ, Calendar, Clock, Heart, Loader2, Sparkles, ThumbsDown, ThumbsUp, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 export type SortDirection = "asc" | "desc";
-export type SortField = "alphabetical" | "weekly_popularity" | "monthly_popularity" | "yearly_popularity" | "rating" | "avg_rating";
+export type SortField = "alphabetical" | "weekly_popularity" | "monthly_popularity" | "yearly_popularity" | "rating" | "avg_rating" | "match";
 export type SortOption = `${SortField}-${SortDirection}`;
 
 type SortButtonProps = {
@@ -92,6 +92,8 @@ export default function SortButton({ currentSort, pathname, currentFilters }: So
                 return `Your Rating (${direction === "asc" ? "Low-High" : "High-Low"})`;
             case "avg_rating":
                 return `Average Rating (${direction === "asc" ? "Low-High" : "High-Low"})`;
+            case "match":
+                return `Match (${direction === "asc" ? "Low-High" : "High-Low"})`;
             default:
                 return "Alphabetical (A-Z)";
         }
@@ -126,6 +128,8 @@ export default function SortButton({ currentSort, pathname, currentFilters }: So
                 return direction === "asc" 
                     ? <ThumbsDown className="h-4 w-4 mr-2" /> 
                     : <Heart className="h-4 w-4 mr-2 text-red-500" />;
+            case "match":
+                return <Sparkles className="h-4 w-4 mr-2" />;
             default:
                 return <ArrowDownAZ className="h-4 w-4 mr-2" />;
         }
@@ -223,6 +227,25 @@ export default function SortButton({ currentSort, pathname, currentFilters }: So
                 >
                     <ThumbsDown className="h-4 w-4 mr-2" />
                     <span className="capitalize font-medium">Average Rating (Low-High)</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="bg-white/20" />
+
+                <DropdownMenuItem 
+                    className="focus:bg-white/10 focus:text-white text-white cursor-pointer"
+                    onClick={() => handleSortChange("match-desc")}
+                    disabled={isPending}
+                >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    <span className="capitalize font-medium">Match (High-Low)</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                    className="focus:bg-white/10 focus:text-white text-white cursor-pointer"
+                    onClick={() => handleSortChange("match-asc")}
+                    disabled={isPending}
+                >
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    <span className="capitalize font-medium">Match (Low-High)</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

@@ -33,7 +33,7 @@ async function AuthButtonContent() {
     return redirect('/login')
   }
 
-  const ProfilePic = async () => {
+  const ProfilePic = () => {
     if (!userInfo) {
       return (
         <Image
@@ -71,14 +71,13 @@ async function AuthButtonContent() {
   const ActiveUser = () => {
     return (
     <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon"
-          className={`overflow-hidden rounded-full`}
-        >
-          <ProfilePic />
-        </Button>
+      {/* Styled directly, not `asChild` + Button: from a server component the asChild shim
+          renders differently on the server and the client, which breaks hydration. */}
+      <DropdownMenuTrigger
+        aria-label="Account menu"
+        className="h-10 w-10 overflow-hidden rounded-full border border-line outline-none transition-colors hover:border-white/20 focus-visible:ring-2 focus-visible:ring-orange"
+      >
+        <ProfilePic />
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className={`${backdropBackground} text-white`}>
         <DropdownMenuLabel>Hey {userInfo?.username}!</DropdownMenuLabel>

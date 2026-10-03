@@ -1,11 +1,14 @@
 import type { AirDate, CurrentlyAiringDTO } from "@/app/models/airDate"
-import { backdropTabs } from "@/app/utils/stylingConstants"
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import ShowTile from "../../show/ShowTile/ShowTile"
+import { homeEmpty, homeTabsList, homeTabsTrigger } from "../homeStyles"
+
+// Shows with no air day set get their own tab, after the weekdays
+const NO_AIR_DAY = "No air day"
 
 type AirDateInfo = {
-  day: AirDate
+  day: AirDate | typeof NO_AIR_DAY
   shows: CurrentlyAiringDTO[]
 }
 
@@ -38,25 +41,25 @@ export default function CurrentlyAiringRowClient({ currentlyAiringShows }: { cur
 
   const groupedShows = (): AirDateInfo[] => {
     if (shows === null) return []
-    const days = new Set(shows?.map((show) => show.airdate)) as Set<AirDate>
+    const days = new Set(shows?.map((show) => show.airdate || NO_AIR_DAY))
     const output: AirDateInfo[] = []
     days.forEach((day) => {
-      const showsForDay = shows?.filter((show) => show.airdate === day)
+      const showsForDay = shows?.filter((show) => (show.airdate || NO_AIR_DAY) === day)
       const dayInfo = { day: day, shows: showsForDay }
       output.push(dayInfo)
     })
     return output
   }
 
-  if (shows === null) return <div className="px-1 py-6 text-center text-sm text-white/40">Error loading currently airing shows</div>
-  if (shows.length === 0) return <div className="px-1 py-6 text-center text-sm text-white/40">No shows currently airing</div>
+  if (shows === null) return <div className={homeEmpty}>Couldn&apos;t load currently airing shows</div>
+  if (shows.length === 0) return <div className={homeEmpty}>None of your shows are airing right now</div>
 
   const sortedDays = groupedShows().sort((a, b) => {
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", NO_AIR_DAY]
     return days.indexOf(a.day) - days.indexOf(b.day)
   })
 
-  let initialDefaultDay: AirDate | undefined = undefined;
+  let initialDefaultDay: AirDateInfo["day"] | undefined = undefined;
   if (hasShowsToday) {
     initialDefaultDay = today;
   } else if (sortedDays.length > 0) {
@@ -69,18 +72,15 @@ export default function CurrentlyAiringRowClient({ currentlyAiringShows }: { cur
         defaultValue={initialDefaultDay}
         className="w-full"
       >
-        <div className="px-1 pb-3">
-          <TabsList className={backdropTabs}>
+        <div className="pb-3">
+          <TabsList className={homeTabsList}>
             {sortedDays.map(({ day }) => (
               <TabsTrigger 
                   key={day} 
                   value={day} 
-                  className="rounded-md text-white/70 hover:text-white hover:bg-white/[0.06] border border-transparent hover:border-primary/50 transition-all duration-200 aria-selected:bg-white/[0.12] aria-selected:text-white aria-selected:font-medium aria-selected:border-transparent"
+                  className={homeTabsTrigger}
               >
-                  <div className="flex flex-col items-center py-0.5 px-1">
-                      <p className="text-sm">{day}</p>
-                      {day === today && <p className="text-[10px] font-medium opacity-80">Today</p>}
-                  </div>
+                  {day === today ? `Today, ${day}` : day}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -89,7 +89,7 @@ export default function CurrentlyAiringRowClient({ currentlyAiringShows }: { cur
         {sortedDays.map(({ day, shows }) => (
           <TabsContent key={day} value={day} className="mt-0">
             <ScrollArea className="w-full whitespace-nowrap">
-              <div className="flex gap-3 px-1">
+              <div className="flex gap-3">
                 {shows.map((show) => (
                   <div key={show.id} className="flex-shrink-0">
                     <ShowTile showId={show.id.toString()} />

@@ -41,6 +41,15 @@
   --color-theme: var(--theme);
   --color-backdrop-surface: var(--backdrop-surface);
   --color-backdrop-surface-hover: var(--backdrop-surface-hover);
+  /* Brand palette (docs/brand-guide.html) */
+  --color-graphite: var(--graphite);
+  --color-raised: var(--raised);
+  --color-chalk: var(--chalk);
+  --color-stone: var(--stone);
+  --color-dim: var(--dim);
+  --color-line: var(--line);
+  --color-orange: var(--orange);
+  --color-orange-ink: var(--orange-ink);
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -107,6 +116,21 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+
+  /* Brand (docs/brand-guide.html). Pages adopt these as they move to the new look;
+     the shadcn values above get replaced once every page has. */
+  --graphite: #0C0B0A;
+  --raised: #161412;
+  --chalk: #F5F1EC;
+  --stone: #A39B93;
+  --dim: #6F6861;
+  --line: rgb(255 255 255 / 8%);
+  --orange: #F2A13A;
+  --orange-ink: #231300;
+  --glass: rgb(255 255 255 / 6%);
+  --glass-deep: rgb(20 18 16 / 50%);
+  --glass-edge: rgb(255 255 255 / 13%);
+  --well: rgb(0 0 0 / 24%);
 }
 
 .light {
@@ -213,6 +237,39 @@
   }
 }
 
+/* Brand surfaces: one glass recipe with a lit top edge. No glows. */
+@utility glass {
+  background: var(--glass);
+  backdrop-filter: blur(26px) saturate(1.4);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+
+/* For anything over busy imagery */
+@utility glass-deep {
+  background: var(--glass-deep);
+  backdrop-filter: blur(26px) saturate(1.4);
+  -webkit-backdrop-filter: blur(26px) saturate(1.4);
+  border: 1px solid var(--line);
+  box-shadow: inset 0 1px 0 var(--glass-edge);
+}
+
+@utility well {
+  background: var(--well);
+  border: 1px solid var(--line);
+}
+
+/* Highlighted row: glass plus the show's wash, left to right. Rows set --wash. */
+@utility row-highlight {
+  transition: background-color 150ms ease;
+  &:hover,
+  &:focus-visible {
+    background: linear-gradient(90deg, var(--wash, rgb(255 255 255 / 7%)) 0%, rgb(255 255 255 / 5%) 62%);
+    box-shadow: inset 0 1px 0 rgb(255 255 255 / 10%);
+  }
+}
+
 .animate-in {
   animation: animateIn 0.3s ease 0.15s both;
 }
@@ -225,181 +282,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* Landing page animations */
-.animate-fade-in {
-  animation: fadeIn 0.7s ease-out both;
-}
-
-.animate-slide-up {
-  animation: slideUp 0.7s ease-out both;
-}
-
-.animate-float {
-  animation: float 6s ease-in-out infinite;
-}
-
-.animate-float-delayed {
-  animation: float 8s ease-in-out infinite;
-  animation-delay: -3s;
-}
-
-.animate-glow-pulse {
-  animation: glowPulse 4s ease-in-out infinite;
-}
-
-.animate-scale-in {
-  animation: scaleIn 0.5s ease-out both;
-}
-
-.animate-bounce-subtle {
-  animation: bounceSubtle 2s ease-in-out infinite;
-}
-
-.animate-shimmer {
-  animation: shimmer 3s ease-in-out infinite;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideUp {
-  from {
-    opacity: 0;
-    transform: translateY(16px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes float {
-  0%, 100% {
-    transform: translateY(0) translateX(0);
-  }
-  25% {
-    transform: translateY(-20px) translateX(10px);
-  }
-  50% {
-    transform: translateY(-10px) translateX(-5px);
-  }
-  75% {
-    transform: translateY(-25px) translateX(5px);
-  }
-}
-
-@keyframes glowPulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 0.8;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes scaleIn {
-  from {
-    opacity: 0;
-    transform: scale(0.9);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes bounceSubtle {
-  0%, 100% {
-    transform: translateY(0);
-  }
-  50% {
-    transform: translateY(-6px);
-  }
-}
-
-@keyframes shimmer {
-  0% {
-    background-position: -200% 0;
-  }
-  100% {
-    background-position: 200% 0;
-  }
-}
-
-/* Feature card hover lift */
-.feature-card {
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.feature-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 20px 40px -12px rgba(0, 0, 0, 0.3);
-}
-
-/* Icon spin on hover */
-.icon-hover-spin {
-  transition: transform 0.4s ease;
-}
-
-.icon-hover-spin:hover {
-  transform: rotate(12deg) scale(1.1);
-}
-
-/* Gradient text shimmer */
-.text-shimmer {
-  background: linear-gradient(
-    90deg,
-    var(--primary) 0%,
-    #fb923c 25%,
-    #fcd34d 50%,
-    #fb923c 75%,
-    var(--primary) 100%
-  );
-  background-size: 200% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmer 4s linear infinite;
-}
-
-/* Orbiting dots */
-.animate-orbit {
-  animation: orbit 12s linear infinite;
-}
-
-@keyframes orbit {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Pulsing ring */
-.animate-ring-pulse {
-  animation: ringPulse 2s ease-out infinite;
-}
-
-@keyframes ringPulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.6;
-  }
-  100% {
-    transform: scale(1.5);
-    opacity: 0;
   }
 }
 
@@ -416,161 +298,5 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-/* Home Hero Section */
-.home-hero {
-  background: linear-gradient(
-    135deg,
-    oklch(0.18 0.02 70 / 35%),
-    oklch(0.14 0.01 70 / 15%)
-  );
-  border: 1px solid oklch(1 0 0 / 8%);
-  border-radius: 0.75rem;
-  padding: 0.875rem;
-  margin-bottom: 1rem;
-}
-
-@media (min-width: 640px) {
-  .home-hero {
-    padding: 1rem;
-  }
-}
-
-.home-hero-header {
-  font-size: 1rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-@media (min-width: 640px) {
-  .home-hero-header {
-    font-size: 1.125rem;
-  }
-}
-
-/* Bento Grid Layout - Simple 2 column */
-.bento-grid {
-  display: grid;
-  gap: 0.5rem;
-  grid-template-columns: 1fr;
-}
-
-@media (min-width: 640px) {
-  .bento-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.625rem;
-  }
-}
-
-/* Bento Box Base */
-.bento-box {
-  background: oklch(0.15 0 0 / 50%);
-  border: 1px solid oklch(1 0 0 / 6%);
-  border-radius: 0.625rem;
-  padding: 0.75rem;
-  overflow: hidden;
-}
-
-@media (min-width: 640px) {
-  .bento-box {
-    padding: 0.875rem;
-  }
-}
-
-/* Featured Bento Box (Coming Soon) - Full width, standalone */
-.bento-featured {
-  background: linear-gradient(
-    135deg,
-    oklch(0.18 0.025 200 / 35%),
-    oklch(0.14 0.015 220 / 20%)
-  );
-  border: 1px solid oklch(0.5 0.08 200 / 15%);
-  border-radius: 0.75rem;
-  padding: 0.875rem;
-  margin-bottom: 0.5rem;
-}
-
-@media (min-width: 640px) {
-  .bento-featured {
-    padding: 1rem;
-    margin-bottom: 0.625rem;
-  }
-}
-
-/* Secondary Bento (Recommendations) */
-.bento-secondary {
-  background: linear-gradient(
-    135deg,
-    oklch(0.17 0.015 50 / 25%),
-    oklch(0.14 0.01 60 / 12%)
-  );
-  border: 1px solid oklch(0.6 0.08 50 / 12%);
-}
-
-/* Subtle Bento (Maintenance sections) */
-.bento-subtle {
-  background: oklch(0.135 0 0 / 35%);
-  border: 1px solid oklch(1 0 0 / 4%);
-}
-
-/* Bento Box Header */
-.bento-header {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-}
-
-@media (min-width: 640px) {
-  .bento-header {
-    font-size: 0.875rem;
-  }
-}
-
-.bento-featured .bento-header {
-  font-size: 0.9375rem;
-}
-
-@media (min-width: 640px) {
-  .bento-featured .bento-header {
-    font-size: 1rem;
-  }
-}
-
-/* Side by side section container (legacy support) */
-.side-by-side-section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
-@media (min-width: 768px) {
-  .side-by-side-section {
-    flex-direction: row;
-    gap: 0.75rem;
-  }
-  
-  .side-by-side-section > * {
-    flex: 1;
-    min-width: 0;
-  }
-}
-
-.side-by-side-section > .home-section {
-  animation-delay: 0ms !important;
-}
-
-/* Compact section card styling */
-.compact-section {
-  background: oklch(0.15 0 0 / 45%);
-  border: 1px solid oklch(1 0 0 / 5%);
-  border-radius: 0.625rem;
-  padding: 0.75rem;
-}
-
-@media (min-width: 640px) {
-  .compact-section {
-    padding: 0.875rem;
   }
 }

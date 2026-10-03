@@ -2,6 +2,7 @@ import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import ShowTileSkeleton from "../show/ShowTile/ShowTileSkeleton";
 import { getCheckInShows } from "./HomeService";
 import CheckInShowTile from "./CheckInShowTile";
+import { homeEmpty } from "./homeStyles";
 
 export async function LoadingCheckInRow() {
     return (
@@ -23,7 +24,7 @@ export default async function CheckInRow({ userId }: { userId: string }) {
 
     if (!shows || shows.length === 0) {
         return (
-            <div className="py-4 text-center text-sm text-white/40">
+            <div className={homeEmpty}>
                 You're all caught up on your active shows!
             </div>
         );

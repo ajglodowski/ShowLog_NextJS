@@ -1,6 +1,6 @@
 import { Service } from "@/app/models/service";
 import { Show, ShowPropertiesWithService } from "@/app/models/show";
-import { Status, WatchlistStatusId } from "@/app/models/status";
+import { ActivelyWatchingStatusIds, Status, WatchlistStatusId } from "@/app/models/status";
 import { createClient, publicClient } from "@/app/utils/supabase/server";
 import { ComingSoonDTO } from "./ComingSoonRow";
 import { UserUpdateTileDTO } from "../userUpdate/UserUpdateService";
@@ -290,4 +290,65 @@ export async function getCheckInShows({userId}: {userId: string}): Promise<Check
     }
     
     return output.slice(0, 15);
+}
+
+export type WatchingNowDTO = {
+    show: Show;
+    statusName: string;
+    currentSeason: number | null;
+}
+
+/** Shows the user is actively watching (see ActivelyWatchingStatusIds), most recently updated first. */
+export async function getWatchingNow({userId}: {userId: string}): Promise<WatchingNowDTO[] | null> {
+    if (!userId) return null;
+
+    const supabase = await publicClient();
+    const { data: showData } = await supabase
+        .from("UserShowDetails")
+        .select(`currentSeason, status (id, name), show (${ShowPropertiesWithService})`)
+        .match({userId: userId})
+        .in('status', ActivelyWatchingStatusIds)
+        .order('updated', {ascending: false})
+        .limit(15);
+
+    if (!showData) return null;
+    return showData.map((obj: unknown) => {
+        const row = obj as { currentSeason: number | null, status: { name: string }, show: { ShowServiceRelationship: { service: Service }[], service?: Service } };
+        const show = {
+            ...row.show,
+            services: (row.show.ShowServiceRelationship && row.show.ShowServiceRelationship.length > 0)
+                ? row.show.ShowServiceRelationship.map((r: unknown) => (r as { service: Service }).service)
+                : (row.show.service ? [row.show.service as unknown as Service] : [])
+        } as unknown as Show;
+        return { show, statusName: row.status.name, currentSeason: row.currentSeason };
+    });
+}
+
+/**
+ * The most recent visible updates from the people the user follows (accepted follows only),
+ * newest first. Mirrors FriendUpdatesRowViewModel in the iOS app. Empty when they follow no one.
+ */
+export async function getFriendUpdates({userId, updateLimit}: {userId: string, updateLimit: number}): Promise<UserUpdateTileDTO[] | null> {
+    if (!userId) return null;
+
+    const supabase = await publicClient();
+    const { data: followData } = await supabase
+        .from("UserFollowRelationship")
+        .select('followingUserId')
+        .match({followerUser: userId, pending: false});
+    if (!followData) return null;
+
+    const friendIds = followData.map((row) => row.followingUserId as string);
+    if (friendIds.length === 0) return [];
+
+    const { data: updateData } = await supabase
+        .from("UserUpdate")
+        .select(UserUpdatePropertiesWithShowName)
+        .in('userId', friendIds)
+        .eq('hidden', false)
+        .order('updateDate', {ascending: false})
+        .limit(updateLimit);
+    if (!updateData) return null;
+
+    return updateData.map((update) => formatUpdate(update as unknown as UserUpdateDTO));
 }

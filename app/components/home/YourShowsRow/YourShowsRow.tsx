@@ -4,15 +4,14 @@ import YourShowsRowClient from "./YourShowsRowClient";
 
 type YourShowsRowProps = {
     userId: string;
-    isHero?: boolean;
 }
 
-export default async function YourShowsRow ({userId, isHero = false}: YourShowsRowProps) {
+export default async function YourShowsRow ({userId}: YourShowsRowProps) {
     'use cache'
     cacheLife('seconds');
     const allStatuses = await getAllStatuses();
     return (
-        <YourShowsRowClient userId={userId} allStatuses={allStatuses} isHero={isHero} />
+        <YourShowsRowClient userId={userId} allStatuses={allStatuses} />
     );
 }
 

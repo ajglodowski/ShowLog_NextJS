@@ -13,6 +13,7 @@ import { ListChecks, Frown } from "lucide-react"
 import Link from "next/link"
 import { Suspense } from "react"
 import UserUpdatesRow from "../UserUpdatesRow"
+import PinnedShows, { LoadingPinnedShows } from "./PinnedShows/PinnedShows"
 
 export default async function UserProfile({username}: {username: string}) {
 
@@ -62,6 +63,9 @@ export default async function UserProfile({username}: {username: string}) {
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
           {/* Main Column */}
           <div className="space-y-6 animate-in" style={{ animationDelay: '0.1s' }}>
+            <Suspense fallback={<LoadingPinnedShows />}>
+              <PinnedShows userId={userId} username={user.username} />
+            </Suspense>
             <Tabs defaultValue="lists" className="w-full">
               <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-1.5">
                 <TabsList className={`grid grid-cols-3 w-full bg-transparent gap-1`}>

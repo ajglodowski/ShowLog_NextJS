@@ -3,7 +3,7 @@ import ShowTile from "../show/ShowTile/ShowTile";
 import { ShowTileBadgeProps } from "../show/ShowTile/ShowTileContent";
 import ShowTileSkeleton from "../show/ShowTile/ShowTileSkeleton";
 import { getWatchlistStartRecommendationsForUser, userHasEmbedding } from "@/app/utils/recommendations/RecommendationService";
-import { Star, Sparkles } from "lucide-react";
+import { homeEmpty, homeNote } from "./homeStyles";
 
 export default async function WatchListRow ({userId}: {userId: string}) {
 
@@ -15,12 +15,7 @@ export default async function WatchListRow ({userId}: {userId: string}) {
 
     if (!recommendations || recommendations.length === 0) {
         return (
-            <div className="px-1 py-6">
-                <div className="flex flex-col items-center justify-center text-center gap-2">
-                    <Star className="w-6 h-6 text-white/20" />
-                    <p className="text-sm text-white/40">No shows in your watchlist yet. Add some shows to start watching!</p>
-                </div>
-            </div>
+            <div className={homeEmpty}>Nothing on your watchlist yet. Add a show to start.</div>
         );
     }
 
@@ -36,13 +31,10 @@ export default async function WatchListRow ({userId}: {userId: string}) {
     return (
         <div className="w-full">
             {!hasEmbedding && recommendations.length > 0 && (
-                <div className="px-1 pb-3 text-xs text-white/40 flex items-center gap-1.5">
-                    <Sparkles className="w-3 h-3" />
-                    <span>Rate some shows to get personalized start recommendations!</span>
-                </div>
+                <p className={homeNote}>Rate a few shows to rank these by match.</p>
             )}
             <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex gap-3 px-1">
+                <div className="flex gap-3">
                     {recommendations.map((rec) => (
                         <div key={rec.showId} className="flex-shrink-0">
                             <ShowTile 
@@ -62,7 +54,7 @@ export async function LoadingWatchlistRow() {
     return (
         <div className="w-full">
             <ScrollArea className="w-full whitespace-nowrap">
-                <div className="flex gap-3 px-1">
+                <div className="flex gap-3">
                     {Array.from({ length: 10 }).map((_, index) => (
                         <div key={index} className="flex-shrink-0">
                             <ShowTileSkeleton />

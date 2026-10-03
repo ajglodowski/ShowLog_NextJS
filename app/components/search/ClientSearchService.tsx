@@ -73,7 +73,7 @@ async function searchActors(supabase: ReturnType<typeof createClient>, query: st
     try {
         const { data: actorData } = await supabase
             .from('actor')
-            .select('id, name')
+            .select('id, name, pictureUrl')
             .ilike('name', `%${query}%`)
             .limit(5);
         
@@ -132,6 +132,13 @@ async function searchLists(supabase: ReturnType<typeof createClient>, query: str
         console.error('Error searching lists:', error);
         return [];
     }
+}
+
+export async function searchShowsByName({searchQuery}: {searchQuery: string}): Promise<Show[]> {
+    const query = searchQuery.trim();
+    if (query.length === 0) return [];
+    const results = await searchShows(createClient(), query);
+    return results.flatMap(result => result.type === 'show' ? [result.data] : []);
 }
 
 export async function searchAll({searchQuery}: {searchQuery: string}): Promise<SearchResult[]> {

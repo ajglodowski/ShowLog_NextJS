@@ -5,6 +5,8 @@ import { ShowLength } from '@/app/models/showLength';
 import { OtherService } from '@/app/models/service';
 import { redirect } from 'next/navigation';
 import { refreshShowEmbedding } from '@/app/utils/recommendations/ShowEmbeddingService';
+import { APPLE_TV_SOURCE, WIKIDATA_APPLE_TV_SHOW_ID_PROPERTY, getAppleTvShowUrl, isValidAppleTvShowId } from '@/app/utils/appleTv';
+import { TVMAZE_SOURCE, WIKIDATA_TVMAZE_SERIES_ID_PROPERTY, getTvmazeShowUrl, isValidTvmazeId } from '@/app/utils/tvmaze';
 
 export type WikidataSearchResult = {
     id: string;
@@ -20,7 +22,7 @@ export type WikidataDraft = {
     suggestedServiceNames: string[];
     suggestedTagNames: string[];
     externalRefs: {
-        source: 'wikidata' | 'wikipedia';
+        source: 'wikidata' | 'wikipedia' | typeof APPLE_TV_SOURCE | typeof TVMAZE_SOURCE;
         externalId: string;
         url?: string;
     }[];
@@ -247,6 +249,26 @@ export async function getWikidataDraftAction(qid: string): Promise<WikidataDraft
                 source: 'wikipedia',
                 externalId: sitelinks.enwiki.title,
                 url: sitelinks.enwiki.url
+            });
+        }
+
+        // Apple TV (P9751 = Apple TV show ID)
+        const appleTvId = getClaimValue(WIKIDATA_APPLE_TV_SHOW_ID_PROPERTY);
+        if (typeof appleTvId === 'string' && isValidAppleTvShowId(appleTvId)) {
+            externalRefs.push({
+                source: APPLE_TV_SOURCE,
+                externalId: appleTvId,
+                url: getAppleTvShowUrl(appleTvId)
+            });
+        }
+
+        // TVmaze (P8600 = TV Maze series ID), used to find actor photos
+        const tvmazeId = getClaimValue(WIKIDATA_TVMAZE_SERIES_ID_PROPERTY);
+        if (typeof tvmazeId === 'string' && isValidTvmazeId(tvmazeId)) {
+            externalRefs.push({
+                source: TVMAZE_SOURCE,
+                externalId: tvmazeId,
+                url: getTvmazeShowUrl(tvmazeId)
             });
         }
 
