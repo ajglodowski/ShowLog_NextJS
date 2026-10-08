@@ -1,216 +1,200 @@
-import ProfilePageCardSkeleton from "@/app/(main)/profile/components/ProfilePage/ProfilePageCardSkeleton"
 import ServiceCountCard from "@/app/(main)/profile/components/ProfilePage/ServiceCountCard"
 import TagCountCard from "@/app/(main)/profile/components/ProfilePage/TagCountCard"
-import UserProfileHeader, { LoadingUserProfileHeader } from "@/app/(main)/profile/components/ProfilePage/UserProfileHeader"
-import UserStatsCard from "@/app/(main)/profile/components/ProfilePage/UserStatsCard/UserStatsCard"
+import UserProfileHeader, { LoadingProfileCounts, LoadingUserProfileHeader, ProfileCounts, ProfileShortcuts } from "@/app/(main)/profile/components/ProfilePage/UserProfileHeader"
+import { fetchAverageShowColor } from "@/app/(main)/show/[showId]/ShowService"
+import { getProfilePicAverageColorAction } from "@/app/actions/imageActions"
 import ShowsListTile from "@/app/components/showList/ShowListTile"
 import ShowListTileSkeleton from "@/app/components/showList/ShowListTileSkeleton"
+import { getCurrentUserId } from "@/app/utils/supabase/server"
 import { getListsForUser, getUserByUsername } from "@/app/utils/userService"
-import { Button } from "@/components/ui/button"
-import { Skeleton } from "@/components/ui/skeleton"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ListChecks, Frown } from "lucide-react"
+import { washFromRgb, washGroundStyle } from "@/app/utils/wash"
+import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area"
+import { History, ListChecks, LucideIcon, Pin, Tag, Tv } from "lucide-react"
 import Link from "next/link"
-import { Suspense } from "react"
-import UserUpdatesRow from "../UserUpdatesRow"
+import { ReactNode, Suspense } from "react"
+import UserUpdatesRow, { LoadingUserUpdatesRow } from "../UserUpdatesRow"
 import PinnedShows, { LoadingPinnedShows } from "./PinnedShows/PinnedShows"
+import PinnedShowsEditorClient from "./PinnedShows/PinnedShowsEditorClient"
+import { getPinnedShows } from "./PinnedShows/PinnedShowsService"
+import { profileEmpty, profileGlassButton, profilePanel } from "./profileStyles"
+import { LoadingTopCountRows } from "./TopCountRows"
+
+/**
+ * Graphite page ground, colored by the person: the profile picture's wash sits at the top,
+ * behind the avatar, and blends into the first pinned show's wash on the way to graphite at
+ * 90% of the first screen. Either color carries the fade alone when the other is missing.
+ * Plain graphite while loading, or with neither.
+ */
+export function ProfileGround({ avatarWash, pinWash, children }: { avatarWash?: string | null; pinWash?: string | null; children: ReactNode }) {
+  return (
+    <div className="-mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={washGroundStyle([avatarWash, pinWash])}>
+      {/* Full width; the side padding lines up with the navbar's */}
+      <div className="grid w-full grid-cols-1 gap-6 px-4 pb-16 pt-7 md:px-6">{children}</div>
+    </div>
+  );
+}
+
+type SectionProps = { title: string; icon: LucideIcon; action?: ReactNode; children: ReactNode };
+
+/** A section header over its content, the same shape as the Home sections. */
+function ProfileSection({ title, icon: Icon, action, children }: SectionProps) {
+  return (
+    <section className="home-section grid min-w-0 grid-cols-1 content-start gap-3">
+      <div className="flex min-h-[30px] items-center justify-between gap-3">
+        <h2 className="flex min-w-0 items-center gap-2 text-xl font-[650] tracking-[-.02em]">
+          <Icon className="h-[18px] w-[18px] flex-none self-center text-stone" strokeWidth={1.8} aria-hidden="true" />
+          {title}
+        </h2>
+        {action}
+      </div>
+      {children}
+    </section>
+  );
+}
+
+/** Message page for a missing user or a signed-out visitor. */
+export function ProfileMessage({ title, body, action }: { title: string; body: string; action: ReactNode }) {
+  return (
+    <ProfileGround>
+      <div className="glass mx-auto mt-10 grid w-full max-w-[680px] justify-items-center gap-3 rounded-[20px] px-5 py-10 text-center">
+        <h1 className="text-[44px] font-black leading-[.9] tracking-[-.065em]">{title}</h1>
+        <p className="max-w-sm text-[14.5px] text-stone">{body}</p>
+        <div className="mt-2">{action}</div>
+      </div>
+    </ProfileGround>
+  );
+}
 
 export default async function UserProfile({username}: {username: string}) {
 
   const user = await getUserByUsername(username);
 
-  const UserNotFound = () => {
-      return (
-          <div className="min-h-screen flex items-center justify-center">
-            <div className="flex flex-col items-center justify-center space-y-4 p-8 rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10">
-                <div className="w-16 h-16 rounded-full bg-white/10 flex items-center justify-center">
-                  <Frown className="w-8 h-8 text-white/60" />
-                </div>
-                <h1 className="text-2xl font-bold text-white">User Not Found</h1>
-                <p className="text-white/60 text-center max-w-sm">The user you are looking for does not exist or has been deleted.</p>
-                <Link href="/">
-                  <Button variant="outline" className="mt-4 border-white/20 hover:bg-white/10">
-                    Go Home
-                  </Button>
-                </Link>
-            </div>
-          </div>
-      );
+  if (!user) {
+    return (
+      <ProfileMessage
+        title="User not found"
+        body="This user doesn't exist or has been deleted."
+        action={<Link href="/" className={profileGlassButton}>Go home</Link>}
+      />
+    );
   }
-
-  if (!user) return <UserNotFound />;
   const userId = user.id;
 
-  const showLists: number[] | null = await getListsForUser(userId);
-   
+  const [pinnedShows, showLists, currentUserId] = await Promise.all([
+    getPinnedShows(userId),
+    getListsForUser(userId),
+    getCurrentUserId(),
+  ]);
+  const isOwner = currentUserId === userId;
+  const pins = pinnedShows ?? [];
+
+  const leadPictureUrl = pins.find((show) => show.pictureUrl)?.pictureUrl;
+  const [pinColor, avatarColor] = await Promise.all([
+    leadPictureUrl ? fetchAverageShowColor(leadPictureUrl) : null,
+    user.profilePhotoURL ? getProfilePicAverageColorAction(user.profilePhotoURL) : null,
+  ]);
+  const pinWash = pinColor ? washFromRgb(pinColor) : null;
+  const avatarWash = avatarColor ? washFromRgb(avatarColor) : null;
+
   return (
-    <div className="min-h-screen">
-      {/* Background gradient */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(100,50,15)_0%,rgb(30,15,5)_35%,rgb(5,5,5)_100%)]" />
+    <ProfileGround avatarWash={avatarWash} pinWash={pinWash}>
+      <div className="mx-auto grid w-full max-w-[560px] grid-cols-1 gap-4">
+        <UserProfileHeader user={user} currentUserId={currentUserId} />
+        <Suspense fallback={<LoadingProfileCounts />}>
+          <ProfileCounts user={user} />
+        </Suspense>
+        <ProfileShortcuts username={user.username} />
       </div>
 
-      {/* Main content */}
-      <div className="relative z-10 container mx-auto py-6 px-4 md:px-6 max-w-6xl">
-        {/* Header Section */}
-        <div className="animate-in mb-8">
-          <div className="rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden">
-            <UserProfileHeader userId={userId} userData={user} />
-          </div>
+      <ProfileSection title="Pinned Shows" icon={Pin} action={isOwner && <PinnedShowsEditorClient pinnedShows={pins} />}>
+        <div className={profilePanel}>
+          <PinnedShows shows={pins} username={user.username} isOwner={isOwner} />
         </div>
+      </ProfileSection>
 
-        {/* Content Grid */}
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          {/* Main Column */}
-          <div className="space-y-6 animate-in" style={{ animationDelay: '0.1s' }}>
-            <Suspense fallback={<LoadingPinnedShows />}>
-              <PinnedShows userId={userId} username={user.username} />
-            </Suspense>
-            <Tabs defaultValue="lists" className="w-full">
-              <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-1.5">
-                <TabsList className={`grid grid-cols-3 w-full bg-transparent gap-1`}>
-                  <TabsTrigger 
-                    value="lists" 
-                    className="aria-selected:bg-white aria-selected:text-black aria-selected:font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                  >
-                    Lists
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="updates" 
-                    className="aria-selected:bg-white aria-selected:text-black aria-selected:font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                  >
-                    Updates
-                  </TabsTrigger>
-                  <TabsTrigger 
-                    value="reviews" 
-                    className="aria-selected:bg-white aria-selected:text-black aria-selected:font-medium text-white/70 hover:text-white hover:bg-white/10 rounded-lg transition-all"
-                  >
-                    Reviews
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-              
-              <TabsContent value="lists" className="mt-6">
-                <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-5">
-                  <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-lg font-semibold text-white">{user.username}&apos;s Lists</h2>
-                    <Button 
-                      variant="outline" 
-                      size="sm"
-                      className="border-white/20 bg-white/5 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
-                    >
-                      <ListChecks className="mr-2 h-4 w-4" />
-                      Create List
-                    </Button>
-                  </div>
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    {showLists && showLists.length > 0 ? (
-                      showLists.map((listId) => (
-                        <ShowsListTile key={listId} listId={listId}/>
-                      ))
-                    ) : (
-                      <div className="col-span-2 text-center py-12 text-white/50">
-                        <ListChecks className="w-12 h-12 mx-auto mb-3 opacity-50" />
-                        <p>No lists yet</p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </TabsContent>
-
-              <TabsContent value="updates" className="mt-6">
-                <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-5">
-                  <div className="flex items-center justify-between mb-5">
-                    <h2 className="text-lg font-semibold text-white">Recent Activity</h2>
-                    <Link 
-                      href={`/${username}/updates`}
-                      className="text-sm text-primary hover:text-primary/80 hover:underline transition-colors"
-                    >
-                      View all updates →
-                    </Link>
-                  </div>
-                  <UserUpdatesRow userId={userId} />
-                </div>
-              </TabsContent>
-
-              <TabsContent value="reviews" className="mt-6">
-                <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-5">
-                  <h2 className="text-lg font-semibold text-white mb-5">Reviews</h2>
-                  <div className="text-center py-12 text-white/50">
-                    <p>Reviews coming soon</p>
-                  </div>
-                </div>
-              </TabsContent>
-            </Tabs>
+      {/* List tiles are glass cards themselves, so the row sits straight on the ground */}
+      <ProfileSection title="Lists" icon={ListChecks}>
+        {showLists && showLists.length > 0 ? (
+          <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex gap-2">
+              {showLists.map((listId) => (
+                <ShowsListTile key={listId} listId={listId}/>
+              ))}
+            </div>
+            <ScrollBar orientation="horizontal" className="opacity-0" />
+          </ScrollArea>
+        ) : (
+          <div className={profilePanel}>
+            <div className={profileEmpty}>
+              {showLists === null ? "Couldn't load lists" : isOwner ? "You haven't made any lists yet." : `${user.username} hasn't made any lists yet.`}
+            </div>
           </div>
+        )}
+      </ProfileSection>
 
-          {/* Sidebar */}
-          <div className="space-y-5 animate-in" style={{ animationDelay: '0.2s' }}>
-            <Suspense fallback={<ProfilePageCardSkeleton cardTitle="Stats" />}>
-              <Link href={`/profile/${username}/stats`} className="block group">
-                <UserStatsCard userId={userId} />
-              </Link>
-            </Suspense>
-            <Suspense fallback={<ProfilePageCardSkeleton cardTitle="Top Tags" />}>
+      <ProfileSection
+        title="Recent Updates"
+        icon={History}
+        action={
+          <Link href={`/${user.username}/updates`} className="flex-none text-[12.5px] text-stone transition-colors hover:text-chalk">
+            View all
+          </Link>
+        }
+      >
+        <div className={profilePanel}>
+          <Suspense fallback={<LoadingUserUpdatesRow />}>
+            <UserUpdatesRow userId={userId} />
+          </Suspense>
+        </div>
+      </ProfileSection>
+
+      <div className="grid gap-6 lg:grid-cols-2">
+        <ProfileSection title="Top Tags" icon={Tag}>
+          <div className={profilePanel}>
+            <Suspense fallback={<LoadingTopCountRows />}>
               <TagCountCard userId={userId}/>
             </Suspense>
-            <Suspense fallback={<ProfilePageCardSkeleton cardTitle="Top Services" />}>
+          </div>
+        </ProfileSection>
+        <ProfileSection title="Top Services" icon={Tv}>
+          <div className={profilePanel}>
+            <Suspense fallback={<LoadingTopCountRows />}>
               <ServiceCountCard userId={userId}/>
             </Suspense>
           </div>
-        </div>
+        </ProfileSection>
       </div>
-    </div>
+    </ProfileGround>
   )
 }
 
-export async function LoadingUserProfile() {
+export function LoadingUserProfile() {
   return (
-    <div className="min-h-screen">
-      {/* Background gradient */}
-      <div className="fixed inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgb(100,50,15)_0%,rgb(30,15,5)_35%,rgb(5,5,5)_100%)]" />
+    <ProfileGround>
+      <div className="mx-auto grid w-full max-w-[560px] grid-cols-1 gap-4">
+        <LoadingUserProfileHeader />
+        <LoadingProfileCounts />
       </div>
 
-      <div className="relative z-10 container mx-auto py-6 px-4 md:px-6 max-w-6xl">
-        <div className="animate-in mb-8">
-          <div className="rounded-2xl bg-white/5 backdrop-blur-sm border border-white/10 overflow-hidden p-6">
-            <LoadingUserProfileHeader />
-          </div>
+      <ProfileSection title="Pinned Shows" icon={Pin}>
+        <div className={profilePanel}>
+          <LoadingPinnedShows />
         </div>
+      </ProfileSection>
 
-        <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          <div className="space-y-6">
-            <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-1.5">
-              <div className="grid grid-cols-3 gap-1">
-                {['Lists', 'Updates', 'Reviews'].map((tab) => (
-                  <div key={tab} className="py-2 px-4 text-center text-white/50 text-sm">
-                    {tab}
-                  </div>
-                ))}
-              </div>
-            </div>
-            
-            <div className="rounded-xl bg-white/5 backdrop-blur-sm border border-white/10 p-5">
-              <div className="flex items-center justify-between mb-5">
-                <Skeleton className="h-6 w-32 bg-white/10" />
-                <Skeleton className="h-9 w-28 bg-white/10" />
-              </div>
-              <div className="grid gap-4 sm:grid-cols-2">
-                {Array.from({ length: 4 }).map((_, index) => (
-                  <ShowListTileSkeleton key={index} listId={index} />
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <div className="space-y-5">
-            <ProfilePageCardSkeleton cardTitle="Stats" />
-            <ProfilePageCardSkeleton cardTitle="Top Tags" />
-            <ProfilePageCardSkeleton cardTitle="Top Services" />
-          </div>
+      <ProfileSection title="Lists" icon={ListChecks}>
+        <div className="flex gap-2 overflow-hidden">
+          {Array.from({ length: 4 }).map((_, index) => (
+            <ShowListTileSkeleton key={index} listId={index} />
+          ))}
         </div>
-      </div>
-    </div>
+      </ProfileSection>
+
+      <ProfileSection title="Recent Updates" icon={History}>
+        <div className={profilePanel}>
+          <LoadingUserUpdatesRow />
+        </div>
+      </ProfileSection>
+    </ProfileGround>
   )
 }

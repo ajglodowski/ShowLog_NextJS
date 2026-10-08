@@ -3,13 +3,14 @@
 import { useRouter } from "next/navigation"
 import { useForm } from "react-hook-form"
 
+import { Service } from "@/app/models/service"
 import { User } from "@/app/models/user"
 import { Button } from "@/components/ui/button"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
-import { AtSign, ArrowLeft, Check, Lock, Mail, User as UserIcon } from "lucide-react"
+import { AtSign, ArrowLeft, Check, Lock, Mail, Tv, User as UserIcon } from "lucide-react"
 import { toast } from "sonner"
 import ProfilePictureSection from "./ProfilePictureSection"
 
@@ -18,16 +19,19 @@ export type ProfileFormValues = {
     name: string
     bio: string
     isPrivate: boolean
+    serviceIds: number[]
 }
 
 type ProfileFormProps = {
     userData: User
     email: string | undefined
     presignedImageUrl: string | null
+    services: Service[]
+    userServiceIds: number[]
     saveFunction: (data: ProfileFormValues) => Promise<boolean>
 }
 
-export function EditProfileForm({ userData, email, presignedImageUrl, saveFunction }: ProfileFormProps) {
+export function EditProfileForm({ userData, email, presignedImageUrl, services, userServiceIds, saveFunction }: ProfileFormProps) {
     const router = useRouter()
 
     const form = useForm<ProfileFormValues>({
@@ -36,6 +40,7 @@ export function EditProfileForm({ userData, email, presignedImageUrl, saveFuncti
             name: userData.name || "",
             bio: userData.bio || "",
             isPrivate: userData.private || false,
+            serviceIds: userServiceIds,
         },
     })
 
@@ -179,6 +184,52 @@ export function EditProfileForm({ userData, email, presignedImageUrl, saveFuncti
                                         aria-label="Private account"
                                         className="data-[state=checked]:bg-primary"
                                     />
+                                </FormControl>
+                            </FormItem>
+                        )}
+                    />
+
+                    {/* My Services */}
+                    <FormField
+                        control={form.control}
+                        name="serviceIds"
+                        render={({ field }) => (
+                            <FormItem className="rounded-xl bg-white/5 border border-white/10 p-5">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-10 h-10 rounded-lg bg-primary/20 flex items-center justify-center flex-shrink-0">
+                                        <Tv className="w-5 h-5 text-primary" />
+                                    </div>
+                                    <div className="space-y-1">
+                                        <FormLabel className="text-base text-white">My Services</FormLabel>
+                                        <FormDescription className="text-white/50">
+                                            Pick the services you have access to, then filter show searches to just those. Only you can see this.
+                                        </FormDescription>
+                                    </div>
+                                </div>
+                                <FormControl>
+                                    <div className="flex flex-wrap gap-2 pt-3">
+                                        {services.map((service) => {
+                                            const selected = field.value.includes(service.id)
+                                            return (
+                                                <Button
+                                                    key={service.id}
+                                                    type="button"
+                                                    variant="outline"
+                                                    size="sm"
+                                                    aria-pressed={selected}
+                                                    className={`${selected ? 'bg-white text-black hover:bg-white/80 hover:text-black' : 'bg-primary/10 hover:bg-white hover:text-black text-foreground border-border'} whitespace-nowrap`}
+                                                    onClick={() => field.onChange(
+                                                        selected
+                                                            ? field.value.filter((id) => id !== service.id)
+                                                            : [...field.value, service.id]
+                                                    )}
+                                                >
+                                                    {service.name}
+                                                    {selected && <Check className="ml-1 h-3 w-3" />}
+                                                </Button>
+                                            )
+                                        })}
+                                    </div>
                                 </FormControl>
                             </FormItem>
                         )}

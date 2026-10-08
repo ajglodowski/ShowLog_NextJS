@@ -46,3 +46,20 @@ export function washFromRgb(rgb: string, alpha = 1): string | null {
     const color = `${l.toFixed(3)} ${c.toFixed(3)} ${h.toFixed(1)}`;
     return alpha < 1 ? `oklch(${color} / ${alpha})` : `oklch(${color})`;
 }
+
+/**
+ * Page ground for several washes: they blend top to bottom over the upper part of the first
+ * screen, then fade to graphite by 90% of it. One wash carries the fade alone. Spread the
+ * result into a style on a bg-graphite element; undefined (plain graphite) with no washes.
+ */
+export function washGroundStyle(washes: (string | null | undefined)[]): { backgroundImage: string; backgroundRepeat: string } | undefined {
+    const colors = washes.filter((color): color is string => Boolean(color));
+    if (colors.length === 0) return undefined;
+    // Two washes meet a third of the way down; more than that share the top 60%
+    const step = Math.min(34, 60 / Math.max(colors.length - 1, 1));
+    const stops = colors.map((color, index) => `${color} ${index === 0 ? "0%" : `${Math.round(index * step)}svh`}`);
+    return {
+        backgroundImage: `linear-gradient(180deg, ${stops.join(", ")}, var(--graphite) 90svh)`,
+        backgroundRepeat: "no-repeat",
+    };
+}

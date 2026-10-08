@@ -5,6 +5,7 @@ import TagNetworkChart from "./TagNetworkChart";
 import UserProfileHeader from "../../components/ProfilePage/UserProfileHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { backdropBackground } from "@/app/utils/stylingConstants";
+import { getCurrentUserId } from "@/app/utils/supabase/server";
 
 export default async function StatsPage({ params }: { params: Promise<{ username: string }> }) {
     const username = (await params).username;
@@ -15,6 +16,7 @@ export default async function StatsPage({ params }: { params: Promise<{ username
     }
 
     const userId = user.id;
+    const currentUserId = await getCurrentUserId();
 
     // Fetch all stats in parallel
     const [
@@ -55,7 +57,7 @@ export default async function StatsPage({ params }: { params: Promise<{ username
         <div className="container mx-auto py-6 px-4 md:px-6 space-y-6">
              <Card className={`${backdropBackground} text-white border-2 border-white/10 shadow-lg rounded-lg`}>
                 <CardContent className="p-4">
-                    <UserProfileHeader userId={userId} userData={user} />
+                    <UserProfileHeader user={user} currentUserId={currentUserId} />
                 </CardContent>
             </Card>
             

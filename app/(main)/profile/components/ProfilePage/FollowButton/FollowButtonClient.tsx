@@ -1,9 +1,12 @@
 'use client';
 import { UserFollowRelationship } from "@/app/models/userFollowRelationship";
-import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { followUser, unfollowUser } from "@/app/(main)/profile/UserServiceClient";
-import { UserPlus, UserMinus, Clock, User } from "lucide-react";
+import { Check, Clock, UserPlus } from "lucide-react";
+import Link from "next/link";
+import { profileGlassButton, profilePrimaryButton } from "../profileStyles";
+
+const iconProps = { className: "h-[15px] w-[15px]", strokeWidth: 1.8, "aria-hidden": true } as const;
 
 export default function FollowButtonClient({ currentUserId, followRelationship, userId }: { currentUserId: string | undefined, followRelationship: UserFollowRelationship|null, userId: string }) {
 
@@ -13,14 +16,10 @@ export default function FollowButtonClient({ currentUserId, followRelationship, 
 
     if (!loggedIn) {
         return (
-            <Button 
-                size="sm" 
-                variant="outline"
-                className="border-white/20 bg-white/5 text-white/70 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all"
-            >
-                <UserPlus className="w-4 h-4 mr-2" />
-                Log in to Follow
-            </Button>
+            <Link href="/login" className={profileGlassButton}>
+                <UserPlus {...iconProps} />
+                Log in to follow
+            </Link>
         );
     }
 
@@ -46,45 +45,29 @@ export default function FollowButtonClient({ currentUserId, followRelationship, 
     // Determine button state
     if (relationship?.pending) {
         return (
-            <Button 
-                size="sm"
-                variant="outline"
-                className="border-amber-500/30 bg-amber-500/10 text-amber-400 hover:bg-amber-500/20 hover:border-amber-500/50 transition-all"
-                onClick={handleButtonClick}
-                disabled={isLoading}
-            >
-                <Clock className="w-4 h-4 mr-2" />
-                Pending
-            </Button>
+            <button type="button" className={`${profileGlassButton} group text-stone`} onClick={handleButtonClick} disabled={isLoading}>
+                <Clock {...iconProps} />
+                <span className="group-hover:hidden group-focus-visible:hidden">Requested</span>
+                <span className="hidden group-hover:inline group-focus-visible:inline">Cancel request</span>
+            </button>
         );
     }
 
     if (relationship) {
         return (
-            <Button 
-                size="sm"
-                variant="outline"
-                className="border-white/20 bg-white/10 text-white hover:bg-red-500/20 hover:border-red-500/50 hover:text-red-400 transition-all group"
-                onClick={handleButtonClick}
-                disabled={isLoading}
-            >
-                <User className="w-4 h-4 mr-2 group-hover:hidden" />
-                <UserMinus className="w-4 h-4 mr-2 hidden group-hover:block" />
-                <span className="group-hover:hidden">Following</span>
-                <span className="hidden group-hover:inline">Unfollow</span>
-            </Button>
+            <button type="button" className={`${profileGlassButton} group`} onClick={handleButtonClick} disabled={isLoading}>
+                <Check {...iconProps} />
+                <span className="group-hover:hidden group-focus-visible:hidden">Following</span>
+                <span className="hidden group-hover:inline group-focus-visible:inline">Unfollow</span>
+            </button>
         );
     }
 
+    // The profile's one primary action
     return (
-        <Button 
-            size="sm"
-            className="bg-primary text-primary-foreground hover:bg-primary/90 transition-all"
-            onClick={handleButtonClick}
-            disabled={isLoading}
-        >
-            <UserPlus className="w-4 h-4 mr-2" />
+        <button type="button" className={profilePrimaryButton} onClick={handleButtonClick} disabled={isLoading}>
+            <UserPlus {...iconProps} />
             Follow
-        </Button>
+        </button>
     );
 }

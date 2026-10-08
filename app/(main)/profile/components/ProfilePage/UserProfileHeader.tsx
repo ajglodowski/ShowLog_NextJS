@@ -1,224 +1,144 @@
 import { User } from "@/app/models/user";
+import { getProfilePicUrl } from "@/app/utils/imageUrls";
 import { getFollowerCount, getFollowingCount, getShowsLogged } from "@/app/utils/userService";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ChevronRight, Tv, Users, Lock, Sparkles } from "lucide-react";
+import { ChartNoAxesColumn, ChevronRight, History, Lock, LucideIcon, Pencil, Tv, UserRound } from "lucide-react";
 import Link from "next/link";
-import { getProfilePicUrl } from "@/app/utils/imageUrls";
-import EditButton from "./EditButton";
 import FollowButton from "./FollowButton/FollowButton";
+import { profileChip, profileGlassButton } from "./profileStyles";
 
-export default async function UserProfileHeader({userId, userData}: {userId: string, userData: User}) {
-    const user = userData;
+const titleClass = "mt-3.5 max-w-full text-balance break-words text-[44px] font-black leading-[.9] tracking-[-.065em]";
+const countLabel = "flex items-center gap-1 text-[11px] font-semibold uppercase tracking-[.08em] text-stone";
+const countValue = "mt-1 block text-[22px] font-bold leading-none tracking-[-.5px] tabular-nums";
+const countCell = "min-w-0 px-3 py-2.5 text-left";
 
-    let profilePicUrl: string | undefined = undefined;
-    profilePicUrl = user.profilePhotoURL ? getProfilePicUrl(user.profilePhotoURL) : undefined;
+type HeaderProps = { user: User; currentUserId: string | undefined };
 
-    const [showsLogged, followersCount, followingCount] = await Promise.all([
-        getShowsLogged(userId),
-        getFollowerCount(userId),
-        getFollowingCount(userId!)
+/**
+ * Avatar over the page's wash, then the username as a heavy chalk page title.
+ * Avatars are circles, so the title sits under the art rather than overlapping it.
+ */
+export default async function UserProfileHeader({ user, currentUserId }: HeaderProps) {
+    const isCurrentUser = currentUserId === user.id;
+    const profilePicUrl = user.profilePhotoURL ? getProfilePicUrl(user.profilePhotoURL) : undefined;
+    const joined = new Date(user.created_at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
+    const meta = [user.name, `Joined ${joined}`].filter(Boolean).join(" · ");
+
+    return (
+        <header className="grid justify-items-center text-center">
+            <Avatar className="h-28 w-28 bg-raised shadow-[inset_0_0_0_1px_rgba(255,255,255,.14)]">
+                <AvatarImage src={profilePicUrl} alt="" className="object-cover" />
+                <AvatarFallback className="bg-raised">
+                    <UserRound className="h-11 w-11 text-dim" strokeWidth={1.8} aria-hidden="true" />
+                </AvatarFallback>
+            </Avatar>
+            <h1 className={titleClass}>{user.username}</h1>
+            <p className="mt-2 text-[12.5px] text-stone">
+                {meta}
+                {/* Orange marks what's yours */}
+                {isCurrentUser && <> · <span className="text-orange">You</span></>}
+            </p>
+            {user.private && (
+                <span className={`${profileChip} mt-2`}>
+                    <Lock className="h-2.5 w-2.5" aria-hidden="true" />
+                    Private
+                </span>
+            )}
+            {user.bio && <p className="mt-3 max-w-[340px] text-[14.5px] leading-snug text-chalk/85">{user.bio}</p>}
+            <div className="mt-4 flex flex-wrap items-center justify-center gap-2 empty:hidden">
+                {isCurrentUser ? (
+                    <Link href="/profile/edit" className={profileGlassButton}>
+                        <Pencil className="h-[15px] w-[15px]" strokeWidth={1.8} aria-hidden="true" />
+                        Edit profile
+                    </Link>
+                ) : (
+                    <FollowButton userId={user.id} currentUserId={currentUserId} />
+                )}
+            </div>
+        </header>
+    );
+}
+
+/** Shows, followers, and following as one glass segment; the social cells open their lists. */
+export async function ProfileCounts({ user }: { user: User }) {
+    const [showsLogged, followerCount, followingCount] = await Promise.all([
+        getShowsLogged(user.id),
+        getFollowerCount(user.id),
+        getFollowingCount(user.id),
     ]);
 
-    // Get initials for avatar fallback
-    const initials = user.name
-        ? user.name.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
-        : user.username?.slice(0, 2).toUpperCase() || '?';
-    
-    return(
-        <div className="relative">
-            {/* Top decorative gradient bar */}
-            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent rounded-t-2xl" />
-            
-            <div className="relative px-5 pb-6 pt-8 md:px-8">
-                {/* Mobile Layout - Stacked */}
-                <div className="md:hidden">
-                    {/* Avatar Section */}
-                    <div className="flex flex-col items-center text-center mb-6">
-                        <div className="relative mb-4">
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/50 to-primary/20 blur-xl scale-110" />
-                            <Avatar className="relative h-28 w-28 border-4 border-white/20 shadow-2xl ring-2 ring-primary/30 ring-offset-2 ring-offset-transparent">
-                                <AvatarImage src={profilePicUrl} alt={user.username} className="object-cover" />
-                                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-2xl font-bold">
-                                    {initials}
-                                </AvatarFallback>
-                            </Avatar>
-                        </div>
-                        
-                        <h1 className="text-2xl font-bold text-white mb-1">{user.name}</h1>
-                        <p className="text-primary font-medium mb-2">@{user.username}</p>
-                        
-                        {user.private && (
-                            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white/70 text-xs mb-3">
-                                <Lock className="w-3 h-3" />
-                                Private Account
-                            </div>
-                        )}
-                        
-                        {/* Action Buttons */}
-                        <div className="flex items-center gap-3 mt-2">
-                            <FollowButton userId={userId} />
-                            <EditButton userId={userId} />
-                        </div>
-                    </div>
-
-                    {/* Bio */}
-                    {user.bio && (
-                        <p className="text-white/70 text-sm text-center mb-6 max-w-sm mx-auto leading-relaxed">
-                            {user.bio}
-                        </p>
-                    )}
-
-                    {/* Stats Grid */}
-                    <div className="grid grid-cols-3 gap-2 mb-6">
-                        <div className="bg-white/5 rounded-xl p-4 text-center border border-white/5">
-                            <div className="text-2xl font-bold text-white">{showsLogged || 0}</div>
-                            <div className="text-xs text-white/50 uppercase tracking-wide mt-1">Shows</div>
-                        </div>
-                        <Link href={`/profile/${user.username}/followers`} className="group">
-                            <div className="bg-white/5 rounded-xl p-4 text-center border border-white/5 group-hover:bg-white/10 group-hover:border-primary/30 transition-all">
-                                <div className="text-2xl font-bold text-white">{followersCount ?? 0}</div>
-                                <div className="text-xs text-white/50 uppercase tracking-wide mt-1">Followers</div>
-                            </div>
-                        </Link>
-                        <Link href={`/profile/${user.username}/following`} className="group">
-                            <div className="bg-white/5 rounded-xl p-4 text-center border border-white/5 group-hover:bg-white/10 group-hover:border-primary/30 transition-all">
-                                <div className="text-2xl font-bold text-white">{followingCount ?? 0}</div>
-                                <div className="text-xs text-white/50 uppercase tracking-wide mt-1">Following</div>
-                            </div>
-                        </Link>
-                    </div>
-
-                    {/* Watchlist Link */}
-                    <Link href={`/watchlist/${user.username}`} className="block group">
-                        <div className="flex items-center justify-between px-4 py-3 rounded-xl bg-primary/10 border border-primary/20 group-hover:bg-primary/20 group-hover:border-primary/40 transition-all">
-                            <div className="flex items-center gap-3">
-                                <div className="w-8 h-8 rounded-lg bg-primary/20 flex items-center justify-center">
-                                    <Sparkles className="w-4 h-4 text-primary" />
-                                </div>
-                                <span className="text-white/80 text-sm font-medium">View Watchlist</span>
-                            </div>
-                            <ChevronRight className="w-5 h-5 text-white/40 group-hover:text-primary group-hover:translate-x-1 transition-all" />
-                        </div>
-                    </Link>
-                </div>
-
-                {/* Desktop Layout - Horizontal */}
-                <div className="hidden md:flex md:items-start gap-8">
-                    {/* Avatar Section */}
-                    <div className="flex-shrink-0">
-                        <div className="relative">
-                            <div className="absolute inset-0 rounded-full bg-gradient-to-br from-primary/50 to-primary/20 blur-xl scale-110" />
-                            <Avatar className="relative h-32 w-32 border-4 border-white/20 shadow-2xl ring-2 ring-primary/30 ring-offset-4 ring-offset-transparent">
-                                <AvatarImage src={profilePicUrl} alt={user.username} className="object-cover" />
-                                <AvatarFallback className="bg-gradient-to-br from-primary to-primary/70 text-primary-foreground text-3xl font-bold">
-                                    {initials}
-                                </AvatarFallback>
-                            </Avatar>
-                        </div>
-                    </div>
-
-                    {/* User Info */}
-                    <div className="flex-1 min-w-0">
-                        <div className="flex flex-wrap items-center gap-3 mb-2">
-                            <h1 className="text-3xl font-bold text-white">{user.name}</h1>
-                            {user.private && (
-                                <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/10 text-white/70 text-xs">
-                                    <Lock className="w-3 h-3" />
-                                    Private
-                                </div>
-                            )}
-                        </div>
-                        
-                        <p className="text-primary font-medium text-lg mb-3">@{user.username}</p>
-                        
-                        {user.bio && (
-                            <p className="text-white/70 text-sm max-w-lg leading-relaxed mb-4">
-                                {user.bio}
-                            </p>
-                        )}
-
-                        {/* Stats Row */}
-                        <div className="flex items-center gap-6 mb-4">
-                            <div className="flex items-center gap-2 text-white/70">
-                                <Tv className="w-4 h-4 text-primary" />
-                                <span className="font-semibold text-white">{showsLogged || 0}</span>
-                                <span className="text-sm">Shows</span>
-                            </div>
-                            <Link href={`/profile/${user.username}/followers`} className="flex items-center gap-2 text-white/70 hover:text-white transition-colors group">
-                                <Users className="w-4 h-4 text-primary" />
-                                <span className="font-semibold text-white">{followersCount ?? 0}</span>
-                                <span className="text-sm group-hover:underline">Followers</span>
-                            </Link>
-                            <Link href={`/profile/${user.username}/following`} className="flex items-center gap-2 text-white/70 hover:text-white transition-colors group">
-                                <Users className="w-4 h-4 text-primary" />
-                                <span className="font-semibold text-white">{followingCount ?? 0}</span>
-                                <span className="text-sm group-hover:underline">Following</span>
-                            </Link>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center gap-3">
-                            <FollowButton userId={userId} />
-                            <EditButton userId={userId} />
-                            <Link href={`/watchlist/${user.username}`} className="group">
-                                <div className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/5 border border-white/10 hover:bg-white/10 hover:border-primary/30 transition-all text-sm text-white/70 hover:text-white">
-                                    <Sparkles className="w-4 h-4 text-primary" />
-                                    <span>Watchlist</span>
-                                    <ChevronRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                                </div>
-                            </Link>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    return (
+        <div className="glass grid grid-cols-3 divide-x divide-line overflow-hidden rounded-2xl">
+            <CountCell label="Shows" value={showsLogged ?? 0} />
+            <CountCell label="Followers" value={followerCount} href={`/profile/${user.username}/followers`} />
+            <CountCell label="Following" value={followingCount} href={`/profile/${user.username}/following`} />
         </div>
     );
 }
 
-export async function LoadingUserProfileHeader() {
+function CountCell({ label, value, href }: { label: string; value: number | null; href?: string }) {
+    const body = (
+        <>
+            <span className={countLabel}>
+                {label}
+                {href && <ChevronRight className="h-2.5 w-2.5 text-dim" strokeWidth={3} aria-hidden="true" />}
+            </span>
+            {value === null
+                ? <span className={`${countValue} text-dim`}>–</span>
+                : <span className={countValue}>{value.toLocaleString("en-US")}</span>}
+        </>
+    );
+    if (!href) return <div className={countCell}>{body}</div>;
     return (
-        <div className="relative">
-            <div className="absolute top-0 left-0 right-0 h-24 bg-gradient-to-br from-primary/30 via-primary/10 to-transparent rounded-t-2xl" />
-            
-            <div className="relative px-5 pb-6 pt-8 md:px-8">
-                {/* Mobile Loading */}
-                <div className="md:hidden">
-                    <div className="flex flex-col items-center text-center mb-6">
-                        <Skeleton className="h-28 w-28 rounded-full bg-white/10 mb-4" />
-                        <Skeleton className="h-8 w-40 bg-white/10 mb-2" />
-                        <Skeleton className="h-5 w-28 bg-white/10 mb-4" />
-                        <div className="flex items-center gap-3">
-                            <Skeleton className="h-10 w-24 bg-white/10 rounded-lg" />
-                        </div>
-                    </div>
-                    <Skeleton className="h-16 w-full bg-white/10 rounded-lg mb-6" />
-                    <div className="grid grid-cols-3 gap-2 mb-6">
-                        <Skeleton className="h-20 bg-white/10 rounded-xl" />
-                        <Skeleton className="h-20 bg-white/10 rounded-xl" />
-                        <Skeleton className="h-20 bg-white/10 rounded-xl" />
-                    </div>
-                </div>
+        <Link href={href} className={`${countCell} outline-none transition-colors hover:bg-white/[.06] focus-visible:bg-white/10`}>
+            {body}
+        </Link>
+    );
+}
 
-                {/* Desktop Loading */}
-                <div className="hidden md:flex md:items-start gap-8">
-                    <Skeleton className="h-32 w-32 rounded-full bg-white/10 flex-shrink-0" />
-                    <div className="flex-1">
-                        <Skeleton className="h-9 w-48 bg-white/10 mb-3" />
-                        <Skeleton className="h-6 w-32 bg-white/10 mb-4" />
-                        <Skeleton className="h-16 w-full max-w-lg bg-white/10 rounded-lg mb-4" />
-                        <div className="flex items-center gap-6 mb-4">
-                            <Skeleton className="h-5 w-24 bg-white/10" />
-                            <Skeleton className="h-5 w-28 bg-white/10" />
-                            <Skeleton className="h-5 w-28 bg-white/10" />
-                        </div>
-                        <div className="flex items-center gap-3">
-                            <Skeleton className="h-10 w-24 bg-white/10 rounded-lg" />
-                            <Skeleton className="h-10 w-28 bg-white/10 rounded-lg" />
-                        </div>
-                    </div>
+export function LoadingProfileCounts() {
+    return (
+        <div className="glass grid grid-cols-3 divide-x divide-line overflow-hidden rounded-2xl">
+            {["Shows", "Followers", "Following"].map((label) => (
+                <div key={label} className={countCell}>
+                    <span className={countLabel}>{label}</span>
+                    <span className={`${countValue} text-dim`}>–</span>
                 </div>
-            </div>
+            ))}
+        </div>
+    );
+}
+
+/** Glass tiles into the rest of the profile, like the Home shortcuts on iOS. */
+export function ProfileShortcuts({ username }: { username: string }) {
+    return (
+        <nav aria-label="Profile sections" className="grid grid-cols-2 gap-2 sm:grid-cols-3">
+            <ShortcutTile title="Updates" icon={History} href={`/${username}/updates`} />
+            <ShortcutTile title="Stats" icon={ChartNoAxesColumn} href={`/profile/${username}/stats`} />
+            <ShortcutTile title="Watchlist" icon={Tv} href={`/watchlist/${username}`} className="col-span-2 sm:col-span-1" />
+        </nav>
+    );
+}
+
+function ShortcutTile({ title, icon: Icon, href, className = "" }: { title: string; icon: LucideIcon; href: string; className?: string }) {
+    return (
+        <Link
+            href={href}
+            className={`glass flex h-[46px] min-w-0 items-center gap-2.5 rounded-xl px-3 outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-orange ${className}`}
+        >
+            <Icon className="h-[18px] w-[18px] flex-none text-stone" strokeWidth={1.8} aria-hidden="true" />
+            <span className="min-w-0 flex-1 truncate text-left text-[15px] font-[650] tracking-[-.2px]">{title}</span>
+            <ChevronRight className="h-3.5 w-3.5 flex-none text-dim" strokeWidth={2.4} aria-hidden="true" />
+        </Link>
+    );
+}
+
+export function LoadingUserProfileHeader() {
+    return (
+        <div className="grid animate-pulse justify-items-center" aria-hidden="true">
+            <div className="h-28 w-28 rounded-full bg-white/10" />
+            <div className="mt-3.5 h-10 w-48 rounded-lg bg-white/10" />
+            <div className="mt-2.5 h-3.5 w-40 rounded bg-white/[.06]" />
         </div>
     );
 }

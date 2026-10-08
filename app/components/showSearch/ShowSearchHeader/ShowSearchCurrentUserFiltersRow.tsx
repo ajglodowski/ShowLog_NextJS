@@ -64,6 +64,7 @@ export default function ShowSearchCurrentUserFiltersRow({
         
         // Add all current filter params
         if (currentFilters.service.length > 0) url.searchParams.set('service', currentFilters.service.map(s => s.id).join(','));
+        if (currentFilters.myServices) url.searchParams.set('myServices', 'true');
         if (currentFilters.length.length > 0) url.searchParams.set('length', currentFilters.length.join(','));
         if (currentFilters.airDate.length > 0) url.searchParams.set('airDate', currentFilters.airDate.join(','));
         if (currentFilters.limitedSeries !== undefined && currentFilters.limitedSeries !== null) url.searchParams.set('limitedSeries', currentFilters.limitedSeries.toString());
@@ -190,6 +191,7 @@ export default function ShowSearchCurrentUserFiltersRow({
         
         // Add only show filter params
         if (currentFilters.service.length > 0) url.searchParams.set('service', currentFilters.service.map(s => s.id).join(','));
+        if (currentFilters.myServices) url.searchParams.set('myServices', 'true');
         if (currentFilters.length.length > 0) url.searchParams.set('length', currentFilters.length.join(','));
         if (currentFilters.airDate.length > 0) url.searchParams.set('airDate', currentFilters.airDate.join(','));
         if (currentFilters.limitedSeries !== undefined && currentFilters.limitedSeries !== null) url.searchParams.set('limitedSeries', currentFilters.limitedSeries.toString());

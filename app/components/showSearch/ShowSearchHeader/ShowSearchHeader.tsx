@@ -20,9 +20,12 @@ import TagFilterButton from "./TagFilterButton";
 import ShowSearchTagsRow from "./ShowSearchTagsRow";
 import { getAllTags, getAllTagCategories } from "@/app/(main)/show/[showId]/ShowService";
 import { getAllStatuses } from "@/app/(main)/show/[showId]/UserShowDataService";
+import { getCurrentUserServiceIds } from "@/app/(main)/profile/UserService";
 
 export type ShowSearchFiltersType = {
     service: Service[];
+    // true limits results to the current user's services; null when not applied
+    myServices: boolean | null;
     length: ShowLength[];
     airDate: AirDate[];
     totalSeasons: string[];
@@ -35,6 +38,7 @@ export type ShowSearchFiltersType = {
 
 export const defaultFilters: ShowSearchFiltersType = {
     service: [],
+    myServices: null,
     length: [],
     airDate: [],
     totalSeasons: [],
@@ -86,6 +90,7 @@ export default async function ShowSearchHeader({
     const statuses: Status[] | null = await getAllStatuses();
     const tags: ShowTag[] | null = await getAllTags(); // Fetch all tags
     const tagCategories: TagCategory[] | null = await getAllTagCategories(); // Fetch all tag categories
+    const userServiceIds = currentUserId ? await getCurrentUserServiceIds() : [];
     
     return (
         <div className="">
@@ -158,6 +163,8 @@ export default async function ShowSearchHeader({
                                         filters={filters} 
                                         pathname={pathname}
                                         services={services}
+                                        isLoggedIn={!!currentUserId}
+                                        userServiceIds={userServiceIds}
                                     />
                                 </Suspense>
                             </div>

@@ -2,10 +2,10 @@ import { fetchFriendsUserDetails } from "@/app/components/show/ShowRow/ShowRowSe
 import { Show } from "@/app/models/show";
 import { UserShowDataWithUserInfo } from "@/app/models/userShowData";
 import { getCurrentUserId } from "@/app/utils/supabase/server";
-import { washFromRgb } from "@/app/utils/wash";
+import { washFromRgb, washGroundStyle } from "@/app/utils/wash";
 import { Pencil, Plus } from "lucide-react";
 import Link from "next/link";
-import { CSSProperties, ReactNode } from "react";
+import { ReactNode } from "react";
 import { fetchAverageShowColor } from "../../show/[showId]/ShowService";
 import { ActorShowUserDetails, getActor, getShowsForActor, getUserDetailsForShows } from "../ActorService";
 import { ActorHero } from "./components/ActorHero";
@@ -15,20 +15,20 @@ import { TvmazeCredit } from "@/app/components/actor/TvmazeCredit";
 const glassButton = "glass inline-flex h-[38px] items-center gap-[7px] rounded-[11px] px-4 text-[13.5px] font-semibold text-chalk transition-colors hover:bg-white/10";
 const primaryButton = "inline-flex h-[38px] items-center gap-[7px] rounded-[11px] bg-orange px-4 text-[13.5px] font-semibold text-orange-ink transition-colors hover:bg-orange/90";
 
-// Newest work first, so the lead show (and the page's wash) is the actor's latest.
+// How many shows color the page: the same ones the hero can show as posters
+const MAX_GROUND_WASHES = 4;
+
+// Newest work first, so the hero posters (and the top of the page's gradient) are the actor's latest.
 const byNewest = (a: Show, b: Show) => {
     const aTime = a.releaseDate ? new Date(a.releaseDate).getTime() : -Infinity;
     const bTime = b.releaseDate ? new Date(b.releaseDate).getTime() : -Infinity;
     return bTime - aTime || a.name.localeCompare(b.name);
 };
 
-/** Graphite page ground that fades from the lead show's wash by 90% of the first screen. */
-function ActorGround({ wash, children }: { wash?: string | null; children: ReactNode }) {
-    const style: CSSProperties | undefined = wash
-        ? { backgroundImage: `linear-gradient(180deg, ${wash} 0%, var(--graphite) 90svh)`, backgroundRepeat: "no-repeat" }
-        : undefined;
+/** Graphite page ground. The washes of the actor's shows blend down the first screen, newest on top. */
+function ActorGround({ washes = [], children }: { washes?: (string | null)[]; children: ReactNode }) {
     return (
-        <div className="-mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={style}>
+        <div className="-mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={washGroundStyle(washes)}>
             <div className="mx-auto grid w-full max-w-[680px] gap-4 px-4 pb-16 pt-7">{children}</div>
         </div>
     );
@@ -58,11 +58,13 @@ export default async function ActorPage({ params }: { params: Promise<{ actorId:
             : [],
     ]);
 
-    const leadIndex = shows.findIndex((show) => show.pictureUrl);
-    const pageWash = leadIndex >= 0 && averageColors[leadIndex] ? washFromRgb(averageColors[leadIndex]!) : null;
+    const groundWashes = averageColors
+        .filter((color): color is string => Boolean(color))
+        .slice(0, MAX_GROUND_WASHES)
+        .map((color) => washFromRgb(color));
 
     return (
-        <ActorGround wash={pageWash}>
+        <ActorGround washes={groundWashes}>
             <header>
                 <ActorHero name={actor.name} pictureUrl={actor.pictureUrl} shows={shows} />
                 <p className="mt-3 text-center text-[13px] text-stone">

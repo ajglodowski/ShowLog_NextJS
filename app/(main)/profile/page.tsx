@@ -1,23 +1,22 @@
 import { getCurrentUserId } from "@/app/utils/supabase/server";
-import UserProfile from "./components/ProfilePage/UserProfile";
+import UserProfile, { ProfileMessage } from "./components/ProfilePage/UserProfile";
 import { getUser } from "@/app/utils/userService";
+import { profilePrimaryButton } from "./components/ProfilePage/profileStyles";
+import Link from "next/link";
+
 export default async function CurrentUserProfilePage() {
     const currentUserId = await getCurrentUserId();
-    const loggedIn = currentUserId !== undefined && currentUserId !== null;
-    
-    const NotLoggedIn = () => {
+    const userData = currentUserId ? await getUser(currentUserId) : null;
+
+    if (!userData) {
         return (
-            <div className='text-center my-auto mx-auto'>
-                <h1 className='text-4xl font-bold'>Uh oh</h1>
-                <h2 className='text-2xl'>You must be logged in to view this page</h2>
-                <h2 className='text-5xl'>😞</h2>
-            </div>
+            <ProfileMessage
+                title="Log in first"
+                body="You must be logged in to view your profile."
+                action={<Link href="/login" className={profilePrimaryButton}>Log in</Link>}
+            />
         );
     }
-    if (!loggedIn) return <NotLoggedIn />;
-
-    const userData = await getUser(currentUserId);
-    if (!userData) return <NotLoggedIn />;
 
     return <UserProfile username={userData.username} />
 }

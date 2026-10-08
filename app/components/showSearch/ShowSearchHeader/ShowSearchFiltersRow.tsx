@@ -44,6 +44,10 @@ export default function ShowSearchFiltersRow({
             }
         }
         
+        if (optimisticFilters.myServices && key !== 'myServices') {
+            url.searchParams.set('myServices', 'true');
+        }
+        
         if (optimisticFilters.length.length > 0) {
             if (key === 'length') {
                 const newLengths = optimisticFilters.length.filter(l => l !== value);
@@ -161,7 +165,7 @@ export default function ShowSearchFiltersRow({
                     );
                 });
             }
-            // Handle boolean filters (limitedSeries, running, currentlyAiring)
+            // Handle boolean filters (myServices, limitedSeries, running, currentlyAiring)
             else if (typeof value === 'boolean' && value !== null) {
                 bubbles.push(
                     <div
@@ -174,7 +178,7 @@ export default function ShowSearchFiltersRow({
                         }}
                     >
                         <Button variant="outline" size="sm" className={`${buttonStyles} whitespace-nowrap`}>
-                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                            {key === 'myServices' ? 'My Services' : key.replace(/([A-Z])/g, ' $1').trim()}
                             <X className="ml-1 h-4 w-4" />
                         </Button>
                     </div>

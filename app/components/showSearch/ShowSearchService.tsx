@@ -16,6 +16,19 @@ import { cache } from "react";
 import { ShowSearchFiltersType } from "./ShowSearchHeader/ShowSearchHeader";
 import { UserWatchListData } from './types';
 import { currentUserShowDetailsStateTag } from "@/app/utils/cacheTags";
+import { getCurrentUserServiceIds } from "@/app/(main)/profile/UserService";
+
+// Service IDs a show must match at least one of, or null when no service filtering applies.
+// "My Services" combines with an explicit service selection by intersection, so the result
+// can be an empty array (nothing matches). It is ignored when the user has no saved services.
+async function getServiceFilterIds(filters: ShowSearchFiltersType): Promise<number[] | null> {
+    const selectedIds = filters.service.map((service) => service.id);
+    const myServiceIds = filters.myServices ? await getCurrentUserServiceIds() : [];
+
+    if (myServiceIds.length === 0) return selectedIds.length > 0 ? selectedIds : null;
+    if (selectedIds.length === 0) return myServiceIds;
+    return selectedIds.filter((id) => myServiceIds.includes(id));
+}
 
 export const getServices = cache(async (): Promise<Service[] | null> => {
     'use cache'
@@ -29,6 +42,9 @@ export async function fetchShows(filters: ShowSearchFiltersType, searchType: Sho
     const supabase = await createClient();
     let queryBase;
     
+    const serviceFilterIds = await getServiceFilterIds(filters);
+    if (serviceFilterIds && serviceFilterIds.length === 0) return [];
+
     // Check if we need to filter by tags
     const hasTagFilters = filters.tags && filters.tags.length > 0;
     
@@ -119,14 +135,13 @@ export async function fetchShows(filters: ShowSearchFiltersType, searchType: Sho
         if (filters.currentlyAiring !== undefined && filters.currentlyAiring !== null) queryBase = queryBase.eq('currentlyAiring', filters.currentlyAiring);
         if (filters.running !== undefined && filters.running !== null) queryBase = queryBase.eq('running', filters.running);
         if (filters.limitedSeries !== undefined && filters.limitedSeries !== null) queryBase = queryBase.eq('"limitedSeries"', filters.limitedSeries);
-        if (filters.service.length > 0) {
+        if (serviceFilterIds) {
             // Filter shows that have AT LEAST ONE of the selected services
             // We can't use a simple .in() on array column easily in PostgREST for "contains any" logic 
             // without using the overlap operator (cs or cd) which expects array input.
             // But we're querying a view where service_ids is an integer array.
             // The syntax for array overlap in Supabase js client is .overlaps('column', [values])
-            const serviceIds = filters.service.map((service) => service.id);
-            queryBase = queryBase.overlaps('service_ids', serviceIds);
+            queryBase = queryBase.overlaps('service_ids', serviceFilterIds);
         }
         if (filters.airDate.length > 0) queryBase = queryBase.in('airdate', filters.airDate);
         if (filters.length.length > 0) queryBase = queryBase.in('length', filters.length);
@@ -182,10 +197,10 @@ export async function fetchShows(filters: ShowSearchFiltersType, searchType: Sho
         if (filters.currentlyAiring !== undefined && filters.currentlyAiring !== null) queryBase = queryBase.eq('currentlyAiring', filters.currentlyAiring);
         if (filters.running !== undefined && filters.running !== null) queryBase = queryBase.eq('running', filters.running);
         if (filters.limitedSeries !== undefined && filters.limitedSeries !== null) queryBase = queryBase.eq('limitedSeries', filters.limitedSeries);
-        if (filters.service.length > 0) {
+        if (serviceFilterIds) {
              // Since we're querying the base table, we need to filter by the relation
              // We need shows where ShowServiceRelationship.serviceId is in our list
-             const serviceIds = filters.service.map(s => s.id);
+             const serviceIds = serviceFilterIds;
              // Inner join filtering pattern
              queryBase = queryBase.not('ShowServiceRelationship', 'is', null);
              // This is tricky with Supabase client on nested relations for filtering parent rows
@@ -431,8 +446,8 @@ export async function filterWatchlist(UserWatchListData: UserWatchListData[] | n
         filteredShows = filteredShows.filter((show) => show.show.limitedSeries === filters.limitedSeries);
     }
     
-    if (filters.service.length > 0) {
-        const filterServiceIds = filters.service.map((service) => service.id);
+    const filterServiceIds = await getServiceFilterIds(filters);
+    if (filterServiceIds) {
         filteredShows = filteredShows.filter((show) => {
             // Check if ANY of the show's services match ANY of the filter services
             return show.show.services.some(showService => filterServiceIds.includes(showService.id));

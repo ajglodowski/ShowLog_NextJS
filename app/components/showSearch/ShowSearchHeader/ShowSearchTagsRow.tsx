@@ -41,6 +41,10 @@ export default function ShowSearchTagsRow({
             url.searchParams.set('service', optimisticFilters.service.map(s => s.id).join(','));
         }
         
+        if (optimisticFilters.myServices) {
+            url.searchParams.set('myServices', 'true');
+        }
+
         if (optimisticFilters.length.length > 0) {
             url.searchParams.set('length', optimisticFilters.length.join(','));
         }
@@ -73,6 +77,10 @@ export default function ShowSearchTagsRow({
             url.searchParams.set('service', optimisticFilters.service.map(s => s.id).join(','));
         }
         
+        if (optimisticFilters.myServices) {
+            url.searchParams.set('myServices', 'true');
+        }
+
         if (optimisticFilters.length.length > 0) {
             url.searchParams.set('length', optimisticFilters.length.join(','));
         }

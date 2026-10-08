@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Filter, Loader2, X, ChevronDown, ChevronRight, Tv, Clock, Calendar, Play, Pause, Zap, Layers } from "lucide-react";
+import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useOptimistic, useTransition, useState } from "react";
 import { ShowSearchFiltersType } from "./ShowSearchHeader";
@@ -16,12 +17,16 @@ type ShowSearchFilterButtonProps = {
     filters: ShowSearchFiltersType;
     pathname: string;
     services: Service[] | null;
+    isLoggedIn?: boolean;
+    userServiceIds?: number[];
 }
 
 export default function ShowSearchFilterButton({ 
     filters, 
     pathname: _pathname, 
-    services 
+    services,
+    isLoggedIn = false,
+    userServiceIds = []
 }: ShowSearchFilterButtonProps) {
     const router = useRouter();
     const searchParams = useSearchParams();
@@ -40,6 +45,7 @@ export default function ShowSearchFilterButton({
     const createFilterUrl = (updatedFilters: ShowSearchFiltersType) => {
         const params = new URLSearchParams(searchParams?.toString() || "");
         params.delete('service');
+        params.delete('myServices');
         params.delete('length');
         params.delete('airDate');
         params.delete('totalSeasons');
@@ -49,6 +55,7 @@ export default function ShowSearchFilterButton({
         params.delete('page');
         
         if (updatedFilters.service.length > 0) params.set('service', updatedFilters.service.map(s => s.id).join(','));
+        if (updatedFilters.myServices) params.set('myServices', 'true');
         if (updatedFilters.length.length > 0) params.set('length', updatedFilters.length.join(','));
         if (updatedFilters.airDate.length > 0) params.set('airDate', updatedFilters.airDate.join(','));
         if (updatedFilters.totalSeasons && updatedFilters.totalSeasons.length > 0) params.set('totalSeasons', updatedFilters.totalSeasons.join(','));
@@ -133,7 +140,7 @@ export default function ShowSearchFilterButton({
         });
     };
 
-    const handleSetFilter = (key: 'running' | 'limitedSeries' | 'currentlyAiring', value: boolean | null) => {
+    const handleSetFilter = (key: 'running' | 'limitedSeries' | 'currentlyAiring' | 'myServices', value: boolean | null) => {
         const updatedFilters = { ...optimisticFilters, [key]: value };
         startTransition(() => {
             updateOptimisticFilters({ [key]: value });
@@ -317,6 +324,33 @@ export default function ShowSearchFilterButton({
                                 )}
                             </CollapsibleTrigger>
                             <CollapsibleContent className="pt-2">
+                                {/* My Services: narrows to the services saved on the user's profile */}
+                                {isLoggedIn && (
+                                    <div className="flex flex-wrap items-center gap-2 px-4 pb-3">
+                                        {userServiceIds.length > 0 ? (
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                aria-pressed={optimisticFilters.myServices === true}
+                                                className={`${optimisticFilters.myServices ? 'bg-white text-black hover:bg-primary/10 hover:text-white' : 'bg-primary/10 hover:bg-white hover:text-black text-foreground border-border'} whitespace-nowrap`}
+                                                onClick={() => handleSetFilter('myServices', optimisticFilters.myServices ? null : true)}
+                                                disabled={isPending}
+                                            >
+                                                My Services
+                                                {optimisticFilters.myServices && <X className="ml-1 h-3 w-3" />}
+                                            </Button>
+                                        ) : (
+                                            <>
+                                                <Button variant="outline" size="sm" className="bg-primary/10 text-foreground border-border whitespace-nowrap" disabled>
+                                                    My Services
+                                                </Button>
+                                                <Link href="/profile/edit" className="text-xs text-zinc-400 underline hover:text-white">
+                                                    Set your services
+                                                </Link>
+                                            </>
+                                        )}
+                                    </div>
+                                )}
                                 <ScrollArea className="w-full">
                                     <div className="flex flex-wrap gap-2 px-4">
                                         {/* Selected services */}
@@ -496,6 +530,7 @@ export default function ShowSearchFilterButton({
 
     const badgeCount = [
         filters.service.length,
+        filters.myServices ? 1 : 0,
         filters.length.length,
         filters.airDate.length,
         filters.totalSeasons?.length || 0,

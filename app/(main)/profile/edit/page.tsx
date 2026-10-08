@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { LogIn, UserX } from "lucide-react";
 import Link from "next/link";
 import { getProfilePicUrl } from "@/app/utils/imageUrls";
-import { updateUserProfile } from "../UserService";
+import { getCurrentUserServiceIds, setCurrentUserServices, updateUserProfile } from "../UserService";
+import { getServices } from "@/app/components/showSearch/ShowSearchService";
 
 export default async function EditProfilePage() {
 
@@ -69,11 +70,14 @@ export default async function EditProfilePage() {
     let presignedImageUrl: string | null = null;
     presignedImageUrl = user.profilePhotoURL ? getProfilePicUrl(user.profilePhotoURL) : null;
 
+    const [services, userServiceIds] = await Promise.all([getServices(), getCurrentUserServiceIds()]);
+
     async function submitChanges(data: ProfileFormValues): Promise<boolean> {
         'use server';
         if (!user) return false;
         const saveSuccess = await updateUserProfile(user.id, data);
-        return saveSuccess;
+        if (!saveSuccess) return false;
+        return await setCurrentUserServices(data.serviceIds);
     }
 
     return (
@@ -97,6 +101,8 @@ export default async function EditProfilePage() {
                             userData={user} 
                             email={authData.email} 
                             presignedImageUrl={presignedImageUrl} 
+                            services={services || []}
+                            userServiceIds={userServiceIds}
                             saveFunction={submitChanges} 
                         />
                     </div>

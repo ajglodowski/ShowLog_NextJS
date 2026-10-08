@@ -19,6 +19,7 @@ export type ShowSearchProps = {
         page?: string;
         search?: string;
         service?: string;
+        myServices?: string;
         length?: string;
         airDate?: string;
         totalSeasons?: string;
