@@ -453,7 +453,7 @@ pre .k{color:#F6D3A6}
     </div>
     <div class="grid2" style="margin-top:16px">
       <div class="card"><h4 class="lbl">How a wash is made</h4><div class="body">
-        <p>Start from the poster's average color (<code class="i">fetchAverageShowColor</code> already exists). Convert to OKLCH, <b>clamp lightness to 0.30–0.36 and chroma to 0.09 or below</b>, and keep the hue.</p>
+        <p>Start from the poster's average color (<code class="i">fetchAverageShowColor</code> already exists). Convert to OKLCH, <b>clamp lightness to 0.34–0.44, boost chroma 1.6× up to 0.15</b> (eased back to fit sRGB), and keep the hue.</p>
         <p>Show pages fade from the wash to graphite by 90% of the first screen. On Discover, the wash appears only inside the highlighted row, fading left to right.</p>
       </div></div>
       <div class="card"><h4 class="lbl">Orange rules</h4>
@@ -687,8 +687,8 @@ Text(show.name)
 // on the show row so both apps read one value</span>
 function wash(avg: Oklch): Oklch {
   return {
-    l: clamp(avg.l, 0.30, 0.36),
-    c: Math.min(avg.c, 0.09),
+    l: clamp(avg.l, 0.34, 0.44),
+    c: Math.min(avg.c * 1.6, 0.15), <span class="c">// then eased back to fit sRGB</span>
     h: avg.h,
   };
 }</pre>

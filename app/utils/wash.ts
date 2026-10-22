@@ -1,12 +1,13 @@
 // The wash: one color per show, from its poster's average color (docs/brand-guide.html).
-// Convert to OKLCH, clamp lightness to 0.30–0.36 and chroma to 0.09 or below, keep the hue.
+// Convert to OKLCH, clamp lightness to 0.34–0.44, boost chroma 1.6x up to 0.15, keep the hue.
 // iOS applies the same math, so keep the two in step.
 
 export type Oklch = { l: number; c: number; h: number };
 
-const WASH_MIN_L = 0.30;
-const WASH_MAX_L = 0.36;
-const WASH_MAX_C = 0.09;
+const WASH_MIN_L = 0.34;
+const WASH_MAX_L = 0.44;
+const WASH_CHROMA_BOOST = 1.6;
+const WASH_MAX_C = 0.15;
 
 const toLinear = (channel: number) => {
     const v = channel / 255;
@@ -30,12 +31,26 @@ export function rgbToOklch(r: number, g: number, b: number): Oklch {
     return { l: L, c: Math.sqrt(A * A + B * B), h: h < 0 ? h + 360 : h };
 }
 
+const inSrgb = ({ l, c, h }: Oklch) => {
+    const a = c * Math.cos((h * Math.PI) / 180);
+    const b = c * Math.sin((h * Math.PI) / 180);
+    const l3 = Math.pow(l + 0.3963377774 * a + 0.2158037573 * b, 3);
+    const m3 = Math.pow(l - 0.1055613458 * a - 0.0638541728 * b, 3);
+    const s3 = Math.pow(l - 0.0894841775 * a - 1.2914855480 * b, 3);
+    const linear = [
+        4.0767416621 * l3 - 3.3077115913 * m3 + 0.2309699292 * s3,
+        -1.2684380046 * l3 + 2.6097574011 * m3 - 0.3413193965 * s3,
+        -0.0041960863 * l3 - 0.7034186147 * m3 + 1.7076147010 * s3,
+    ];
+    return linear.every((channel) => channel >= -0.0001 && channel <= 1.0001);
+};
+
 export function wash(avg: Oklch): Oklch {
-    return {
-        l: Math.min(Math.max(avg.l, WASH_MIN_L), WASH_MAX_L),
-        c: Math.min(avg.c, WASH_MAX_C),
-        h: avg.h,
-    };
+    const l = Math.min(Math.max(avg.l, WASH_MIN_L), WASH_MAX_L);
+    let c = Math.min(avg.c * WASH_CHROMA_BOOST, WASH_MAX_C);
+    // Ease the chroma down until the color fits sRGB, so clipping doesn't shift the hue
+    while (c > 0.005 && !inSrgb({ l, c, h: avg.h })) c -= 0.005;
+    return { l, c, h: avg.h };
 }
 
 /** Takes the "rgb(r,g,b)" string from fetchAverageShowColor; returns a CSS oklch() color, or null if unparseable. */
