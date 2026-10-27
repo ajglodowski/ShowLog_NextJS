@@ -215,6 +215,7 @@ export async function getStaleShows({userId}: {userId: string}): Promise<StaleSh
         const name = s.name.toLowerCase();
         return name === 'show ended' || 
                name === 'seen enough' || 
+               name === 'seen some' || 
                name === 'needs watched' ||
                name === 'coming soon';
     }).map(s => s.id);
@@ -276,6 +277,7 @@ export async function getCheckInShows({userId}: {userId: string}): Promise<Check
         const name = s.name.toLowerCase();
         return name === 'show ended' || 
                name === 'seen enough' || 
+               name === 'seen some' || 
                name === 'needs watched' ||
                name === 'coming soon';
     }).map(s => s.id);

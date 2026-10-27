@@ -2,15 +2,18 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { ClientSearch } from './search/ClientSearch';
 import { Menu, PlusCircle } from 'lucide-react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetClose } from '@/components/ui/sheet';
 import { useIsMobile } from '@/components/hooks/use-mobile';
 import { Button } from '@/components/ui/button';
+import { NAV_ITEMS, isNavItemActive } from './NavbarLinksClient';
 
 export function NavbarMobileMenu({ isAdmin }: { isAdmin: boolean }) {
     const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
     const isMobile = useIsMobile();
+    const pathname = usePathname();
 
     if (!isMobile) {
         return null;
@@ -34,30 +37,17 @@ export function NavbarMobileMenu({ isAdmin }: { isAdmin: boolean }) {
                         <SheetTitle className="text-white text-left">Menu</SheetTitle>
                     </SheetHeader>
                     <div className="mt-6 flex flex-col gap-1">
-                        <SheetClose asChild>
-                            <Link 
-                                href="/" 
-                                className="block px-3 py-2.5 rounded-md transition-colors hover:bg-neutral-800 text-gray-300 hover:text-white"
-                            >
-                                Home
-                            </Link>
-                        </SheetClose>
-                        <SheetClose asChild>
-                            <Link 
-                                href="/watchlist" 
-                                className="block px-3 py-2.5 rounded-md transition-colors hover:bg-neutral-800 text-gray-300 hover:text-white"
-                            >
-                                Watchlist
-                            </Link>
-                        </SheetClose>
-                        <SheetClose asChild>
-                            <Link 
-                                href="/discoverShows" 
-                                className="block px-3 py-2.5 rounded-md transition-colors hover:bg-neutral-800 text-gray-300 hover:text-white"
-                            >
-                                Discover
-                            </Link>
-                        </SheetClose>
+                        {NAV_ITEMS.map((item) => (
+                            <SheetClose asChild key={item.href}>
+                                <Link
+                                    href={item.href}
+                                    aria-current={isNavItemActive(pathname, item) ? 'page' : undefined}
+                                    className="block px-3 py-2.5 rounded-md border-l-2 border-transparent transition-colors hover:bg-neutral-800 text-gray-300 hover:text-white aria-[current=page]:border-orange aria-[current=page]:bg-white/5 aria-[current=page]:text-chalk"
+                                >
+                                    {item.label}
+                                </Link>
+                            </SheetClose>
+                        ))}
                         {isAdmin && (
                             <SheetClose asChild>
                                 <Link 

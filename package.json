@@ -2,6 +2,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev --turbo",
+    "dev:prod": "next dev --turbo -H local.showlog.tv --experimental-https --experimental-https-key certificates/local.showlog.tv-key.pem --experimental-https-cert certificates/local.showlog.tv.pem",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",

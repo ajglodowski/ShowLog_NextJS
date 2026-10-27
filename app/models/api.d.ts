@@ -1121,12 +1121,14 @@ export interface operations {
                 currentlyAiring?: boolean;
                 /** @description Watchlist owner's status */
                 statusIds?: string;
-                /** @description Watchlist owner's rating */
+                /** @description Watchlist owner's rating; `none` for shows they haven't rated */
                 ratings?: string;
                 /** @description Whether the watchlist owner has the show */
                 addedToWatchlist?: boolean;
-                /** @description Default: name, or -updated for scope=watchlist */
-                sort?: "name" | "-name" | "-weekly" | "-monthly" | "-yearly" | "-rating" | "rating" | "-updated";
+                /** @description Admin only: true for shows with no picture, false for shows with one */
+                missingImage?: boolean;
+                /** @description Default: name, or -updated for scope=watchlist. `updated`/`-updated` order by the watchlist owner's (or, outside scope=watchlist, the viewer's) last update to the show, shows they don't have last */
+                sort?: "name" | "-name" | "-weekly" | "-monthly" | "-yearly" | "-rating" | "rating" | "-updated" | "updated";
                 /** @description `friends` adds to each item the people the viewer follows who have the show (empty without a token) */
                 include?: "friends";
                 page?: number;
@@ -1158,6 +1160,15 @@ export interface operations {
             };
             /** @description Missing or invalid access token */
             401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Error"];
+                };
+            };
+            /** @description Not allowed */
+            403: {
                 headers: {
                     [name: string]: unknown;
                 };

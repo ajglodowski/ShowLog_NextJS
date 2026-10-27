@@ -4,6 +4,7 @@ import {
     Calendar,
     CheckCircle2,
     CircleCheckBig,
+    CircleDashed,
     Eye,
     PlayCircle,
     Radio,
@@ -19,6 +20,7 @@ type StatusType =
     | 'up-to-date'
     | 'needs-watched'
     | 'seen-enough'
+    | 'seen-some'
     | 'currently-airing'
     | 'new-release'
     | 'new-season'
@@ -41,6 +43,9 @@ const getStatusType = (statusName: string): StatusType => {
     }
     if (name.includes('seen enough') || name.includes('dropped')) {
         return 'seen-enough';
+    }
+    if (name.includes('seen some')) {
+        return 'seen-some';
     }
     if (name.includes('currently airing') || name.includes('airing')) {
         return 'currently-airing';
@@ -77,6 +82,8 @@ export const StatusIcon = (status: Status, size: number = 4): React.JSX.Element 
             return <Eye className={style} />;
         case 'seen-enough':
             return <XCircle className={style} />;
+        case 'seen-some':
+            return <CircleDashed className={style} />;
         case 'currently-airing':
             return <Radio className={style} />;
         case 'new-release':

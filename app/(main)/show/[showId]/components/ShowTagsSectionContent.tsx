@@ -1,105 +1,72 @@
 'use client'
 
 import { addShowTag, removeShowTag } from "@/app/components/show/ClientShowService";
+import { homeChip } from "@/app/components/home/homeStyles";
 import { ShowTag } from "@/app/models/showTag";
 import { TagCategory } from "@/app/models/tagCategory";
+import { Plus, X } from "lucide-react";
 import Link from "next/link";
-import { Plus } from "lucide-react";
 import { useState } from "react";
-import { backdropBackground } from "@/app/utils/stylingConstants";
+import { showHeaderButton, showLabel } from "./showPageStyles";
 
 export default function ShowTagsSectionContent({showId, currentTags, allTags, tagCategories, isAdmin}: {showId: string, currentTags: ShowTag[] | null, allTags: ShowTag[] | null, tagCategories: TagCategory[] | null, isAdmin: boolean} ) {
-    
-    const [editingTags, setEditingTags] = useState(false);
-    const [appliedTags, setAppliedTags] = useState<ShowTag[]>(currentTags ? currentTags : []);
 
-    const unusedTags = () => allTags?.filter((allTag) => !appliedTags?.some((currentTag) => currentTag.id === allTag.id));
+    const [editingTags, setEditingTags] = useState(false);
+    const [appliedTags, setAppliedTags] = useState<ShowTag[]>(currentTags ?? []);
+
+    const unusedTags = allTags?.filter((tag) => !appliedTags.some((applied) => applied.id === tag.id)) ?? [];
 
     async function addTag(tag: ShowTag) {
-        if (appliedTags.includes(tag)) return;
+        if (appliedTags.some((applied) => applied.id === tag.id)) return;
         const response = await addShowTag(showId, tag);
-        if (response) {
-            if (appliedTags === null) setAppliedTags([tag]);
-            else setAppliedTags([...appliedTags, tag]);
-        }
+        if (response) setAppliedTags([...appliedTags, tag]);
     }
 
     async function removeTag(tag: ShowTag) {
         const response = await removeShowTag(showId, tag);
-        if (response) setAppliedTags(appliedTags.filter((appliedTag) => appliedTag.id !== tag.id));
+        if (response) setAppliedTags(appliedTags.filter((applied) => applied.id !== tag.id));
     }
 
-    const tagStyle = `${backdropBackground} p-1 px-2 m-1 rounded-full border border-white/30 hover:bg-white/20 text-white transition-colors`;
+    const empty = "text-[13.5px] text-stone";
 
-    function CurrentTagsSection() {
-        if (currentTags === null) return (
-            <div>
-                <h1>Error fetching tags</h1>
-            </div>
-        );
-    
-        if (appliedTags.length === 0) return (
-            <div>
-                <h1>No tags yet</h1>
-            </div>
-        );
-
+    function CurrentTags() {
+        if (currentTags === null) return <p className={empty}>Couldn&apos;t load tags</p>;
+        if (appliedTags.length === 0) return <p className={empty}>No tags yet</p>;
         return (
-            <div>
-                <ul className='flex flex-row flex-wrap'>
-                    {appliedTags.map((tag: ShowTag) => (
-                        <li key={tag.id}>
-                            {editingTags &&
-                                <button
-                                    className={tagStyle}
-                                    onClick={() => removeTag(tag)}>
-                                    <h2 className=''>{tag.name}</h2>
-                                </button>
-                            }
-                            {!editingTags &&
-                                <Link href={`/search?tags=${tag.id}`}>
-                                    <h2 className={`${backdropBackground} p-1 px-2 mx-2 rounded-full border border-white/30 hover:bg-white/20 text-white transition-colors`}>{tag.name}</h2>
-                                </Link>
-                            }
-                        </li>
-                    ))}
-                </ul>
-            </div>
+            <ul className="flex flex-wrap gap-1.5">
+                {appliedTags.map((tag) => (
+                    <li key={tag.id}>
+                        {editingTags ? (
+                            <button type="button" className={homeChip} onClick={() => removeTag(tag)} aria-label={`Remove ${tag.name}`}>
+                                {tag.name}
+                                <X className="h-3.5 w-3.5 text-stone" strokeWidth={1.8} aria-hidden="true" />
+                            </button>
+                        ) : (
+                            <Link href={`/search?tags=${tag.id}`} className={homeChip}>{tag.name}</Link>
+                        )}
+                    </li>
+                ))}
+            </ul>
         );
     }
 
-    function AllTagsSection() {
-        if (allTags === null || unusedTags() === null) return (
-            <div>
-                <h1>Error fetching other tags</h1>
-            </div>
-        );
-        if (tagCategories === null) return (
-            <div>
-                <h1>Error fetching tag categories</h1>
-            </div>
-        );
+    function TagPicker() {
+        if (allTags === null || tagCategories === null) return <p className={empty}>Couldn&apos;t load other tags</p>;
         return (
-            <div>
-                <h1>Add tags:</h1>
-                {tagCategories.map((category: TagCategory) => {
-                    const categoryTags = unusedTags()!.filter((tag: ShowTag) => tag.category.id === category.id);
+            <div className="grid gap-3">
+                {tagCategories.map((category) => {
+                    const categoryTags = unusedTags.filter((tag) => tag.category.id === category.id);
                     if (categoryTags.length === 0) return null;
                     return (
-                        <div key={category.id} className="mb-4">
-                            <div className="overflow-x-auto">
-                                <div className="flex flex-row flex-nowrap">
-                                    {categoryTags.map((tag: ShowTag) => (
-                                        <button 
-                                            key={tag.id} 
-                                            className={tagStyle + ' flex-shrink-0 flex items-center gap-1'}
-                                            onClick={()=>{addTag(tag)}}
-                                        >
-                                            <h2 className=''>{tag.name}</h2>
-                                            <Plus className="h-4 w-4" />
-                                        </button>
-                                    ))}
-                                </div>
+                        <div key={category.id} className="grid gap-1.5">
+                            <h4 className={showLabel}>{category.name}</h4>
+                            <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
+                                {categoryTags.map((tag) => (
+                                    <button key={tag.id} type="button" className={homeChip} onClick={() => addTag(tag)}>
+                                        <Plus className="h-3.5 w-3.5 text-stone" strokeWidth={1.8} aria-hidden="true" />
+                                        {tag.name}
+                                    </button>
+                                ))}
                             </div>
                         </div>
                     );
@@ -107,22 +74,23 @@ export default function ShowTagsSectionContent({showId, currentTags, allTags, ta
             </div>
         );
     }
-  
+
     return (
-      <div className=''>
-        <span className="flex justify-between">
-            <h1 className='text-2xl font-bold my-auto'>Tags</h1>
-            {isAdmin && (
-              <button 
-                  className={`${backdropBackground} p-1 px-3 mx-2 my-2 rounded-lg border border-white/30 hover:bg-white/20 text-white transition-colors`}
-                  onClick={() => setEditingTags(!editingTags)}>
-                  {editingTags ? 'Done' : 'Edit'}
-              </button>
+        <>
+            <div className="flex min-h-[30px] items-center justify-between gap-3">
+                <h3 className={showLabel}>Tags</h3>
+                {isAdmin && (
+                    <button type="button" className={showHeaderButton} onClick={() => setEditingTags(!editingTags)}>
+                        {editingTags ? "Done" : "Edit tags"}
+                    </button>
+                )}
+            </div>
+            <CurrentTags />
+            {editingTags && (
+                <div className="well grid gap-3 rounded-xl p-3">
+                    <TagPicker />
+                </div>
             )}
-        </span>
-        <CurrentTagsSection />
-        {editingTags && <AllTagsSection /> }
-      </div>
+        </>
     );
-  
-  }
+}

@@ -27,7 +27,7 @@ import { LoadingTopCountRows } from "./TopCountRows"
  */
 export function ProfileGround({ avatarWash, pinWash, children }: { avatarWash?: string | null; pinWash?: string | null; children: ReactNode }) {
   return (
-    <div className="-mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={washGroundStyle([avatarWash, pinWash])}>
+    <div className="grain -mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={washGroundStyle([avatarWash, pinWash])}>
       {/* Full width; the side padding lines up with the navbar's */}
       <div className="grid w-full grid-cols-1 gap-6 px-4 pb-16 pt-7 md:px-6">{children}</div>
     </div>

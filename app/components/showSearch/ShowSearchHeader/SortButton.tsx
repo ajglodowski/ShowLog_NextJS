@@ -9,12 +9,12 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger
 } from "@/components/ui/dropdown-menu";
-import { ArrowDownAZ, ArrowUpAZ, Calendar, Clock, Heart, Loader2, Sparkles, ThumbsDown, ThumbsUp, TrendingUp } from "lucide-react";
+import { ArrowDownAZ, ArrowUpAZ, Calendar, Clock, Heart, History, Loader2, Sparkles, ThumbsDown, ThumbsUp, TrendingUp } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 
 export type SortDirection = "asc" | "desc";
-export type SortField = "alphabetical" | "weekly_popularity" | "monthly_popularity" | "yearly_popularity" | "rating" | "avg_rating" | "match";
+export type SortField = "alphabetical" | "weekly_popularity" | "monthly_popularity" | "yearly_popularity" | "rating" | "avg_rating" | "match" | "updated";
 export type SortOption = `${SortField}-${SortDirection}`;
 
 type SortButtonProps = {
@@ -94,6 +94,8 @@ export default function SortButton({ currentSort, pathname, currentFilters }: So
                 return `Average Rating (${direction === "asc" ? "Low-High" : "High-Low"})`;
             case "match":
                 return `Match (${direction === "asc" ? "Low-High" : "High-Low"})`;
+            case "updated":
+                return `Last Updated (${direction === "asc" ? "Oldest" : "Newest"})`;
             default:
                 return "Alphabetical (A-Z)";
         }
@@ -130,6 +132,8 @@ export default function SortButton({ currentSort, pathname, currentFilters }: So
                     : <Heart className="h-4 w-4 mr-2 text-red-500" />;
             case "match":
                 return <Sparkles className="h-4 w-4 mr-2" />;
+            case "updated":
+                return <History className="h-4 w-4 mr-2" />;
             default:
                 return <ArrowDownAZ className="h-4 w-4 mr-2" />;
         }
@@ -246,6 +250,25 @@ export default function SortButton({ currentSort, pathname, currentFilters }: So
                 >
                     <Sparkles className="h-4 w-4 mr-2" />
                     <span className="capitalize font-medium">Match (Low-High)</span>
+                </DropdownMenuItem>
+
+                <DropdownMenuSeparator className="bg-white/20" />
+
+                <DropdownMenuItem 
+                    className="focus:bg-white/10 focus:text-white text-white cursor-pointer"
+                    onClick={() => handleSortChange("updated-desc")}
+                    disabled={isPending}
+                >
+                    <History className="h-4 w-4 mr-2" />
+                    <span className="capitalize font-medium">Last Updated (Newest)</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                    className="focus:bg-white/10 focus:text-white text-white cursor-pointer"
+                    onClick={() => handleSortChange("updated-asc")}
+                    disabled={isPending}
+                >
+                    <History className="h-4 w-4 mr-2" />
+                    <span className="capitalize font-medium">Last Updated (Oldest)</span>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

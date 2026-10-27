@@ -1,73 +1,26 @@
-'use client'
-
+import { statusIcon } from '@/app/components/brand/StatusAndRating';
 import { StatusCount } from '@/app/models/statusCount';
-import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { StatBars } from './StatBars';
+import { showEmpty, showLabel } from './showPageStyles';
 
-import {
-  ChartConfig,
-  ChartContainer,
-  ChartTooltip,
-  ChartTooltipContent,
-} from "@/components/ui/chart";
+export default function StatusStatsSection({ statusCounts }: { statusCounts: StatusCount[] | null }) {
+    if (!statusCounts) return <p className={showEmpty}>Couldn&apos;t load statuses</p>;
 
-export default function StatusStatsSection ({ statusCounts }: { statusCounts: StatusCount[]| null }) {
+    const counts = statusCounts.filter((entry) => entry.count > 0).sort((a, b) => b.count - a.count);
+    if (counts.length === 0) return <p className={showEmpty}>Nobody is tracking this show yet</p>;
 
-    if (!statusCounts) {
-        return (
-            <h4>Error Loading Rating Counts</h4>
-        );
-    }
-
-    const data = ():{name: string, total: number}[] => {
-        const out = [];
-        for (const statusCount of statusCounts) {
-            out.push({name: statusCount.status.name, total: statusCount.count});
-        }
-        return out;
-    };
-
-    const chartConfig = {
-        total: {
-          label: "Count",
-        },
-        name: {
-            label: "Status"
-        }
-    } satisfies ChartConfig
+    const total = counts.reduce((sum, entry) => sum + entry.count, 0);
 
     return (
-        <div className='text-left'>
+        <div className="grid gap-4">
             <div>
-                <h1 className='text-7xl font-bold tracking-tighter'>Status Counts</h1>
+                <p className={showLabel}>Tracking</p>
+                <p className="mt-1 text-xl font-[650] tabular-nums tracking-[-.02em]">{total.toLocaleString()}</p>
             </div>
-            <div className="w-full -mx-4">
-                {data().length > 0 &&
-                    <ChartContainer config={chartConfig} className="h-52 w-full">
-                        <BarChart accessibilityLayer data={data()}>
-                          <CartesianGrid vertical={false} />
-                          <XAxis
-                            dataKey="name"
-                            tickLine={false}
-                            tickMargin={10}
-                            axisLine={false}
-                            stroke="#FFFFFF"
-                            // tickFormatter={(value) => value.slice(0, 3)} // Optional: Shorten labels if needed
-                          />
-                          <YAxis
-                           tickLine={false}
-                           tickMargin={10}
-                           axisLine={false}
-                           stroke="#FFFFFF"
-                           />
-                          <ChartTooltip
-                            cursor={false}
-                            content={<ChartTooltipContent indicator="dashed" />}
-                          />
-                          <Bar dataKey="total" fill="#FFFFFF" radius={4} />
-                        </BarChart>
-                      </ChartContainer>
-                }
-            </div>
+            {/* Counts across everyone, so no orange: that's reserved for your own status */}
+            <StatBars
+                bars={counts.map((entry) => ({ label: entry.status.name, count: entry.count, Icon: statusIcon(entry.status.name), tone: "chalk" }))}
+            />
         </div>
     );
-};
+}

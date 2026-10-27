@@ -33,7 +33,7 @@ export default async function LandingPage() {
         : undefined;
 
     return (
-        <div className="-mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={groundStyle}>
+        <div className="grain -mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={groundStyle}>
             <div className="mx-auto grid w-full max-w-[680px] gap-4 px-4 pb-10 pt-7">
                 <header className="text-center">
                     {/* The wordmark stands alone on the wash, as on the brand guide's cover */}

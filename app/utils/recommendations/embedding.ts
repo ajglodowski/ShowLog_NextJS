@@ -1,7 +1,7 @@
 /**
  * Deterministic show embedding utilities for pgvector recommendations.
  * 
- * Creates fixed-size (256-dim) feature vectors from show properties using
+ * Creates fixed-size (1024-dim) feature vectors from show properties using
  * feature hashing (FNV-1a). No external APIs or ML models required.
  * 
  * Tags (IDF-weighted) carry the signal; see WEIGHTS below. Vectors are
@@ -10,8 +10,8 @@
 
 import { ShowLength } from "@/app/models/showLength";
 
-// Embedding dimension - must match the vector(256) in ShowEmbedding table
-export const EMBEDDING_DIM = 256;
+// Embedding dimension - must match the vector(1024) in ShowEmbedding and UserEmbedding (and the 1024 in refresh_user_embedding)
+export const EMBEDDING_DIM = 1024;
 
 /**
  * Input data needed to compute a show embedding.
@@ -181,7 +181,7 @@ export function computeTagIdf(tagIdsPerShow: number[][]): Map<number, number> {
  *
  * @param input Show properties needed for embedding
  * @param tagIdf Per-tag IDF from computeTagIdf; tags missing from it get 1.0
- * @returns Normalized 256-dimensional embedding vector
+ * @returns Normalized 1024-dimensional embedding vector
  */
 export function computeShowEmbedding(
   input: ShowEmbeddingInput,

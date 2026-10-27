@@ -1,20 +1,22 @@
-import { Skeleton } from "@/components/ui/skeleton";
+const block = "animate-pulse bg-white/[.06]";
 
-export default async function LoadingShowPage() {
-
+export default function LoadingShowPage() {
     return (
-        <div className='w-full h-full'>
-          <div className=''>
-            <div className='w-full'>
-                <div className="mx-auto">
-                    <Skeleton className="w-[300px] sm:w-[400px] md:w-[500px] lg:w-[600px] h-[300px] sm:h-[400px] md:h-[500px] lg:h-[600px] mx-auto object-contain rounded-md" />
+        <div className="-mt-14 min-h-screen w-full bg-graphite pt-14">
+            <div className="grid w-full grid-cols-1 gap-3.5 px-4 pb-16 pt-7 md:px-6">
+                <div className="grid justify-items-center">
+                    <div className={`${block} aspect-square w-[min(280px,70vw)] rounded-[20px]`} />
+                    <div className={`${block} -mt-6 h-16 w-3/4 max-w-md rounded-xl`} />
+                    <div className={`${block} mt-3 h-4 w-48 rounded-md`} />
                 </div>
+                <div className={`${block} h-[62px] rounded-2xl`} />
+                <div className="mt-2 flex gap-[18px] border-b border-line pb-2">
+                    {[72, 48, 92, 84].map((width) => (
+                        <div key={width} className={`${block} h-4 rounded`} style={{ width }} />
+                    ))}
+                </div>
+                <div className={`${block} h-48 rounded-[18px]`} />
             </div>
-            <h1 className='text-7xl sm:text-9xl font-extrabold tracking-tighter text-center -mt-16'>Loading show...</h1>
-            <h2 className='text-2xl tracking-tight text-center'>Your show info will be available shortly</h2>
-          </div>
-    
         </div>
-    
-      );
+    );
 }

@@ -13,10 +13,10 @@ export const UserDetailsDropdown = ({ currentUserInfo, otherUsersInfo }: { curre
         <div className="w-auto flex justify-end">
             <div className="flex items-center">
                 <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button className={`${backdropBackground} py-6 -px-2 border`}>
-                            <AvatarsBubbleRow currentUserInfo={currentUserInfo} otherUsersInfo={filteredOtherUsers}/>
-                        </Button>
+                    {/* The avatars are async server components, so they go in as plain children. Cloning them
+                        through asChild/render made the server and client HTML disagree (hydration error). */}
+                    <DropdownMenuTrigger render={<Button className={`${backdropBackground} py-6 -px-2 border`} />}>
+                        <AvatarsBubbleRow currentUserInfo={currentUserInfo} otherUsersInfo={filteredOtherUsers}/>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className={`${backdropBackground} text-white min-w-[300px]`}>
                         <DropdownMenuGroup>

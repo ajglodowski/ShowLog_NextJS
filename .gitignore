@@ -6,3 +6,6 @@ gcpCreds.json
 supabase
 # typescript incremental build cache
 *.tsbuildinfo
+
+# mkcert certificates for `npm run dev:prod`
+/certificates

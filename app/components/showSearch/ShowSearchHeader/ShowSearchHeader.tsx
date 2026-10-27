@@ -21,6 +21,8 @@ import ShowSearchTagsRow from "./ShowSearchTagsRow";
 import { getAllTags, getAllTagCategories } from "@/app/(main)/show/[showId]/ShowService";
 import { getAllStatuses } from "@/app/(main)/show/[showId]/UserShowDataService";
 import { getCurrentUserServiceIds } from "@/app/(main)/profile/UserService";
+import { isAdmin } from "@/app/utils/userService";
+import AdminFilterButton from "./AdminFilterButton";
 
 export type ShowSearchFiltersType = {
     service: Service[];
@@ -34,6 +36,8 @@ export type ShowSearchFiltersType = {
     currentlyAiring: boolean | null;
     sortBy: SortOption | undefined;
     tags: ShowTag[];
+    // Admin only: true for shows with no picture, false for shows with one; null when not applied
+    missingImage: boolean | null;
 }
 
 export const defaultFilters: ShowSearchFiltersType = {
@@ -47,6 +51,7 @@ export const defaultFilters: ShowSearchFiltersType = {
     currentlyAiring: null,
     sortBy: undefined,
     tags: [],
+    missingImage: null,
 }
 
 export type ShowSearchHeaderProps = {
@@ -91,6 +96,7 @@ export default async function ShowSearchHeader({
     const tags: ShowTag[] | null = await getAllTags(); // Fetch all tags
     const tagCategories: TagCategory[] | null = await getAllTagCategories(); // Fetch all tag categories
     const userServiceIds = currentUserId ? await getCurrentUserServiceIds() : [];
+    const userIsAdmin = await isAdmin(currentUserId);
     
     return (
         <div className="">
@@ -167,6 +173,10 @@ export default async function ShowSearchHeader({
                                         userServiceIds={userServiceIds}
                                     />
                                 </Suspense>
+
+                                {userIsAdmin && (
+                                    <AdminFilterButton filters={filters} />
+                                )}
                             </div>
                         </div>
                     </div>

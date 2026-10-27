@@ -34,6 +34,7 @@ export type ShowSearchProps = {
         sortBy?: string;
         tags?: string;
         statuses?: string;
+        missingImage?: string;
     };
     pathname?: string;
 }

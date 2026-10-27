@@ -4,6 +4,9 @@ const withBundleAnalyzer = require('@next/bundle-analyzer')({
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+    // `npm run dev:prod` serves on this host so the browser sends it the production
+    // session cookie (set on .showlog.tv). It resolves to 127.0.0.1 through /etc/hosts.
+    allowedDevOrigins: ['local.showlog.tv'],
     async headers() {
         return [
             {

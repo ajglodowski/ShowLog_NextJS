@@ -3,7 +3,7 @@
 import { AirDate } from "@/app/models/airDate";
 import { Rating, RatingPoints } from "@/app/models/rating";
 import { Service } from "@/app/models/service";
-import { convertRawShowAnalyticsToShowWithAnalytics, ShowAnalyticsProperties, ShowPropertiesWithService, ShowWithAnalytics, ShowAnalytics } from "@/app/models/show";
+import { convertRawShowAnalyticsToShowWithAnalytics, Show, ShowAnalyticsProperties, ShowPropertiesWithService, ShowWithAnalytics, ShowAnalytics } from "@/app/models/show";
 import { ShowLength } from "@/app/models/showLength";
 import { ShowSearchType } from "@/app/models/showSearchType";
 import { Status } from "@/app/models/status";
@@ -23,7 +23,8 @@ import { toAPILength, toShow } from "@/app/utils/backend/backendMapping";
 import { SortOption } from "./ShowSearchHeader/SortButton";
 
 // GET /shows sorts popularity only most-active first, so ascending popularity is that order reversed.
-// Sorts by the user's own rating or match aren't server sorts; ShowSearchShows applies those.
+// Sorts by the user's own rating or match aren't server sorts; ShowSearchShows applies those
+// (and re-applies the update date sort, since it also covers the Supabase fallback).
 function backendSort(sortBy: SortOption | undefined): { sort: Backend.ShowSearchQuery["sort"], reverse: boolean } {
     switch (sortBy) {
         case "alphabetical-desc": return { sort: "-name", reverse: false };
@@ -35,6 +36,8 @@ function backendSort(sortBy: SortOption | undefined): { sort: Backend.ShowSearch
         case "yearly_popularity-asc": return { sort: "-yearly", reverse: true };
         case "avg_rating-desc": return { sort: "-rating", reverse: false };
         case "avg_rating-asc": return { sort: "rating", reverse: false };
+        case "updated-desc": return { sort: "-updated", reverse: false };
+        case "updated-asc": return { sort: "updated", reverse: false };
         default: return { sort: "name", reverse: false };
     }
 }
@@ -83,6 +86,7 @@ export async function fetchShows(filters: ShowSearchFiltersType, searchType: Sho
                 limitedSeries: filters.limitedSeries,
                 running: filters.running,
                 currentlyAiring: filters.currentlyAiring,
+                missingImage: filters.missingImage,
                 sort,
             });
             const shows = items.map(toShow);
@@ -381,7 +385,14 @@ export async function fetchShows(filters: ShowSearchFiltersType, searchType: Sho
         }
     });
     
-    return shows;
+    return filterMissingImage(shows, filters.missingImage);
+}
+
+const hasPicture = (show: Show) => !!show.pictureUrl?.trim();
+
+function filterMissingImage<T extends Show>(shows: T[], missingImage: boolean | null): T[] {
+    if (missingImage === null) return shows;
+    return shows.filter((show) => hasPicture(show) !== missingImage);
 }
 
 export async function fetchUsersWatchlist(userId: string): Promise<UserWatchListData[] | null> {
@@ -512,6 +523,10 @@ export async function filterWatchlist(UserWatchListData: UserWatchListData[] | n
     
     if (filters.limitedSeries !== undefined && filters.limitedSeries !== null) {
         filteredShows = filteredShows.filter((show) => show.show.limitedSeries === filters.limitedSeries);
+    }
+
+    if (filters.missingImage !== null) {
+        filteredShows = filteredShows.filter((show) => hasPicture(show.show) !== filters.missingImage);
     }
     
     const filterServiceIds = await getServiceFilterIds(filters);

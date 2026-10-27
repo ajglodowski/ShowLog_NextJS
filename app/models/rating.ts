@@ -18,3 +18,12 @@ export const RatingColors = {
     [Rating.LIKED]: 'green-400',
     [Rating.LOVED]: 'blue-400'
 }
+
+// A ratings filter can also ask for shows the user hasn't rated
+export const UNRATED = "Unrated";
+export type RatingFilter = Rating | typeof UNRATED;
+export const RatingFilterOptions: RatingFilter[] = [...Object.values(Rating), UNRATED];
+
+export function matchesRatingFilter(filters: RatingFilter[], rating?: Rating | null): boolean {
+    return rating ? filters.includes(rating) : filters.includes(UNRATED);
+}

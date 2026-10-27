@@ -14,7 +14,7 @@ export default async function FriendActivityPage() {
     const updates = await getFriendUpdates({userId: currentUserId, updateLimit: FEED_LIMIT});
 
     return (
-        <div className="-mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={homeGroundStyle}>
+        <div className="grain -mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={homeGroundStyle}>
             <div className="grid w-full gap-6 px-4 pb-16 pt-7 md:px-6">
                 <h1 className="text-[44px] font-black leading-[.9] tracking-[-.065em]">Friends&apos; activity</h1>
                 <div className="glass rounded-[20px] p-3">

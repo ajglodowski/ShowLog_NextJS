@@ -1,71 +1,37 @@
-'use client'
-
+import { ratingStyle } from '@/app/components/brand/StatusAndRating';
 import { Rating, RatingPoints } from '@/app/models/rating';
 import { RatingCounts } from '@/app/models/ratingCounts';
-import React from 'react';
-import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import { StatBars } from './StatBars';
+import { showEmpty, showLabel } from './showPageStyles';
 
-export default function RatingsStatsSection ({ ratingCounts }: { ratingCounts: RatingCounts| null }) {
+const RATING_ORDER = [Rating.LOVED, Rating.LIKED, Rating.MEH, Rating.DISLIKED];
 
-    if (!ratingCounts) {
-        return (
-            <h4>Error Loading Rating Counts</h4>
-        );
-    }
+export default function RatingsStatsSection({ ratingCounts }: { ratingCounts: RatingCounts | null }) {
+    if (!ratingCounts) return <p className={showEmpty}>Couldn&apos;t load ratings</p>;
 
-    const averageRating = (): number => {
-        // iterate over the rating counts keys and generate the average rating
-        let totalRatings = 0;
-        let ratingTotal = 0;
-        for (const rating in ratingCounts) {
-            const ratingCount = ratingCounts[rating as Rating];
-            totalRatings += ratingCount;
-            ratingTotal += ratingCount * RatingPoints[rating as Rating];
-        }
-        return ratingTotal / totalRatings;
-    }
-    const data = ():{name: string, total: number}[] => {
-        const out = [];
-        for (const rating in ratingCounts) {
-            out.push({name: rating, total: ratingCounts[rating as Rating]});
-        }
-        return out;
-    };
+    const total = RATING_ORDER.reduce((sum, rating) => sum + (ratingCounts[rating] ?? 0), 0);
+    if (total === 0) return <p className={showEmpty}>No ratings yet</p>;
 
-
-
+    const average = RATING_ORDER.reduce((sum, rating) => sum + (ratingCounts[rating] ?? 0) * RatingPoints[rating], 0) / total;
 
     return (
-        <div className='text-left flex flex-wrap md:flex-nowrap'>
-            <div>
-                <h1 className='text-7xl font-bold tracking-tighter'>Ratings</h1>
-                <h2 className='text-lg'>Average Rating Score: {averageRating().toFixed(2)}</h2>
+        <div className="grid gap-4">
+            <div className="flex items-baseline gap-4">
+                <div>
+                    <p className={showLabel}>Average</p>
+                    <p className="mt-1 text-xl font-[650] tabular-nums tracking-[-.02em]">{average.toFixed(2)}</p>
+                </div>
+                <div>
+                    <p className={showLabel}>Ratings</p>
+                    <p className="mt-1 text-xl font-[650] tabular-nums tracking-[-.02em]">{total.toLocaleString()}</p>
+                </div>
             </div>
-            {data().length > 0 &&
-                <ResponsiveContainer width="100%" height={200}>
-                    <BarChart data={data()}>
-                        <XAxis
-                            dataKey="name"
-                            stroke="#FFFFFF"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                        />
-                        <YAxis
-                            stroke="#FFFFFF"
-                            fontSize={12}
-                            tickLine={false}
-                            axisLine={false}
-                        />
-                        <Bar
-                            dataKey="total"
-                            fill="#FFFFFF"
-                            radius={[4, 4, 0, 0]}
-                            className="fill-primary"
-                        />
-                    </BarChart>
-                </ResponsiveContainer>
-            }
+            <StatBars
+                bars={RATING_ORDER.map((rating) => {
+                    const { Icon, filled, color } = ratingStyle(rating);
+                    return { label: rating, count: ratingCounts[rating] ?? 0, Icon, filled, tone: color === "text-chalk" ? "chalk" : "stone" };
+                })}
+            />
         </div>
     );
-};
+}

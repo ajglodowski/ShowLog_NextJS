@@ -4,6 +4,7 @@ import {
     AlarmClock,
     Calendar,
     Check,
+    CircleDashed,
     CircleMinus,
     CircleX,
     Eye,
@@ -30,13 +31,17 @@ const STATUS_ICONS: Record<string, LucideIcon> = {
     "Rewatching": RotateCw,
     "Show Ended": ListChecks,
     "Seen Enough": CircleX,
+    "Seen Some": CircleDashed,
 };
 
 /** The brand icon for a status, by its name. */
 export const statusIcon = (statusName: string): LucideIcon => STATUS_ICONS[statusName] ?? Check;
 
-// Finished statuses drop to stone; every other status is yours, so it's orange.
-const FINISHED_STATUSES = new Set(["Show Ended", "Seen Enough"]);
+// Finished statuses (and Seen Some, which has no progress) drop to stone; every other status is yours, so it's orange.
+const FINISHED_STATUSES = new Set(["Show Ended", "Seen Enough", "Seen Some"]);
+
+/** Text color for a status: stone once it's finished, otherwise orange. */
+export const statusColor = (statusName: string) => (FINISHED_STATUSES.has(statusName) ? "text-stone" : "text-orange");
 
 export function StatusLabel({ status, className = "" }: { status: Status; className?: string }) {
     const Icon = statusIcon(status.name);
@@ -55,6 +60,9 @@ const RATING_STYLES: Record<Rating, { Icon: LucideIcon; filled: boolean; color: 
     [Rating.MEH]: { Icon: CircleMinus, filled: false, color: "text-stone" },
     [Rating.DISLIKED]: { Icon: ThumbsDown, filled: false, color: "text-stone" },
 };
+
+/** Icon, fill, and color for a rating. */
+export const ratingStyle = (rating: Rating) => RATING_STYLES[rating];
 
 export function RatingLabel({ rating, className = "" }: { rating: Rating | null | undefined; className?: string }) {
     const style = rating ? RATING_STYLES[rating] : undefined;

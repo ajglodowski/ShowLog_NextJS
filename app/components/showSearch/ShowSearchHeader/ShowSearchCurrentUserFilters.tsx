@@ -1,6 +1,6 @@
 "use client";
 
-import { Rating } from "@/app/models/rating";
+import { RatingFilter, RatingFilterOptions } from "@/app/models/rating";
 import { ShowSearchType } from "@/app/models/showSearchType";
 import { Status } from "@/app/models/status";
 import { backdropBackground } from "@/app/utils/stylingConstants";
@@ -16,7 +16,7 @@ import { StatusIcon } from "@/app/utils/StatusIcon";
 
 export type CurrentUserFilters = {
     addedToWatchlist?: boolean;
-    ratings: Rating[];
+    ratings: RatingFilter[];
     statuses: Status[];
     searchType?: ShowSearchType;
     userId?: string;
@@ -92,7 +92,7 @@ export default function ShowSearchCurrentUserFilters({
     };
 
     // --- Update Handlers to apply immediately with optimistic updates ---
-    const handleRemoveRating = (rating: Rating) => {
+    const handleRemoveRating = (rating: RatingFilter) => {
         const newRatings = optimisticFilters.ratings.filter(r => r !== rating);
         startTransition(() => {
             updateOptimisticFilters({ ratings: newRatings });
@@ -100,7 +100,7 @@ export default function ShowSearchCurrentUserFilters({
         });
     };
 
-    const handleAddRating = (rating: Rating) => {
+    const handleAddRating = (rating: RatingFilter) => {
         const newRatings = [...optimisticFilters.ratings, rating];
         startTransition(() => {
             updateOptimisticFilters({ ratings: newRatings });
@@ -232,7 +232,7 @@ export default function ShowSearchCurrentUserFilters({
                                     </Button>
                                 ))}
                                 {/* Unselected ratings */}
-                                {Object.values(Rating).filter(rating => !optimisticFilters.ratings.includes(rating)).map((rating) => (
+                                {RatingFilterOptions.filter(rating => !optimisticFilters.ratings.includes(rating)).map((rating) => (
                                     <Button
                                         key={rating}
                                         variant="outline"

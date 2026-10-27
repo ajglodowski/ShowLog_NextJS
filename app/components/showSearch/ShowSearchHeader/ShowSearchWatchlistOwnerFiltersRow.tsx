@@ -1,5 +1,5 @@
 'use client'
-import { Rating } from "@/app/models/rating";
+import { RatingFilter } from "@/app/models/rating";
 import { Status } from "@/app/models/status";
 import { StatusIcon } from "@/app/utils/StatusIcon";
 import { Button } from "@/components/ui/button";
@@ -50,7 +50,7 @@ export default function ShowSearchWatchlistOwnerFiltersRow({
         }
     }   
 
-    const createRemoveFilterURL = (key: keyof CurrentUserFilters, value: Rating | Status | boolean | undefined) => {
+    const createRemoveFilterURL = (key: keyof CurrentUserFilters, value: RatingFilter | Status | boolean | undefined) => {
         const url = new URL(pathname, typeof window !== 'undefined' ? window.location.origin : '');
         
         // Add all current filter params
@@ -61,6 +61,7 @@ export default function ShowSearchWatchlistOwnerFiltersRow({
         if (currentFilters.limitedSeries !== undefined && currentFilters.limitedSeries !== null) url.searchParams.set('limitedSeries', currentFilters.limitedSeries.toString());
         if (currentFilters.running !== undefined && currentFilters.running !== null) url.searchParams.set('running', currentFilters.running.toString());
         if (currentFilters.currentlyAiring !== undefined && currentFilters.currentlyAiring !== null) url.searchParams.set('currentlyAiring', currentFilters.currentlyAiring.toString());
+        if (currentFilters.missingImage !== null) url.searchParams.set('missingImage', currentFilters.missingImage.toString());
         
         // Handle watchlist owner filter params
         if (key === 'ratings') {
@@ -188,6 +189,7 @@ export default function ShowSearchWatchlistOwnerFiltersRow({
         if (currentFilters.limitedSeries !== undefined && currentFilters.limitedSeries !== null) url.searchParams.set('limitedSeries', currentFilters.limitedSeries.toString());
         if (currentFilters.running !== undefined && currentFilters.running !== null) url.searchParams.set('running', currentFilters.running.toString());
         if (currentFilters.currentlyAiring !== undefined && currentFilters.currentlyAiring !== null) url.searchParams.set('currentlyAiring', currentFilters.currentlyAiring.toString());
+        if (currentFilters.missingImage !== null) url.searchParams.set('missingImage', currentFilters.missingImage.toString());
         
         return pathname + url.search;
     };

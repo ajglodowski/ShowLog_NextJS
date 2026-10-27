@@ -36,7 +36,7 @@ export async function AuthShell({ title, subtitle, children, footer }: AuthShell
         ? { backgroundImage: `linear-gradient(180deg, ${wash} 0%, var(--graphite) 90svh)`, backgroundRepeat: "no-repeat" }
         : undefined;
     return (
-        <div className="-mt-14 flex min-h-screen w-full flex-col justify-center bg-graphite px-4 pb-16 pt-[88px] text-chalk" style={style}>
+        <div className="grain -mt-14 flex min-h-screen w-full flex-col justify-center bg-graphite px-4 pb-16 pt-[88px] text-chalk" style={style}>
             <div className="animate-in mx-auto grid w-full max-w-[400px] gap-4">
                 <header>
                     <h1 className="text-[44px] font-black leading-[.9] tracking-[-.065em]">{title}</h1>

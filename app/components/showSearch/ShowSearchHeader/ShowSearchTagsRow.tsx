@@ -64,6 +64,9 @@ export default function ShowSearchTagsRow({
         if (optimisticFilters.currentlyAiring !== null) {
             url.searchParams.set('currentlyAiring', optimisticFilters.currentlyAiring.toString());
         }
+        if (optimisticFilters.missingImage !== null) {
+            url.searchParams.set('missingImage', optimisticFilters.missingImage.toString());
+        }
         
         return pathname + url.search;
     };
@@ -99,6 +102,9 @@ export default function ShowSearchTagsRow({
         
         if (optimisticFilters.currentlyAiring !== null) {
             url.searchParams.set('currentlyAiring', optimisticFilters.currentlyAiring.toString());
+        }
+        if (optimisticFilters.missingImage !== null) {
+            url.searchParams.set('missingImage', optimisticFilters.missingImage.toString());
         }
         
         return pathname + url.search;

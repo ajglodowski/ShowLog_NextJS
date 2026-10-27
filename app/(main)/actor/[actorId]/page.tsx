@@ -28,7 +28,7 @@ const byNewest = (a: Show, b: Show) => {
 /** Graphite page ground. The washes of the actor's shows blend down the first screen, newest on top. */
 function ActorGround({ washes = [], children }: { washes?: (string | null)[]; children: ReactNode }) {
     return (
-        <div className="-mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={washGroundStyle(washes)}>
+        <div className="grain -mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={washGroundStyle(washes)}>
             <div className="mx-auto grid w-full max-w-[680px] gap-4 px-4 pb-16 pt-7">{children}</div>
         </div>
     );

@@ -206,6 +206,12 @@ code.i{font:500 12.5px var(--code);background:rgba(255,255,255,.08);padding:1px 
 .wash .top h5{font-size:22px;font-weight:900;letter-spacing:-.06em;line-height:.9}
 .wash p{padding:10px 12px;font-size:12px;color:var(--stone);line-height:1.45}
 .wash p b{color:var(--chalk);font-weight:600}
+/* film grain on wash grounds, same recipe as the app's grain utility */
+.grain{position:relative;isolation:isolate}
+.grain::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n' x='0' y='0'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='.33 .33 .33 0 0 .33 .33 .33 0 0 .33 .33 .33 0 0 0 0 0 0 1'/%3E%3CfeComponentTransfer%3E%3CfeFuncR type='linear' slope='1.9' intercept='-0.45'/%3E%3CfeFuncG type='linear' slope='1.9' intercept='-0.45'/%3E%3CfeFuncB type='linear' slope='1.9' intercept='-0.45'/%3E%3C/feComponentTransfer%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");background-size:200px 200px;mix-blend-mode:soft-light;opacity:.2;-webkit-mask-image:linear-gradient(180deg,#000 0%,rgb(0 0 0/35%) 70%,transparent 92%);mask-image:linear-gradient(180deg,#000 0%,rgb(0 0 0/35%) 70%,transparent 92%)}
+.grain-demo{display:grid;grid-template-columns:1fr 1fr;gap:6px;border-radius:12px;overflow:hidden;margin-top:12px}
+.grain-demo div{height:84px;background:linear-gradient(180deg,#17505A 0%,var(--graphite) 95%);display:flex;align-items:flex-end;padding:8px 10px;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--stone)}
+.grain-demo div.grain{color:var(--chalk)}
 
 /* type */
 .tscale{display:grid;border-radius:18px;overflow:hidden;border:1px solid var(--line)}
@@ -247,6 +253,26 @@ pre{margin:0;padding:14px 16px;border-radius:14px;background:rgba(0,0,0,.35);bor
 pre .c{color:var(--dim)}
 pre .k{color:#F6D3A6}
 
+/* logo */
+.mark{display:block;flex:none;overflow:visible}
+.logo .mark{width:24px;height:24px;margin-right:8px}
+.lockup-xl{display:flex;align-items:center;gap:clamp(14px,2.2vw,28px);margin-top:18px}
+.lockup-xl .mark{width:clamp(70px,13vw,164px);height:clamp(70px,13vw,164px)}
+.icon{--s:120px;width:var(--s);height:var(--s);border-radius:22.4%;display:grid;place-items:center;flex:none;background:linear-gradient(180deg,#1F1C19,#0C0B0A);box-shadow:inset 0 1px 0 rgba(255,255,255,.13),0 0 0 1px rgba(255,255,255,.07),0 14px 28px -14px rgba(0,0,0,.6)}
+.icon .mark{width:64%;height:64%}
+.icon.clear{background:radial-gradient(120% 90% at 50% 0%,#2A2724,#121110);box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.icon.tint{background:#000;--m-tv:#B9AE9F;--m-knob:#FFF4E2;--m-track:#FFF4E2;box-shadow:inset 0 0 0 1px rgba(255,255,255,.1)}
+.icon.mac{border-radius:22.5%;transform:scale(.805)}
+.specimens{display:flex;gap:18px;align-items:flex-end;flex-wrap:wrap}
+.specimens figure{margin:0;display:grid;justify-items:center;gap:8px;font-size:12px;color:var(--stone);text-align:center}
+.specimens .sm{--s:60px}
+.on-grid{position:relative;aspect-ratio:1;max-width:260px;margin:0 auto;border-radius:14px;border:1px solid var(--line);background:repeating-linear-gradient(0deg,transparent 0 calc(10% - 1px),rgba(255,255,255,.06) calc(10% - 1px) 10%),repeating-linear-gradient(90deg,transparent 0 calc(10% - 1px),rgba(255,255,255,.06) calc(10% - 1px) 10%),var(--graphite)}
+.on-grid .mark{position:absolute;inset:0;width:100%;height:100%}
+.specs{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:14px 0 0;font-size:13px;color:#D8D1C9}
+.specs dt{color:var(--stone)}
+.specs dd{margin:0}
+.navdemo{display:flex;align-items:center;height:56px;padding:0 16px;border-radius:12px;border:1px solid var(--line);background:rgba(23,23,23,.9)}
+
 @media (max-width:1060px){
   .pair{grid-template-columns:1fr}
   .principles{grid-template-columns:1fr 1fr}
@@ -279,6 +305,15 @@ pre .k{color:#F6D3A6}
 <body>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <mask id="mark-play" maskUnits="userSpaceOnUse" x="0" y="0" width="100" height="100"><rect width="100" height="100" fill="#fff"/><path d="M42 26L62 38L42 50Z" fill="#000" stroke="#000" stroke-width="6" stroke-linejoin="round"/></mask>
+  </defs>
+  <symbol id="mark" viewBox="0 0 100 100">
+    <rect x="8" y="8" width="84" height="62" rx="15" mask="url(#mark-play)" style="fill:var(--m-tv,#F2A13A)"/>
+    <rect x="8" y="83" width="84" height="7" rx="3.5" style="fill:var(--m-track,#F5F1EC);opacity:.24"/>
+    <rect x="8" y="83" width="54" height="7" rx="3.5" style="fill:var(--m-tv,#F2A13A)"/>
+    <circle cx="62" cy="86.5" r="8" style="fill:var(--m-knob,#F5F1EC)"/>
+  </symbol>
   <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.6-3.6"/></symbol>
   <symbol id="i-eye" viewBox="0 0 24 24"><path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M4 12.5l5 5L20 6.5"/></symbol>
@@ -317,26 +352,78 @@ pre .k{color:#F6D3A6}
 
 </svg>
 
-<header class="cover">
+<header class="cover grain">
   <div class="wrap">
-    <p class="lbl" style="color:#CFE3E5">Brand guide · v1 · September 2026</p>
-    <h1 class="wordmark" style="margin-top:18px">ShowLog</h1>
+    <p class="lbl" style="color:#CFE3E5">Brand guide · v2 · October 2026</p>
+    <div class="lockup-xl"><svg class="mark" aria-hidden="true"><use href="#mark"/></svg><h1 class="wordmark">ShowLog</h1></div>
     <p class="sub"><span><b>showlog.tv</b> web</span><span><b>tv.showlog.app</b> iOS &amp; macOS</span><span>One system, both apps</span></p>
     <p class="thesis">A dark room with glass on top, where every show brings its own color.</p>
     <div class="principles">
       <div class="glass"><h3>The show brings the color</h3><p>The interface is graphite. Color comes from the poster's wash and the services' own logos, never from decoration.</p></div>
       <div class="glass"><h3>Glass holds everything</h3><p>Panels, rows, bars, and controls sit on one glass recipe with a lit top edge. There are no glows.</p></div>
       <div class="glass"><h3>Titles sit on the art</h3><p>Heavy Geist titles overlap the poster in solid chalk, today's signature made consistent.</p></div>
-      <div class="glass"><h3>Orange is yours</h3><p>#F2A13A marks your status and the one primary action per screen. Nothing else is orange.</p></div>
+      <div class="glass"><h3>Orange is ShowLog, and yours</h3><p>#F2A13A is the logo's color. In the interface it marks only your status and the one primary action per screen.</p></div>
     </div>
   </div>
 </header>
 
 <nav class="jump" aria-label="Sections">
   <div class="wrap">
-    <a href="#look">The look</a><a href="#color">Color</a><a href="#type">Type</a><a href="#surfaces">Surfaces</a><a href="#components">Components</a><a href="#services">Services</a><a href="#build">Build it</a>
+    <a href="#logo">Logo</a><a href="#look">The look</a><a href="#color">Color</a><a href="#type">Type</a><a href="#surfaces">Surfaces</a><a href="#components">Components</a><a href="#services">Services</a><a href="#build">Build it</a>
   </div>
 </nav>
+
+<!-- ============================ LOGO ============================ -->
+<section id="logo">
+  <div class="wrap">
+    <div class="sh"><h2>Logo</h2><p>An orange TV with the play button cut out, standing over a scrubber. The chalk playhead shows how far you've watched, the way ShowLog logs every show. One drawing makes the app icon, the favicon, and the navbar mark.</p></div>
+    <div class="card">
+      <h4 class="lbl">App icon</h4>
+      <div class="specimens">
+        <figure><span class="icon" style="--s:150px"><svg class="mark"><use href="#mark"/></svg></span>iOS · default</figure>
+        <figure><span class="icon clear" style="--s:150px"><svg class="mark"><use href="#mark"/></svg></span>iOS · dark<br>transparent ground</figure>
+        <figure><span class="icon tint" style="--s:150px"><svg class="mark"><use href="#mark"/></svg></span>iOS · tinted<br>grayscale, system tints</figure>
+        <figure><span class="icon mac" style="--s:150px"><svg class="mark"><use href="#mark"/></svg></span>macOS<br>824 tile in a 1024 grid</figure>
+        <figure><span class="icon sm"><svg class="mark"><use href="#mark"/></svg></span>60</figure>
+        <figure><span class="icon" style="--s:40px"><svg class="mark"><use href="#mark"/></svg></span>40</figure>
+        <figure><span class="icon" style="--s:29px"><svg class="mark"><use href="#mark"/></svg></span>29</figure>
+        <figure><span class="icon" style="--s:16px"><svg class="mark"><use href="#mark"/></svg></span>16 · favicon</figure>
+      </div>
+      <p class="note">The mark fills 64% of the tile on graphite (#1F1C19 to #0C0B0A, top to bottom). iOS rounds the corners itself, so its 1024 master is a full square.</p>
+    </div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="card"><h4 class="lbl">Construction · 100-unit grid</h4>
+        <div class="on-grid"><svg class="mark" viewBox="0 0 100 100"><use href="#mark"/></svg></div>
+        <dl class="specs">
+          <dt>TV</dt><dd>84 × 62 at (8, 8), radius 15</dd>
+          <dt>Play</dt><dd>cut out, (42,26) (62,38) (42,50), 6 round stroke</dd>
+          <dt>Track</dt><dd>84 × 7 at y 83, chalk 24%</dd>
+          <dt>Progress</dt><dd>54 of 84 filled, orange</dd>
+          <dt>Playhead</dt><dd>chalk circle, radius 8, at x 62</dd>
+        </dl>
+      </div>
+      <div class="card"><h4 class="lbl">Lockup</h4>
+        <div class="navdemo"><span class="logo"><svg class="mark" aria-hidden="true"><use href="#mark"/></svg>ShowLog</span></div>
+        <div class="lockup-xl" style="margin-top:18px"><svg class="mark" style="width:64px;height:64px" aria-hidden="true"><use href="#mark"/></svg><span class="hero-title" style="font-size:48px">ShowLog</span></div>
+        <p class="note">The mark is 4/3 of the type size and sits 0.45em from the wordmark. The navbar uses 24 on 18px Geist 850, −5%. Large lockups use Geist 900.</p>
+      </div>
+      <div class="card"><h4 class="lbl">Rules</h4>
+        <ul class="do">
+          <li>On graphite, or a wash no lighter than the show-page clamp</li>
+          <li>Keep the playhead chalk and at 64%. The position is part of the mark.</li>
+          <li>Keep the scrubber. Without it the mark reads as a generic video logo.</li>
+          <li class="no">Never on an orange ground, where the TV disappears</li>
+          <li class="no">Never recolored, outlined, glowing, or given a shadow</li>
+          <li class="no">Never used as a play button or progress control in the UI</li>
+        </ul>
+      </div>
+    </div>
+    <div class="card" style="margin-top:16px"><h4 class="lbl">Files</h4><div class="body">
+      <p><b>Web:</b> <code class="i">app/icon.svg</code> (favicon), <code class="i">app/apple-icon.png</code> (180), <code class="i">app/favicon.ico</code> (16, 32, 48), and <code class="i">app/components/brand/LogoMark.tsx</code> for the navbar.</p>
+      <p><b>iOS and macOS:</b> <code class="i">Assets.xcassets/AppIcon.appiconset</code>, holding the 1024 icon with dark and tinted appearances, plus macOS sizes 16–1024. All of them come from the drawing above, so change it in every place at once.</p>
+    </div></div>
+  </div>
+</section>
 
 <!-- ============================ LOOK ============================ -->
 <section id="look">
@@ -348,7 +435,7 @@ pre .k{color:#F6D3A6}
         <div class="browser">
           <div class="browser-bar"><i></i><i></i><i></i><span>showlog.tv/search?tags=Drama&amp;watchlist=true</span></div>
           <div class="web">
-            <div class="nav"><span class="logo">ShowLog</span><nav><span>Home</span><span class="on">Discover</span><span>Watchlist</span><span>Lists</span></nav><span class="av av1">AJ</span></div>
+            <div class="nav"><span class="logo"><svg class="mark" aria-hidden="true"><use href="#mark"/></svg>ShowLog</span><nav><span>Home</span><span class="on">Discover</span><span>Watchlist</span><span>Lists</span></nav><span class="av av1">AJ</span></div>
             <div class="page">
               <div class="ptitle"><h3>Discover</h3><span>24 shows</span></div>
               <div class="panel glass">
@@ -382,7 +469,7 @@ pre .k{color:#F6D3A6}
           <div class="browser">
             <div class="browser-bar"><i></i><i></i><i></i><span>showlog.tv/show/412</span></div>
             <div class="web sp">
-              <div class="nav" style="background:rgba(12,11,10,.2)"><span class="logo">ShowLog</span><nav><span>Home</span><span class="on">Discover</span><span>Watchlist</span><span>Lists</span></nav><span class="av av1">AJ</span></div>
+              <div class="nav" style="background:rgba(12,11,10,.2)"><span class="logo"><svg class="mark" aria-hidden="true"><use href="#mark"/></svg>ShowLog</span><nav><span>Home</span><span class="on">Discover</span><span>Watchlist</span><span>Lists</span></nav><span class="av av1">AJ</span></div>
               <div class="sp-in">
                 <div class="poster p-sev bare sp-card"><div class="scrim"></div></div>
                 <h3 class="hero-title sp-title">Severance</h3>
@@ -440,28 +527,39 @@ pre .k{color:#F6D3A6}
       <div class="sw" style="--c:#A39B93"><i></i><b>Stone</b><span>#A39B93 · secondary text</span></div>
       <div class="sw" style="--c:#6F6861"><i></i><b>Dim</b><span>#6F6861 · empty values, hints</span></div>
       <div class="sw" style="--c:rgba(255,255,255,.08)"><i></i><b>Line</b><span>white 8% · borders, dividers</span></div>
-      <div class="sw" style="--c:#F2A13A"><i></i><b>Orange</b><span>#F2A13A · your status, primary action</span></div>
+      <div class="sw" style="--c:#F2A13A"><i></i><b>Orange</b><span>#F2A13A · the logo, your status, primary action</span></div>
       <div class="sw" style="--c:#231300"><i></i><b>Orange ink</b><span>#231300 · text on orange</span></div>
     </div>
 
     <h3 class="lbl" style="margin:40px 0 14px">The wash</h3>
     <div class="washes">
-      <div class="wash" style="--w:#17505A"><div class="top"><div class="poster p-sev bare"></div><h5>Severance</h5></div><p><b>oklch(0.36 0.06 205)</b><br>Cool poster, kept as is</p></div>
-      <div class="wash" style="--w:#1E3A68"><div class="top"><div class="poster p-bear bare"></div><h5>The Bear</h5></div><p><b>oklch(0.34 0.08 262)</b><br>Blue dominates the orange stripe</p></div>
-      <div class="wash" style="--w:#5A1E24"><div class="top"><div class="poster p-shog bare"></div><h5>Shōgun</h5></div><p><b>oklch(0.31 0.09 20)</b><br>Near-black poster, lifted to 31%</p></div>
-      <div class="wash" style="--w:#5E2641"><div class="top"><div class="poster p-hacks bare"></div><h5>Hacks</h5></div><p><b>oklch(0.33 0.09 355)</b><br>Neon pink, clamped down</p></div>
+      <div class="wash" style="--w:#17505A"><div class="top grain"><div class="poster p-sev bare"></div><h5>Severance</h5></div><p><b>oklch(0.36 0.06 205)</b><br>Cool poster, kept as is</p></div>
+      <div class="wash" style="--w:#1E3A68"><div class="top grain"><div class="poster p-bear bare"></div><h5>The Bear</h5></div><p><b>oklch(0.34 0.08 262)</b><br>Blue dominates the orange stripe</p></div>
+      <div class="wash" style="--w:#5A1E24"><div class="top grain"><div class="poster p-shog bare"></div><h5>Shōgun</h5></div><p><b>oklch(0.31 0.09 20)</b><br>Near-black poster, lifted to 31%</p></div>
+      <div class="wash" style="--w:#5E2641"><div class="top grain"><div class="poster p-hacks bare"></div><h5>Hacks</h5></div><p><b>oklch(0.33 0.09 355)</b><br>Neon pink, clamped down</p></div>
     </div>
-    <div class="grid2" style="margin-top:16px">
+    <div class="grid3" style="margin-top:16px">
       <div class="card"><h4 class="lbl">How a wash is made</h4><div class="body">
         <p>Start from the poster's average color (<code class="i">fetchAverageShowColor</code> already exists). Convert to OKLCH, <b>clamp lightness to 0.34–0.44, boost chroma 1.6× up to 0.15</b> (eased back to fit sRGB), and keep the hue.</p>
         <p>Show pages fade from the wash to graphite by 90% of the first screen. On Discover, the wash appears only inside the highlighted row, fading left to right.</p>
       </div></div>
+      <div class="card"><h4 class="lbl">Film grain</h4><div class="body">
+        <p>Every wash ground carries a fine film grain, like a little TV static. It gives the color some texture and hides the banding a long, dark gradient shows on 8-bit screens.</p>
+        <p><b>Gray noise, 20%, soft light.</b> It fades out with the wash, so plain graphite stays clean, and it sits under the content: posters, titles, and glass never get grain.</p>
+        <div class="grain-demo"><div>Without</div><div class="grain">With grain</div></div>
+        <ul class="do" style="margin-top:12px">
+          <li>Page grounds that carry a wash: home, show, actor, profile, landing, sign-in</li>
+          <li class="no">Never on posters, service tiles, glass, or the highlighted row</li>
+        </ul>
+      </div></div>
       <div class="card"><h4 class="lbl">Orange rules</h4>
         <ul class="do">
+          <li>The logo: the TV and its progress fill</li>
           <li>Your status, as text and icon</li>
           <li>The primary button: one per screen</li>
           <li>The active tab and nav underline, 2px</li>
-          <li class="no">Never as a background tint, glow, or wash</li>
+          <li>The home page wash, put through the wash clamp. Pages that belong to no single show use it.</li>
+          <li class="no">Never as a glow, and never on a show page, where the poster sets the wash</li>
           <li class="no">Never for ratings. Ratings are chalk and stone.</li>
         </ul>
       </div>
@@ -691,7 +789,13 @@ function wash(avg: Oklch): Oklch {
     c: Math.min(avg.c * 1.6, 0.15), <span class="c">// then eased back to fit sRGB</span>
     h: avg.h,
   };
-}</pre>
+}
+
+<span class="c">// web: add the grain utility (globals.css) to the
+// element that carries the wash style
+// iOS: not built yet; HomeBackdrop and the show
+// backdrop need the same overlay</span>
+&lt;div className="grain bg-graphite" style={washGroundStyle([wash])}&gt;</pre>
       </div>
       <div class="card"><h4 class="lbl">Data · service table</h4>
 <pre><span class="c">-- color column exists, empty on all 19 rows

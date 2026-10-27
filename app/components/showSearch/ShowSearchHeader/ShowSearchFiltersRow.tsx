@@ -92,6 +92,10 @@ export default function ShowSearchFiltersRow({
         if (optimisticFilters.currentlyAiring !== null && key !== 'currentlyAiring') {
             url.searchParams.set('currentlyAiring', optimisticFilters.currentlyAiring.toString());
         }
+
+        if (optimisticFilters.missingImage !== null && key !== 'missingImage') {
+            url.searchParams.set('missingImage', optimisticFilters.missingImage.toString());
+        }
         
         return pathname + url.search;
     };
@@ -178,7 +182,9 @@ export default function ShowSearchFiltersRow({
                         }}
                     >
                         <Button variant="outline" size="sm" className={`${buttonStyles} whitespace-nowrap`}>
-                            {key === 'myServices' ? 'My Services' : key.replace(/([A-Z])/g, ' $1').trim()}
+                            {key === 'myServices' ? 'My Services'
+                                : key === 'missingImage' ? (value ? 'Missing Image' : 'Has Image')
+                                : key.replace(/([A-Z])/g, ' $1').trim()}
                             <X className="ml-1 h-4 w-4" />
                         </Button>
                     </div>

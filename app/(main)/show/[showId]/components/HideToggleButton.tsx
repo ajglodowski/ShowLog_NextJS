@@ -3,12 +3,12 @@
 import { useState } from "react";
 import { EyeIcon, EyeOffIcon } from "lucide-react";
 
-export default function HideToggleButton({ 
-    updateId, 
+export default function HideToggleButton({
+    updateId,
     isHidden,
     toggleHidden
-}: { 
-    updateId: number, 
+}: {
+    updateId: number,
     isHidden: boolean,
     toggleHidden: (updateId: number) => Promise<void>
 }) {
@@ -21,13 +21,15 @@ export default function HideToggleButton({
     };
 
     return (
-        <button 
+        <button
+            type="button"
             onClick={handleToggle}
             disabled={isLoading}
-            className="ml-2 p-1.5 rounded-lg outline outline-white hover:bg-white hover:text-black transition-colors"
+            className="glass grid h-[30px] w-[30px] place-items-center rounded-full text-chalk outline-none transition-colors hover:bg-white/10 focus-visible:ring-2 focus-visible:ring-orange disabled:opacity-50"
             title={isHidden ? "Unhide update" : "Hide update"}
+            aria-label={isHidden ? "Unhide update" : "Hide update"}
         >
-            {isHidden ? <EyeOffIcon size={16} /> : <EyeIcon size={16} />}
+            {isHidden ? <EyeOffIcon className="h-3.5 w-3.5" strokeWidth={1.8} /> : <EyeIcon className="h-3.5 w-3.5" strokeWidth={1.8} />}
         </button>
     );
-} 
+}

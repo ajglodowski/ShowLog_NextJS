@@ -1,6 +1,6 @@
 import { getUserUpdates, toggleUpdateHiddenStatus } from "../UserShowDataService";
-import { Skeleton } from "@/components/ui/skeleton";
 import UpdatesWrapper from "./UpdatesWrapper";
+import { showEmpty, showPanel, showPanelTitle } from "./showPageStyles";
 
 // Define the server action outside the component
 async function handleToggleHidden(updateId: number) {
@@ -11,30 +11,27 @@ async function handleToggleHidden(updateId: number) {
 export async function UserUpdatesSection({ showId, currentUserId }: { showId: number, currentUserId: string | undefined }) {
     const userUpdates = await getUserUpdates({ showId: showId, userId: currentUserId });
 
-    if (userUpdates == null) return (<></>);
-    if (userUpdates.length === 0) return (<div>No updates</div>);
-    
+    if (userUpdates == null || userUpdates.length === 0) {
+        return (
+            <div className={`${showPanel} grid gap-3`}>
+                <h2 className={showPanelTitle}>Your updates</h2>
+                <p className={showEmpty}>{userUpdates == null ? "Couldn't load your updates" : "No updates yet"}</p>
+            </div>
+        );
+    }
+
     return <UpdatesWrapper updates={userUpdates} toggleHidden={handleToggleHidden} />;
 }
 
 export const LoadingUserUpdatesSection = () => {
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-7xl font-bold my-auto tracking-tighter">Your Updates</h2>
-                <div className="w-24 h-8">
-                    <Skeleton className="h-full w-full rounded-lg" />
-                </div>
-            </div>
-            <ul className="mt-4">
+        <div className={`${showPanel} grid gap-3`}>
+            <h2 className={showPanelTitle}>Your updates</h2>
+            <div className="grid gap-2">
                 {Array.from({ length: 3 }).map((_, index) => (
-                    <li key={index}
-                        className="border border-white rounded-full p-2 px-4 my-2 w-full"
-                    >
-                       <Skeleton className="h-12 w-full" />
-                    </li>
+                    <div key={index} className="h-9 animate-pulse rounded-xl bg-white/[.06]" />
                 ))}
-            </ul>
+            </div>
         </div>
     );
 }

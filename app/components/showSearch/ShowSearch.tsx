@@ -14,6 +14,8 @@ import { ShowWithAnalytics } from '@/app/models/show';
 import { UserShowDataWithUserInfo } from '@/app/models/userShowData';
 import { backdropBackground } from '@/app/utils/stylingConstants';
 import { Status } from '@/app/models/status';
+import { matchesRatingFilter } from '@/app/models/rating';
+import { isAdmin } from '@/app/utils/userService';
 
 // Number of items per page - should match ShowSearchShows
 const ITEMS_PER_PAGE = 20;
@@ -25,6 +27,8 @@ export default async function ShowSearch(props: ShowSearchProps) {
     const pathname = props.pathname || '/';
     
     const filters = await parseFiltersFromSearchParams(searchParams);
+    // Admin filters only apply for admins
+    if (filters.missingImage !== null && !(await isAdmin(currentUserId))) filters.missingImage = null;
     const currentUserFilters = parseCurrentUserFilters(searchParams);
     const watchlistOwnerFilters = parseWatchlistOwnerFilters(searchParams);
     const searchResults = searchParams.search || '';
@@ -250,13 +254,13 @@ async function calculateResultsCount({
                         // For other user's watchlist, filter based on current user's ratings
                         filteredShows = filteredShows.filter((show) => {
                             const userInfo = currentUserInfo?.find((info) => Number(info.showId) === show.id);
-                            return userInfo && currentUserFilters.ratings.includes(userInfo.rating);
+                            return matchesRatingFilter(currentUserFilters.ratings, userInfo?.rating);
                         });
                     } else {
                         // For own watchlist or other search types, filter based on display user info
                         filteredShows = filteredShows.filter((show) => {
                             const userInfo = displayUserInfo?.find((info) => Number(info.showId) === show.id);
-                            return userInfo && currentUserFilters.ratings.includes(userInfo.rating);
+                            return matchesRatingFilter(currentUserFilters.ratings, userInfo?.rating);
                         });
                     }
                 }
@@ -306,7 +310,7 @@ async function calculateResultsCount({
                     if (watchlistOwnerFilters.ratings && watchlistOwnerFilters.ratings.length > 0) {
                         filteredShows = filteredShows.filter((show) => {
                             const ownerInfo = displayUserInfo?.find((info) => Number(info.showId) === show.id);
-                            return ownerInfo && watchlistOwnerFilters.ratings.includes(ownerInfo.rating);
+                            return matchesRatingFilter(watchlistOwnerFilters.ratings, ownerInfo?.rating);
                         });
                     }
                     

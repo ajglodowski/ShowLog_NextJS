@@ -1,4 +1,4 @@
-import { Rating, RatingPoints } from '@/app/models/rating';
+import { matchesRatingFilter, Rating, RatingPoints } from '@/app/models/rating';
 import { ShowWithAnalytics } from '@/app/models/show';
 import { ShowSearchType } from '@/app/models/showSearchType';
 import { UserShowDataWithUserInfo } from '@/app/models/userShowData';
@@ -116,13 +116,13 @@ export default async function ShowSearchShows({
                     // For other user's watchlist, filter based on current user's ratings
                     filteredShows = filteredShows.filter((show) => {
                         const userInfo = currentUserInfo?.find((info) => Number(info.showId) === show.id);
-                        return userInfo && currentUserFilters.ratings.includes(userInfo.rating);
+                        return matchesRatingFilter(currentUserFilters.ratings, userInfo?.rating);
                     });
                 } else {
                     // For own watchlist or other search types, filter based on display user info
                     filteredShows = filteredShows.filter((show) => {
                         const userInfo = displayUserInfo?.find((info) => Number(info.showId) === show.id);
-                        return userInfo && currentUserFilters.ratings.includes(userInfo.rating);
+                        return matchesRatingFilter(currentUserFilters.ratings, userInfo?.rating);
                     });
                 }
             }
@@ -172,7 +172,7 @@ export default async function ShowSearchShows({
                 if (watchlistOwnerFilters.ratings && watchlistOwnerFilters.ratings.length > 0) {
                     filteredShows = filteredShows.filter((show) => {
                         const ownerInfo = displayUserInfo?.find((info) => Number(info.showId) === show.id);
-                        return ownerInfo && watchlistOwnerFilters.ratings.includes(ownerInfo.rating);
+                        return matchesRatingFilter(watchlistOwnerFilters.ratings, ownerInfo?.rating);
                     });
                 }
                 
@@ -279,6 +279,28 @@ export default async function ShowSearchShows({
                 }
             }
         }
+    }
+
+    // Sort by when the displayed user (the watchlist owner, otherwise the current user) last updated
+    // the show. Done after filtering, like match, so it applies whether or not any filter is set.
+    if (filteredShows && filters.sortBy?.split('-')[0] === 'updated') {
+        const sortDirection = filters.sortBy.split('-')[1] || 'desc';
+        const updatedTime = (showId: number) => {
+            const updated = displayUserInfoMap.get(showId)?.updated;
+            return updated ? new Date(updated).getTime() : undefined;
+        };
+        filteredShows = [...filteredShows].sort((a, b) => {
+            const aTime = updatedTime(a.id);
+            const bTime = updatedTime(b.id);
+
+            // Shows the user doesn't have go to the end
+            if (aTime === undefined && bTime === undefined) return a.name.localeCompare(b.name);
+            if (aTime === undefined) return 1;
+            if (bTime === undefined) return -1;
+            if (aTime === bTime) return a.name.localeCompare(b.name);
+
+            return sortDirection === 'desc' ? bTime - aTime : aTime - bTime;
+        });
     }
 
     // Sort by the current user's match score (needs the full filtered list, so done after filtering)

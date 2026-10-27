@@ -227,8 +227,10 @@ export type ShowSearchQuery = {
     limitedSeries?: boolean | null;
     running?: boolean | null;
     currentlyAiring?: boolean | null;
+    /** Admin only; the API answers 403 for anyone else. */
+    missingImage?: boolean | null;
     statusIds?: number[];
-    sort?: "name" | "-name" | "-weekly" | "-monthly" | "-yearly" | "-rating" | "rating" | "-updated";
+    sort?: "name" | "-name" | "-weekly" | "-monthly" | "-yearly" | "-rating" | "rating" | "-updated" | "updated";
 };
 
 /** Every page of GET /shows. Sent with the viewer's token, so each item carries viewer.matchPercent. */

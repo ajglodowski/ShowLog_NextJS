@@ -56,7 +56,7 @@ function HomeSection({ row, loading }: { row: HomeRow; loading: boolean }) {
 
 function HomeLayout({ rows, loading }: { rows: HomeRows; loading: boolean }) {
     return (
-        <div className="-mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={homeGroundStyle}>
+        <div className="grain -mt-14 min-h-screen w-full bg-graphite pt-14 text-chalk" style={homeGroundStyle}>
             {/* Full width; the side padding lines up with the navbar's */}
             <div className="grid w-full gap-6 px-4 pb-16 pt-7 md:px-6">
                 <h1 className="text-[44px] font-black leading-[.9] tracking-[-.065em]">Home</h1>

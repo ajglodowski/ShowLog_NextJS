@@ -17,8 +17,10 @@ export async function ShowTagsSection({showId, isAdmin}: {showId: string, isAdmi
 
 export const LoadingShowTagsSection = () => {
     return (
-        <div>
-            <h2>Loading...</h2>
+        <div className="flex flex-wrap gap-1.5">
+            {[64, 88, 72, 96].map((width) => (
+                <div key={width} className="h-[30px] animate-pulse rounded-full bg-white/[.06]" style={{ width }} />
+            ))}
         </div>
     );
 }

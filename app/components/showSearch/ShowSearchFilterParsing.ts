@@ -1,6 +1,6 @@
 import { getAllTags } from "@/app/(main)/show/[showId]/ShowService";
 import { AirDate } from "@/app/models/airDate";
-import { Rating } from "@/app/models/rating";
+import { RatingFilter, RatingFilterOptions } from "@/app/models/rating";
 import { ShowLength } from "@/app/models/showLength";
 import { ShowSearchProps } from "./types";
 import { CurrentUserFilters, defaultCurrentUserFilters } from "./ShowSearchHeader/ShowSearchCurrentUserFilters";
@@ -11,7 +11,7 @@ import { getServices } from "./ShowSearchService";
 export async function parseFiltersFromSearchParams(
     searchParams: ShowSearchProps['searchParams'] & { tags?: string } = {}
 ): Promise<ShowSearchFiltersType> {
-    const { service, myServices, length, airDate, totalSeasons, limitedSeries, running, currentlyAiring, sortBy, tags: tagsParam } = searchParams || {};
+    const { service, myServices, length, airDate, totalSeasons, limitedSeries, running, currentlyAiring, sortBy, tags: tagsParam, missingImage } = searchParams || {};
     const filters: ShowSearchFiltersType = {
         ...defaultFilters
     };
@@ -97,14 +97,17 @@ export async function parseFiltersFromSearchParams(
     } else {
         filters.currentlyAiring = null; // Explicitly set to null
     }
+
+    // Admin-only; ShowSearch drops it for everyone else
+    filters.missingImage = missingImage === 'true' ? true : missingImage === 'false' ? false : null;
     
     // Parse sortBy
     if (sortBy) {
         // Check if it matches our expected format (field-direction)
-        const sortMatch = sortBy.match(/^(alphabetical|weekly_popularity|monthly_popularity|yearly_popularity|rating|avg_rating|match)-(asc|desc)$/);
+        const sortMatch = sortBy.match(/^(alphabetical|weekly_popularity|monthly_popularity|yearly_popularity|rating|avg_rating|match|updated)-(asc|desc)$/);
         if (sortMatch) {
             filters.sortBy = sortBy as SortOption;
-        } else if (["alphabetical", "weekly_popularity", "monthly_popularity", "yearly_popularity", "rating", "avg_rating", "match"].includes(sortBy)) {
+        } else if (["alphabetical", "weekly_popularity", "monthly_popularity", "yearly_popularity", "rating", "avg_rating", "match", "updated"].includes(sortBy)) {
             // Handle legacy format for backward compatibility
             // Default to ascending for alphabetical, descending for others
             const direction = sortBy === "alphabetical" ? "asc" : "desc";
@@ -135,11 +138,11 @@ export function parseCurrentUserFilters(searchParams: ShowSearchProps['searchPar
     // Parse ratings
     if (ratings) {
         const ratingStrings = ratings.split(',');
-        const validRatings: Rating[] = [];
+        const validRatings: RatingFilter[] = [];
         
         for (const ratingStr of ratingStrings) {
             // Check if the string value matches any enum value
-            const matchingRating = Object.values(Rating).find(r => r === ratingStr);
+            const matchingRating = RatingFilterOptions.find(r => r === ratingStr);
             if (matchingRating) {
                 validRatings.push(matchingRating);
             }
@@ -192,11 +195,11 @@ export function parseWatchlistOwnerFilters(searchParams: ShowSearchProps['search
     // Parse owner's ratings
     if (ownerRatings) {
         const ratingStrings = ownerRatings.split(',');
-        const validRatings: Rating[] = [];
+        const validRatings: RatingFilter[] = [];
         
         for (const ratingStr of ratingStrings) {
             // Check if the string value matches any enum value
-            const matchingRating = Object.values(Rating).find(r => r === ratingStr);
+            const matchingRating = RatingFilterOptions.find(r => r === ratingStr);
             if (matchingRating) {
                 validRatings.push(matchingRating);
             }

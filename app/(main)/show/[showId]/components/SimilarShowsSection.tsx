@@ -1,8 +1,9 @@
 import ShowTile from "@/app/components/show/ShowTile/ShowTile";
-import { getSimilarShows } from "../ShowService";
 import ShowTileSkeleton from "@/app/components/show/ShowTile/ShowTileSkeleton";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Suspense } from "react";
+import { getSimilarShows } from "../ShowService";
+import { showEmpty } from "./showPageStyles";
 
 export async function SimilarShowsSection({showId}: {showId: number} ) {
     return (
@@ -15,40 +16,34 @@ export async function SimilarShowsSection({showId}: {showId: number} ) {
 const SimilarShowsContent = async ({showId}: {showId: number}) => {
     const similarShows = await getSimilarShows(showId);
 
-    if (similarShows == null) {
-        return (
-            <div>
-                <h1>Error fetching similar shows</h1>
-            </div>
-        );
-    }
+    if (similarShows == null) return <p className={showEmpty}>Couldn&apos;t load similar shows</p>;
+    if (similarShows.length === 0) return <p className={showEmpty}>No similar shows yet</p>;
 
     return (
-        <ScrollArea className="w-full whitespace-nowrap rounded-md border-2">
-            <div className="flex">
-                {similarShows.map((showId) => (
-                    <div key={showId} className="rounded-md p-2">
-                        <ShowTile 
-                            showId={showId.toString()} 
-                        /> 
+        <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex gap-3">
+                {similarShows.map((similarId) => (
+                    <div key={similarId} className="flex-shrink-0">
+                        <ShowTile showId={similarId.toString()} />
                     </div>
                 ))}
             </div>
-            <ScrollBar orientation="horizontal" />
+            <ScrollBar orientation="horizontal" className="opacity-0" />
         </ScrollArea>
     );
 };
 
 export const LoadingSimilarShowsSection = () => {
     return (
-        <ScrollArea className="w-full whitespace-nowrap rounded-md border-2">
-            <div className="flex">
-                {Array.from({ length: 10 }).map((_, index) => (
-                    <div key={index} className="m-2">
-                        <ShowTileSkeleton key={index} />
+        <ScrollArea className="w-full whitespace-nowrap">
+            <div className="flex gap-3">
+                {Array.from({ length: 6 }).map((_, index) => (
+                    <div key={index} className="flex-shrink-0">
+                        <ShowTileSkeleton />
                     </div>
                 ))}
             </div>
+            <ScrollBar orientation="horizontal" className="opacity-0" />
         </ScrollArea>
     );
 }

@@ -1,6 +1,6 @@
 "use client";
 
-import { Rating } from "@/app/models/rating";
+import { RatingFilter, RatingFilterOptions } from "@/app/models/rating";
 import { Status } from "@/app/models/status";
 import { backdropBackground } from "@/app/utils/stylingConstants";
 import { Button } from "@/components/ui/button";
@@ -69,7 +69,7 @@ export default function ShowSearchWatchlistOwnerFilters({
     };
 
     // --- Update Handlers to apply immediately with optimistic updates ---
-    const handleRemoveRating = (rating: Rating) => {
+    const handleRemoveRating = (rating: RatingFilter) => {
         const newRatings = optimisticFilters.ratings.filter(r => r !== rating);
         startTransition(() => {
             updateOptimisticFilters({ ratings: newRatings });
@@ -77,7 +77,7 @@ export default function ShowSearchWatchlistOwnerFilters({
         });
     };
 
-    const handleAddRating = (rating: Rating) => {
+    const handleAddRating = (rating: RatingFilter) => {
         const newRatings = [...optimisticFilters.ratings, rating];
         startTransition(() => {
             updateOptimisticFilters({ ratings: newRatings });
@@ -199,7 +199,7 @@ export default function ShowSearchWatchlistOwnerFilters({
                                     </Button>
                                 ))}
                                 {/* Unselected ratings */}
-                                {Object.values(Rating).filter(rating => !optimisticFilters.ratings.includes(rating)).map((rating) => (
+                                {RatingFilterOptions.filter(rating => !optimisticFilters.ratings.includes(rating)).map((rating) => (
                                     <Button
                                         key={rating}
                                         variant="outline"
