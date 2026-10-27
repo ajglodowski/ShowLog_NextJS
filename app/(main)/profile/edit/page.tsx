@@ -1,5 +1,5 @@
 import { EditProfileForm, ProfileFormValues } from "@/app/components/editProfile/EditProfileClient";
-import { createClient } from "@/app/utils/supabase/server";
+import { getAuthSession } from "@/app/utils/auth/server";
 import { getUser } from "@/app/utils/userService";
 import { Button } from "@/components/ui/button";
 import { LogIn, UserX } from "lucide-react";
@@ -10,8 +10,7 @@ import { getServices } from "@/app/components/showSearch/ShowSearchService";
 
 export default async function EditProfilePage() {
 
-    const supabase = await createClient();
-    const authData = (await supabase.auth.getUser()).data.user;
+    const authData = (await getAuthSession())?.user;
 
     if (!authData) {
         return (

@@ -4,11 +4,14 @@ import { userPinnedShowsTag } from "@/app/utils/cacheTags";
 import { publicClient } from "@/app/utils/supabase/server";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
 
 export async function getPinnedShows(userId: string): Promise<Show[] | null> {
     'use cache'
     cacheLife('hours');
     cacheTag(userPinnedShowsTag(userId));
+    if (useBackendService) return Backend.getPinnedShows(userId);
 
     const supabase = await publicClient();
     const { data, error } = await supabase

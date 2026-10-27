@@ -1,6 +1,6 @@
 import ShowSearch from "@/app/components/showSearch/ShowSearch";
 import { ShowSearchType } from "@/app/models/showSearchType";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 export default async function SearchPage({
     searchParams
 }: {

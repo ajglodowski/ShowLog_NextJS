@@ -1,5 +1,5 @@
 import type { Show } from '@/app/models/show';
-import { getCurrentUserId } from '@/app/utils/supabase/server';
+import { getCurrentUserId } from '@/app/utils/auth/server';
 import { Suspense } from 'react';
 import { getRatingCounts, getShow, getStatusCounts } from './ShowService';
 import ShowPageContent from './components/ShowPageContent';

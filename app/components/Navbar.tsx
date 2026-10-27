@@ -1,4 +1,4 @@
-import { getCurrentUserId } from '@/app/utils/supabase/server';
+import { getCurrentUserId } from '@/app/utils/auth/server';
 import { isAdmin } from '@/app/utils/userService';
 import AuthButton from '@/supabase_components/AuthButton';
 import { PlusCircle } from 'lucide-react';

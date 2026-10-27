@@ -4,6 +4,20 @@
  */
 
 import { createClient } from "@/app/utils/supabase/server";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
+
+// GET /home's recommendation rows give each show the viewer's matchPercent rather than a raw
+// similarity score; a show with no match is the RPC's trending fallback
+async function recommendationsFromHome(section: "recommendations" | "watchlistStarts", limit: number): Promise<RecommendationResult[]> {
+  const shows = await Backend.getHomeShows(section);
+  if (!shows) throw new Error(`Failed to fetch ${section}`);
+  return shows.slice(0, limit).map((show) => ({
+    showId: show.id,
+    similarityScore: (show.viewer?.matchPercent ?? 0) / 100,
+    isFallback: show.viewer?.matchPercent == null,
+  }));
+}
 
 /**
  * Result from the get_recommendations_for_user RPC
@@ -36,6 +50,7 @@ export async function getRecommendationsForUser(
   userId: string,
   limit: number = 20
 ): Promise<RecommendationResult[]> {
+  if (useBackendService && await Backend.isCurrentUser(userId)) return recommendationsFromHome("recommendations", limit);
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("get_recommendations_for_user", {
@@ -70,6 +85,12 @@ export async function getRecommendationsForUser(
 export async function getShowMatchForCurrentUser(showId: number): Promise<ShowMatchResult> {
 //   "use cache"
 //   cacheLife('minutes');
+  if (useBackendService) {
+    const matchPercent = await Backend.getShowMatchPercent(showId);
+    if (matchPercent !== null) return { similarityScore: matchPercent / 100, reason: "ok" };
+    // The API doesn't say why there's no match; no embedding is the case the badge explains
+    return { similarityScore: null, reason: await Backend.hasEmbedding() ? "no_data" : "no_user_embedding" };
+  }
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("get_show_match", {
@@ -149,6 +170,7 @@ export async function refreshUserEmbedding(userId: string): Promise<void> {
  * @returns true if user has an embedding, false otherwise
  */
 export async function userHasEmbedding(userId: string): Promise<boolean> {
+  if (useBackendService && await Backend.isCurrentUser(userId)) return Backend.hasEmbedding();
   const supabase = await createClient();
 
   const { data, error } = await supabase
@@ -183,6 +205,7 @@ export async function getWatchlistStartRecommendationsForUser(
   userId: string,
   limit: number = 20
 ): Promise<RecommendationResult[]> {
+  if (useBackendService && await Backend.isCurrentUser(userId)) return recommendationsFromHome("watchlistStarts", limit);
   const supabase = await createClient();
 
   const { data, error } = await supabase.rpc("get_watchlist_start_recommendations_for_user", {

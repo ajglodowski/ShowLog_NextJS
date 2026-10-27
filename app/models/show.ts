@@ -41,6 +41,8 @@ export type ShowWithAnalytics = Show & {
     monthly_updates?: number;
     yearly_updates?: number;
     avg_rating_points?: number;
+    // The signed-in viewer's 0-100 match, when the show came from the ShowLog API with a token
+    matchPercent?: number | null;
 }
 
 export const convertRawShowAnalyticsToShowWithAnalytics = (analyticsData: ShowAnalytics): ShowWithAnalytics => {

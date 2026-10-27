@@ -2,10 +2,13 @@ import { Rating } from "@/app/models/rating";
 import { Status } from "@/app/models/status";
 import { UserBasicInfo } from "@/app/models/user";
 import { UserShowDataWithUserInfo, UserShowDataWithUserInfoParams } from "@/app/models/userShowData";
-import { getCurrentUserId, publicClient } from "@/app/utils/supabase/server";
+import { publicClient } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { cacheLife } from "next/cache";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { currentUserShowDetailsStateTag, currentUserShowDetailsTag } from "@/app/utils/cacheTags";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
 
 export const getFriendsUserDetails = async (showId: number, currentUserId?: string | undefined): Promise<UserShowDataWithUserInfo[] | undefined> => {
     let userId: string | undefined = currentUserId;
@@ -24,6 +27,8 @@ export const fetchFriendsUserDetails = async (showId: number, userId: string): P
 
     'use cache'
     cacheLife('seconds');
+    // Public routes keyed by userId, since ShowRow calls this inside its own 'use cache'
+    if (useBackendService) return Backend.getFollowingWithShow(userId, showId);
     const supabase = await publicClient();
 
     const { data, error } = await supabase
@@ -74,6 +79,7 @@ export const getCurrentUsersShowDetails = async (showId: number, currentUserId?:
     }
     cacheTag(currentUserShowDetailsStateTag(currentUserId));
     cacheTag(currentUserShowDetailsTag(currentUserId, showId));
+    if (useBackendService) return Backend.getWatchlistRow(currentUserId, showId);
     
     const supabase = await publicClient();
     const { data, error } = await supabase

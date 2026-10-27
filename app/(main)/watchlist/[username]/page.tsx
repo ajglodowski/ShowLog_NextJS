@@ -1,6 +1,6 @@
 import ShowSearch from "@/app/components/showSearch/ShowSearch";
 import { ShowSearchType } from "@/app/models/showSearchType";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { getUserByUsername } from "@/app/utils/userService";
 import { Suspense as _Suspense } from "react";
 import _LoadingOtherUserWatchlist from "./loading";

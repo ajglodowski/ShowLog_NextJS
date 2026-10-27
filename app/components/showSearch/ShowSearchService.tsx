@@ -17,6 +17,27 @@ import { ShowSearchFiltersType } from "./ShowSearchHeader/ShowSearchHeader";
 import { UserWatchListData } from './types';
 import { currentUserShowDetailsStateTag } from "@/app/utils/cacheTags";
 import { getCurrentUserServiceIds } from "@/app/(main)/profile/UserService";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
+import { toAPILength, toShow } from "@/app/utils/backend/backendMapping";
+import { SortOption } from "./ShowSearchHeader/SortButton";
+
+// GET /shows sorts popularity only most-active first, so ascending popularity is that order reversed.
+// Sorts by the user's own rating or match aren't server sorts; ShowSearchShows applies those.
+function backendSort(sortBy: SortOption | undefined): { sort: Backend.ShowSearchQuery["sort"], reverse: boolean } {
+    switch (sortBy) {
+        case "alphabetical-desc": return { sort: "-name", reverse: false };
+        case "weekly_popularity-desc": return { sort: "-weekly", reverse: false };
+        case "weekly_popularity-asc": return { sort: "-weekly", reverse: true };
+        case "monthly_popularity-desc": return { sort: "-monthly", reverse: false };
+        case "monthly_popularity-asc": return { sort: "-monthly", reverse: true };
+        case "yearly_popularity-desc": return { sort: "-yearly", reverse: false };
+        case "yearly_popularity-asc": return { sort: "-yearly", reverse: true };
+        case "avg_rating-desc": return { sort: "-rating", reverse: false };
+        case "avg_rating-asc": return { sort: "rating", reverse: false };
+        default: return { sort: "name", reverse: false };
+    }
+}
 
 // Service IDs a show must match at least one of, or null when no service filtering applies.
 // "My Services" combines with an explicit service selection by intersection, so the result
@@ -33,12 +54,45 @@ async function getServiceFilterIds(filters: ShowSearchFiltersType): Promise<numb
 export const getServices = cache(async (): Promise<Service[] | null> => {
     'use cache'
     cacheLife('days');
+    if (useBackendService) return Backend.getServices();
     const supabase = await publicClient();
     const { data: serviceData } = await supabase.from("service").select();
     return serviceData;
 });
 
 export async function fetchShows(filters: ShowSearchFiltersType, searchType: ShowSearchType, otherUserId?: string, currentUserId?: string): Promise<ShowWithAnalytics[] | null> {
+    if (useBackendService) {
+        const serviceFilterIds = await getServiceFilterIds(filters);
+        if (serviceFilterIds && serviceFilterIds.length === 0) return [];
+        if (searchType === ShowSearchType.WATCHLIST && !currentUserId) return null;
+        if (searchType === ShowSearchType.OTHER_USER_WATCHLIST && !otherUserId) return null;
+
+        const isWatchlist = searchType === ShowSearchType.WATCHLIST || searchType === ShowSearchType.OTHER_USER_WATCHLIST;
+        const scope = isWatchlist ? "watchlist" : (searchType === ShowSearchType.DISCOVER_NEW && currentUserId ? "discover" : "all");
+        const { sort, reverse } = backendSort(filters.sortBy);
+        try {
+            // Every page, since ShowSearchShows filters and paginates the whole list
+            const items = await Backend.searchAllShows({
+                scope,
+                userId: searchType === ShowSearchType.OTHER_USER_WATCHLIST ? otherUserId : (isWatchlist ? currentUserId : undefined),
+                serviceIds: serviceFilterIds ?? undefined,
+                tagIds: filters.tags.map((tag) => tag.id),
+                lengths: filters.length.map(toAPILength),
+                airdates: filters.airDate,
+                seasons: filters.totalSeasons,
+                limitedSeries: filters.limitedSeries,
+                running: filters.running,
+                currentlyAiring: filters.currentlyAiring,
+                sort,
+            });
+            const shows = items.map(toShow);
+            return reverse ? shows.reverse() : shows;
+        } catch (error) {
+            console.error("Error fetching shows:", error);
+            return null;
+        }
+    }
+
     const supabase = await createClient();
     let queryBase;
     
@@ -331,6 +385,12 @@ export async function fetchShows(filters: ShowSearchFiltersType, searchType: Sho
 }
 
 export async function fetchUsersWatchlist(userId: string): Promise<UserWatchListData[] | null> {
+    // Sent with the viewer's token so each show carries their match percentage, so not cached
+    if (useBackendService) return Backend.getWatchlistWithShows(userId);
+    return fetchUsersWatchlistFromSupabase(userId);
+}
+
+async function fetchUsersWatchlistFromSupabase(userId: string): Promise<UserWatchListData[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
     const supabase = await publicClient();
@@ -413,23 +473,31 @@ export async function filterWatchlist(UserWatchListData: UserWatchListData[] | n
             return [];
         }
         
-        // Query tag relationships for all shows in the watchlist
-        const supabase = await createClient();
-        const { data: taggedShowsData, error: _error } = await supabase
-            .from('ShowTagRelationship')
-            .select('showId, tagId')
-            .in('showId', showIds) // Only get relationships for shows in the watchlist
-            .in('tagId', tagIds);  // Only get relationships for the selected tags
-        
-        if (taggedShowsData && taggedShowsData.length > 0) {
-            // Get unique show IDs that have any of the selected tags
-            const showIdsWithTags = Array.from(new Set(taggedShowsData.map(relation => relation.showId)));
-            
-            // Filter the watchlist to only include shows with matching tags
-            filteredShows = filteredShows.filter(item => showIdsWithTags.includes(item.show.id));
+        if (useBackendService) {
+            // Every row is one owner's watchlist, so ask for that watchlist's shows with the tags
+            const ownerId = filteredShows[0].userShowData.user.id;
+            const showIdsWithTags = await Backend.getWatchlistShowIdsWithTags(ownerId, tagIds);
+            if (!showIdsWithTags) return null;
+            filteredShows = filteredShows.filter(item => showIdsWithTags.has(item.show.id));
         } else {
-            // If no shows match the tags, return empty array
-            return [];
+            // Query tag relationships for all shows in the watchlist
+            const supabase = await createClient();
+            const { data: taggedShowsData, error: _error } = await supabase
+                .from('ShowTagRelationship')
+                .select('showId, tagId')
+                .in('showId', showIds) // Only get relationships for shows in the watchlist
+                .in('tagId', tagIds);  // Only get relationships for the selected tags
+        
+            if (taggedShowsData && taggedShowsData.length > 0) {
+                // Get unique show IDs that have any of the selected tags
+                const showIdsWithTags = Array.from(new Set(taggedShowsData.map(relation => relation.showId)));
+            
+                // Filter the watchlist to only include shows with matching tags
+                filteredShows = filteredShows.filter(item => showIdsWithTags.includes(item.show.id));
+            } else {
+                // If no shows match the tags, return empty array
+                return [];
+            }
         }
     }
     
@@ -529,6 +597,7 @@ export async function filterWatchlist(UserWatchListData: UserWatchListData[] | n
 export async function getUserShowData({showIds, userId}: {showIds: string[], userId: string | undefined}): Promise<UserShowDataWithUserInfo[] | null> {
 
     if (!userId) return null;
+    if (useBackendService) return Backend.getWatchlistRows(userId, showIds.map(Number));
   
     const supabase = await createClient();
     let queryBase = supabase.from("UserShowDetails").select(UserShowDataWithUserInfoParams)

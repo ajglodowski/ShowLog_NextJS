@@ -1,7 +1,7 @@
 import { getFriendUpdates } from "@/app/components/home/HomeService";
 import { homeEmpty, homeGroundStyle } from "@/app/components/home/homeStyles";
 import UserUpdateTile from "@/app/components/userUpdate/UserUpdateTile/UserUpdateTile";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { redirect } from "next/navigation";
 
 const FEED_LIMIT = 50;

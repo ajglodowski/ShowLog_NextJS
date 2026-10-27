@@ -8,7 +8,22 @@ import { cacheLife } from "next/dist/server/use-cache/cache-life";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { Actor } from "../models/actor";
 import { currentUserShowDetailsStateTag } from "./cacheTags";
+import { useBackendService } from "./backend/backendConfig";
+import * as Backend from "./backend/BackendService";
+import { toTag } from "./backend/backendMapping";
 
+// One cached GET /users/{id}/stats serves every stats function below
+async function getUserStats(userId: string) {
+    try {
+        return await Backend.getUserStats(userId);
+    } catch (error) {
+        console.error(error);
+        return null;
+    }
+}
+
+// getUser and getUserByUsername stay on Supabase: the API's UserProfile has no created_at, which
+// the profile header shows as the join date
 export const getUser = cache(async (userId: string): Promise<User | null> => {
     'use cache'
     cacheLife('minutes');
@@ -19,13 +34,19 @@ export const getUser = cache(async (userId: string): Promise<User | null> => {
 });
 
 export const isAdmin = cache(async (userId: string | undefined): Promise<boolean> => {
+    if (!userId) return false;
+    // The role is only in GET /account, so this only goes through the API for the signed-in user
+    if (useBackendService && await Backend.isCurrentUser(userId)) return Backend.isAdmin();
+    return isAdminFromSupabase(userId);
+});
+
+const isAdminFromSupabase = async (userId: string): Promise<boolean> => {
     'use cache'
     cacheLife('days');
-    if (!userId) return false;
     const supabase = await publicClient();
     const { data: userData } = await supabase.from("user").select("role").eq("id", userId).single();
     return userData?.role === 'admin';
-});
+};
 
 export const getUserByUsername = cache(async (username: string): Promise<User | null> => {
     'use cache'
@@ -39,6 +60,7 @@ export const getUserByUsername = cache(async (username: string): Promise<User | 
 export async function getShowsLogged( userId: string ): Promise<number | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await Backend.getUserCounts(userId))?.showsLogged || null;
     const supabase = await publicClient();
     const { count: count } = await supabase.from("UserShowDetails").select('*', { count: 'exact', head: true }).match({userId: userId});
     
@@ -48,6 +70,15 @@ export async function getShowsLogged( userId: string ): Promise<number | null> {
 }
 
 export async function getUserFollowRelationship(followingUser: string, followerUser: string): Promise<UserFollowRelationship | null> {
+    // The API answers for the signed-in user (the follower) from their token
+    if (useBackendService && await Backend.isCurrentUser(followerUser)) {
+        const state = await Backend.getFollowState(followingUser);
+        return state ? { id: "", followingUserId: followingUser, followerUserId: followerUser, pending: state.pending } : null;
+    }
+    return getUserFollowRelationshipFromSupabase(followingUser, followerUser);
+}
+
+async function getUserFollowRelationshipFromSupabase(followingUser: string, followerUser: string): Promise<UserFollowRelationship | null> {
     'use cache'
     cacheLife('seconds');
     const supabase = await publicClient();
@@ -65,6 +96,7 @@ export type ShowTagCountDTO = {
 export async function getUserTopTags(userId: string): Promise<ShowTagCountDTO[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await getUserStats(userId))?.tagCounts.map((row) => ({ tag: { id: row.id, name: row.name } as ShowTag, count: row.count })) ?? null;
     const supabase = await publicClient();
     const { data, error } = await supabase
         .rpc('get_user_tag_counts', { user_id: userId })
@@ -97,6 +129,7 @@ export type ShowServiceCountDTO = {
 export async function getUserTopServices(userId: string): Promise<ShowServiceCountDTO[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await getUserStats(userId))?.serviceCounts.map((row) => ({ service: { id: row.id, name: row.name }, count: row.count })) ?? null;
     const supabase = await publicClient();
     const { data, error } = await supabase
         .rpc('get_user_service_counts', { user_id: userId })
@@ -131,6 +164,7 @@ export type TagRatingDTO = {
 export async function getUserTagRatings(userId: string): Promise<TagRatingDTO[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await getUserStats(userId))?.avgRatingByTag.map((row) => ({ tag: { id: row.id, name: row.name } as ShowTag, avgRating: row.avgRating, count: row.showCount })) ?? null;
     const supabase = await publicClient();
     const { data, error } = await supabase
         .rpc('get_user_avg_rating_by_tag', { user_id: userId })
@@ -167,6 +201,7 @@ export type ServiceRatingDTO = {
 export async function getUserServiceRatings(userId: string): Promise<ServiceRatingDTO[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await getUserStats(userId))?.avgRatingByService.map((row) => ({ service: { id: row.id, name: row.name }, avgRating: row.avgRating, count: row.showCount })) ?? null;
     const supabase = await publicClient();
     const { data, error } = await supabase
         .rpc('get_user_avg_rating_by_service', { user_id: userId })
@@ -202,6 +237,7 @@ export type ActorCountDTO = {
 export async function getUserTopActors(userId: string): Promise<ActorCountDTO[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await getUserStats(userId))?.topActors.map((row) => ({ actor: { id: row.id, name: row.name }, count: row.count })) ?? null;
     const supabase = await publicClient();
     const { data, error } = await supabase
         .rpc('get_user_top_actors', { user_id: userId })
@@ -236,6 +272,7 @@ export type ActorRatingDTO = {
 export async function getUserHighestRatedActors(userId: string): Promise<ActorRatingDTO[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await getUserStats(userId))?.highestRatedActors.map((row) => ({ actor: { id: row.id, name: row.name }, avgRating: row.avgRating, count: row.showCount })) ?? null;
     const supabase = await publicClient();
     const { data, error } = await supabase
         .rpc('get_user_highest_rated_actors', { user_id: userId })
@@ -266,6 +303,7 @@ export async function getUserHighestRatedActors(userId: string): Promise<ActorRa
 export async function getUserLowestRatedActors(userId: string): Promise<ActorRatingDTO[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await getUserStats(userId))?.lowestRatedActors.map((row) => ({ actor: { id: row.id, name: row.name }, avgRating: row.avgRating, count: row.showCount })) ?? null;
     const supabase = await publicClient();
     const { data, error } = await supabase
         .rpc('get_user_lowest_rated_actors', { user_id: userId })
@@ -302,6 +340,7 @@ export type ShowTagWithId = {
 export async function getUserWatchedShowsTags(userId: string): Promise<ShowTagWithId[] | null> {
     'use cache'
     cacheTag(currentUserShowDetailsStateTag(userId));
+    if (useBackendService) return (await getUserStats(userId))?.showTags.map((row) => ({ showId: row.showId, tag: toTag(row.tag) })) ?? null;
     const supabase = await publicClient();
     
     // 1. Get shows logged by user
@@ -355,6 +394,8 @@ export async function getUserWatchedShowsTags(userId: string): Promise<ShowTagWi
 export async function getFollowerCount(userId: string): Promise<number | null> {
     'use cache'
     cacheLife('minutes');
+    // Pending follow requests aren't counted
+    if (useBackendService) return (await Backend.getUserCounts(userId))?.followers ?? null;
     const supabase = await publicClient();
     const { count: count } = await supabase.from("UserFollowRelationship").select('*', { count: 'exact', head: true }).match({followingUserId: userId});
     if (count == null) return null;   
@@ -364,6 +405,7 @@ export async function getFollowerCount(userId: string): Promise<number | null> {
 export async function getFollowingCount(userId: string): Promise<number | null> {
     'use cache'
     cacheLife('minutes');
+    if (useBackendService) return (await Backend.getUserCounts(userId))?.following ?? null;
     const supabase = await publicClient();
     const { count: count } = await supabase.from("UserFollowRelationship").select('*', { count: 'exact', head: true }).match({followerUser: userId});
     if (count == null) return null;   
@@ -372,6 +414,12 @@ export async function getFollowingCount(userId: string): Promise<number | null> 
 }
 
 export async function getListsForUser(userId: string): Promise<number[] | null> {
+    // Sent with the viewer's token so owners still see their private lists, so not cached
+    if (useBackendService) return Backend.getListIdsForUser(userId);
+    return getListsForUserFromSupabase(userId);
+}
+
+async function getListsForUserFromSupabase(userId: string): Promise<number[] | null> {
     'use cache'
     cacheLife('minutes');
     const supabase = await publicClient();
@@ -382,6 +430,7 @@ export async function getListsForUser(userId: string): Promise<number[] | null> 
 }
 
 export async function getFollowerList(userId: string): Promise<UserBasicInfo[] | null> {
+    if (useBackendService) return Backend.getFollowers(userId);
     const supabase = await createClient();
     const { data: userData } = await supabase.from("UserFollowRelationship").select('user:followerUser(id, name, username, profilePhotoURL)').match({followingUserId: userId});
     if (!userData) return null;
@@ -392,6 +441,7 @@ export async function getFollowerList(userId: string): Promise<UserBasicInfo[] |
 }
 
 export async function getFollowingList(userId: string): Promise<UserBasicInfo[] | null> {
+    if (useBackendService) return Backend.getFollowing(userId);
     const supabase = await createClient();
     const { data: userData } = await supabase.from("UserFollowRelationship").select('user:followingUserId(id, name, username, profilePhotoURL)').match({followerUser: userId});
     if (!userData) return null;

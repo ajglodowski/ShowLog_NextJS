@@ -1,7 +1,7 @@
 import { fetchFriendsUserDetails } from "@/app/components/show/ShowRow/ShowRowService";
 import { Show } from "@/app/models/show";
 import { UserShowDataWithUserInfo } from "@/app/models/userShowData";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { washFromRgb, washGroundStyle } from "@/app/utils/wash";
 import { Pencil, Plus } from "lucide-react";
 import Link from "next/link";

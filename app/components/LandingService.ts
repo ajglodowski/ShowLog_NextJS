@@ -2,6 +2,8 @@ import { fetchAverageShowColor } from "@/app/(main)/show/[showId]/ShowService";
 import { convertRawShowAnalyticsToShowWithAnalytics, Show, ShowAnalytics, ShowAnalyticsProperties } from "@/app/models/show";
 import { publicClient } from "@/app/utils/supabase/server";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
 
 export type PopularShow = {
     show: Show;
@@ -12,6 +14,13 @@ export type PopularShow = {
 async function fetchPopularShows(limit: number): Promise<PopularShow[]> {
     'use cache'
     cacheLife('hours');
+    if (useBackendService) {
+        // GET /shows/popular can't skip shows without a poster, so ask for extra and drop them
+        const popular = await Backend.getPopularShows("yearly", 50);
+        const shows = popular.filter((show) => show.pictureUrl).slice(0, limit);
+        const colors = await Promise.all(shows.map((show) => fetchAverageShowColor(show.pictureUrl!)));
+        return shows.map((show, index) => ({ show, averageColor: colors[index] }));
+    }
     const supabase = await publicClient();
     const { data, error } = await supabase
         .from("show_analytics")

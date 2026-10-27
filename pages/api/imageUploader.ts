@@ -2,38 +2,13 @@ import formidable from 'formidable';
 import type { NextApiRequest, NextApiResponse } from 'next';
 import sharp from 'sharp';
 import { randomUUID } from 'node:crypto';
-import { createServerClient, type CookieOptions } from '@supabase/ssr';
+import { accessTokenFor } from '@/app/utils/auth/accessToken';
 import { putImmutableJpeg, R2_PROFILE_PICS_BUCKET, R2_SHOW_IMAGES_BUCKET } from '@/app/utils/r2';
 
 export const config = {
   api: {
     bodyParser: false, // Disable the default body parser as we're using formidable
   },
-};
-
-// Create a Supabase client for authentication checks
-const getSupabaseForAuth = async (req: NextApiRequest, res: NextApiResponse) => {
-  const cookieStore = req.cookies;
-
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return cookieStore[name];
-        },
-        set(name: string, value: string, _options: CookieOptions) {
-          res.setHeader('Set-Cookie', `${name}=${value}; Path=/; HttpOnly; SameSite=Lax`);
-        },
-        remove(name: string, _options: CookieOptions) {
-          res.setHeader('Set-Cookie', `${name}=; Path=/; HttpOnly; SameSite=Lax; Max-Age=0`);
-        },
-      },
-    }
-  );
-
-  return supabase;
 };
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // matches the client-side limit
@@ -72,11 +47,10 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
   }
 
   try {
-    // Check authentication
-    const supabase = await getSupabaseForAuth(req, res);
-    const { data: { user } } = await supabase.auth.getUser();
+    // Signed in = the Better Auth session cookie still mints an API access token
+    const token = await accessTokenFor(req.headers.cookie ?? '');
 
-    if (!user) {
+    if (!token) {
       return res.status(401).json({ error: 'Unauthorized: Authentication required' });
     }
 

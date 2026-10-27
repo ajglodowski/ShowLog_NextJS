@@ -1,11 +1,15 @@
-import { getAllTagCategories } from '@/app/(main)/show/[showId]/ShowService';
+import { getAllTagCategories, getAllTags } from '@/app/(main)/show/[showId]/ShowService';
+import { getServices } from '@/app/components/showSearch/ShowSearchService';
+import { useBackendService } from '@/app/utils/backend/backendConfig';
+import * as Backend from '@/app/utils/backend/BackendService';
 import Unauthorized from '@/app/components/Unauthorized';
 import { WikiImportForm } from '@/app/components/wiki/WikiImportForm';
 import { WikiImportSearchClient } from '@/app/components/wiki/WikiImportSearchClient';
 import { Service } from '@/app/models/service';
 import { ShowTag } from '@/app/models/showTag';
 import { backdropBackground } from '@/app/utils/stylingConstants';
-import { createClient, getCurrentUserId } from '@/app/utils/supabase/server';
+import { createClient } from '@/app/utils/supabase/server';
+import { getCurrentUserId } from '@/app/utils/auth/server';
 import { isAdmin } from '@/app/utils/userService';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -54,13 +58,13 @@ export default async function WikiImportPage({
     }
 
     // 2. Fetch Reference Data
-    const { data: servicesData } = await supabase.from('service').select('*');
-    const { data: tagsData } = await supabase
+    const { data: servicesData } = useBackendService ? { data: await getServices() } : await supabase.from('service').select('*');
+    const { data: tagsData } = useBackendService ? { data: null } : await supabase
         .from('showTag')
         .select('id, name, created_at, category:ShowTagCategory (id, name, created_at)');
     
     const allServices = (servicesData || []) as Service[];
-    const allTags = (tagsData || []).map((item: unknown) => {
+    const allTags = useBackendService ? (await getAllTags() ?? []) : (tagsData || []).map((item: unknown) => {
         const tag = item as { id: number; name: string; created_at: string; category: { id: number; name: string; created_at: string } };
         return {
             id: tag.id,
@@ -109,16 +113,19 @@ export default async function WikiImportPage({
     }
 
     // 4. Check for Duplicates
-    const { data: existingRef } = await supabase
-        .from('ShowExternalReference')
-        .select('showId')
-        .eq('source', 'wikidata')
-        .eq('externalId', qid)
-        .single();
-
     let duplicateShowId: number | null = null;
-    if (existingRef) {
-        duplicateShowId = existingRef.showId;
+    if (useBackendService) {
+        duplicateShowId = await Backend.lookupShowByExternalRef('wikidata', qid);
+    } else {
+        const { data: existingRef } = await supabase
+            .from('ShowExternalReference')
+            .select('showId')
+            .eq('source', 'wikidata')
+            .eq('externalId', qid)
+            .single();
+        if (existingRef) {
+            duplicateShowId = existingRef.showId;
+        }
     }
 
     return (

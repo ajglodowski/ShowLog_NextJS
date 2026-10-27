@@ -1,8 +1,13 @@
 import { convertRawShowAnalyticsToShowWithAnalytics, ShowAnalytics } from "@/app/models/show";
 import { ShowList, ShowListEntry, ShowListEntryParams, ShowListParams } from "@/app/models/showList";
 import { createClient, publicClient } from "@/app/utils/supabase/server";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
+
+// The API only returns a private list to its owner
 
 export async function getList( listId: string ): Promise<ShowList | null> {
+    if (useBackendService) return Backend.getList(Number(listId));
     
     const supabase = await createClient();
     const { data: listData } = await supabase.from("showList").select(ShowListParams).match({id: listId}).single();
@@ -15,6 +20,7 @@ export async function getList( listId: string ): Promise<ShowList | null> {
 }
 
 export async function getShowsForList( listId: string ): Promise<ShowListEntry[] | null> {
+    if (useBackendService) return Backend.getListEntries(Number(listId));
     
     const supabase = await createClient();
     const { data: entryData } = await supabase.from("ShowListRelationship").select(ShowListEntryParams).match({listId: listId});
@@ -31,6 +37,7 @@ export async function getShowsForList( listId: string ): Promise<ShowListEntry[]
 }
 
 export async function getListData(listId: number): Promise<ShowList | null> {
+    if (useBackendService) return Backend.getList(listId);
     const supabase = await publicClient();
     const { data: listData } = await supabase.from("showList").select().match({id: listId}).single();
     if (!listData) return null;
@@ -39,6 +46,8 @@ export async function getListData(listId: number): Promise<ShowList | null> {
 }
 
 export async function getListEntries(listId: number, limit: number| null): Promise<ShowListEntry[] | null> {
+    // Entries come back in position order
+    if (useBackendService) return Backend.getListEntries(listId, limit ?? undefined);
     const supabase = await publicClient();
     let baseQuery = supabase.from("ShowListRelationship").select('id, show: showId (name, releaseDate, id, pictureUrl), created_at, listId, position').match({listId: listId});
     if (limit) baseQuery = baseQuery.limit(limit);

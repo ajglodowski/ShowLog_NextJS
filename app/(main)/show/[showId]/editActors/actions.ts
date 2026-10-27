@@ -6,7 +6,7 @@ import {
   findActorByNameExactCI,
   createActor
 } from "@/app/(main)/actor/ActorService";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { isAdmin } from "@/app/utils/userService";
 import { revalidatePath } from "next/cache";
 

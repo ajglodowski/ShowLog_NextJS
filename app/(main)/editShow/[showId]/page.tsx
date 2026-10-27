@@ -1,6 +1,6 @@
 import { getShow } from "@/app/(main)/show/[showId]/ShowService";
 import EditShowPage from "@/app/components/editShow/EditShow";
-import { getCurrentUserId } from '@/app/utils/supabase/server';
+import { getCurrentUserId } from '@/app/utils/auth/server';
 import { isAdmin } from '@/app/utils/userService';
 import { getShowImageUrl } from "@/app/utils/imageUrls";
 import Unauthorized from "@/app/components/Unauthorized";

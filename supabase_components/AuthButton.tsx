@@ -1,14 +1,13 @@
 import { getProfilePicUrl } from "@/app/utils/imageUrls";
 import { backdropBackground } from '@/app/utils/stylingConstants'
-import { createClient, getCurrentUserId } from '@/app/utils/supabase/server'
+import { SessionKeepAliveClient, SignOutButtonClient } from '@/app/components/auth/SessionClient'
+import { getCurrentUserId } from '@/app/utils/auth/server'
 import { getUser } from '@/app/utils/userService'
 import { Avatar } from '@/components/ui/avatar'
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { revalidateTag } from 'next/cache'
 import Image from "next/image"
 import Link from 'next/link'
-import { redirect } from 'next/navigation'
 import { Suspense } from 'react'
 
 export default function AuthButton() {
@@ -23,15 +22,6 @@ async function AuthButtonContent() {
 
   const userId = await getCurrentUserId();
   const userInfo = userId ? await getUser(userId) : null 
-
-  const signOut = async () => {
-    'use server'
-
-    const supabase = await createClient();
-    await supabase.auth.signOut()
-    revalidateTag('currentUser', 'max');
-    return redirect('/login')
-  }
 
   const ProfilePic = () => {
     if (!userInfo) {
@@ -89,11 +79,7 @@ async function AuthButtonContent() {
         </Link>
         <DropdownMenuSeparator />
         <DropdownMenuItem>
-          <form action={signOut}>
-            <button>
-              Logout
-            </button>
-          </form>
+          <SignOutButtonClient />
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>);
@@ -102,6 +88,7 @@ async function AuthButtonContent() {
 
   return userId && userInfo ? (
     <div className="flex justify-center items-center p-1 m-2">
+      <SessionKeepAliveClient />
       <ActiveUser />
     </div>
   ) : (

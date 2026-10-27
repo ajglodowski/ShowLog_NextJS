@@ -1,7 +1,7 @@
 import Divider from "@/app/components/Divider";
 import { Show } from "@/app/models/show";
 import { RGBAToHexA } from "@/app/utils/colorUtil";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { getAllStatuses, getUserShowData, updateUserShowData } from "../../UserShowDataService";
 import SeasonsRow from "./SeasonsRow";
 import ShowStatusSection from "./ShowStatusSection";

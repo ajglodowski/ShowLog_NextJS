@@ -2,10 +2,13 @@ import { Show, ShowPropertiesWithService } from "@/app/models/show";
 import { Service } from "@/app/models/service";
 import { Status } from "@/app/models/status";
 import { createClient } from "@/app/utils/supabase/client";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import { getYourShowsAction } from "@/app/utils/backend/actions";
 
 export async function getYourShows({userId, selectedStatuses}: {userId: string, selectedStatuses: Status[]}): Promise<Show[] | null> {
     'use client'
     if (!userId) return null;
+    if (useBackendService) return getYourShowsAction(userId, selectedStatuses.map((status) => status.id));
 
     let statusesString = "(";
     for (const status of selectedStatuses) {

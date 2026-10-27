@@ -1,6 +1,6 @@
 import { Service } from "@/app/models/service";
 import { Show, ShowPropertiesWithService } from "@/app/models/show";
-import { ActivelyWatchingStatusIds, Status, WatchlistStatusId } from "@/app/models/status";
+import { ActivelyWatchingStatusIds, ComingSoonStatusId, CurrentlyAiringStatusId, Status, WatchlistStatusId } from "@/app/models/status";
 import { createClient, publicClient } from "@/app/utils/supabase/server";
 import { ComingSoonDTO } from "./ComingSoonRow";
 import { UserUpdateTileDTO } from "../userUpdate/UserUpdateService";
@@ -8,9 +8,20 @@ import { UserUpdate, UserUpdatePropertiesWithShowName } from "@/app/models/userU
 import { CurrentlyAiringDTO } from "@/app/models/airDate";
 import { cache } from "react";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
+import { toShow, toStatus, toUpdateTile } from "@/app/utils/backend/backendMapping";
+import { AirDate } from "@/app/models/airDate";
+
+// Most home rows render inside 'use cache' components, which can't read the session cookie, so
+// they read the user's watchlist through the API's public userId routes, as the Supabase queries
+// did with publicClient. Stale and check-in shows aren't cached and use GET /home, which needs
+// the signed-in user.
+const useHomeFor = async (userId: string) => useBackendService && await Backend.isCurrentUser(userId);
 
 export async function getWatchList({userId}: {userId: string}): Promise<Show[] | null> {
     if (!userId) return null;
+    if (useBackendService) return (await Backend.getWatchlistShows(userId, {statusIds: [WatchlistStatusId], sort: "-updated", limit: 10}))?.map(toShow) ?? null;
     
     const supabase = await publicClient();
     const { data: showData } = await supabase
@@ -36,6 +47,11 @@ export async function getTop10(): Promise<{showId: number, updates: number}[] | 
 
     'use cache'
     cacheLife('hours');
+    if (useBackendService) {
+        // Like GET /home's top10 section, hidden updates don't count (top10shows counted them)
+        const shows = await Backend.getPopularShows("weekly", 10);
+        return shows.map((show) => ({showId: show.id, updates: show.weekly_updates ?? 0}));
+    }
     const supabase = await publicClient();
     const { data: showData } = await supabase.from("top10shows").select('showId, updates');
     
@@ -48,6 +64,7 @@ export async function getTop10(): Promise<{showId: number, updates: number}[] | 
 export const getAllStatuses = cache(async function (): Promise<Status[] | null> {
     'use cache'
     cacheLife('days');
+    if (useBackendService) return Backend.getAllStatuses();
     const supabase = await publicClient();
     const { data } = await supabase.from("status").select();
     const statuses = data as unknown as Status[];
@@ -57,6 +74,14 @@ export const getAllStatuses = cache(async function (): Promise<Status[] | null> 
 export async function getComingSoon({userId}: {userId: string}): Promise<ComingSoonDTO[] | null> {
 
     if (!userId) return null;
+    if (useBackendService) {
+        const shows = await Backend.getWatchlistShows(userId, {statusIds: [ComingSoonStatusId]});
+        if (!shows) return null;
+        return shows
+            .filter((show) => show.releaseDate)
+            .map((show) => ({showId: show.id.toString(), releaseDate: show.releaseDate} as unknown as ComingSoonDTO))
+            .sort((a, b) => a.releaseDate > b.releaseDate ? 1 : -1);
+    }
     
     
     const supabase = await publicClient();
@@ -100,6 +125,10 @@ function formatUpdate(updateData: UserUpdateDTO): UserUpdateTileDTO {
 }
 
 export async function getUserUpdates({userId, updateLimit, fetchHidden}: {userId: string, updateLimit: number, fetchHidden?: boolean}): Promise<UserUpdateTileDTO[]|null> {
+    if (useBackendService) {
+        const page = await Backend.getUserUpdatesPage(userId, {pageSize: updateLimit, includeHidden: fetchHidden ?? false});
+        return page?.items.map(toUpdateTile) ?? null;
+    }
     
     const supabase = await publicClient();
     const { data: updateData } = fetchHidden
@@ -117,6 +146,10 @@ export async function getUserUpdates({userId, updateLimit, fetchHidden}: {userId
 export async function getCurrentlyAiring({userId}: {userId: string}): Promise<CurrentlyAiringDTO[] | null> {
 
     if (!userId) return null;
+    if (useBackendService) {
+        const shows = await Backend.getWatchlistShows(userId, {statusIds: [CurrentlyAiringStatusId]});
+        return shows?.map((show) => ({id: show.id, name: show.name, airdate: show.airdate as AirDate} as unknown as CurrentlyAiringDTO)) ?? null;
+    }
     const supabase = await publicClient();
     const { data: showData } = await supabase.from("UserShowDetails").select('show: showId (name, airdate, id)').match({userId: userId, status: 5});
     if (!showData) return null;
@@ -128,6 +161,7 @@ export async function getCurrentlyAiring({userId}: {userId: string}): Promise<Cu
 export async function getYourShows({userId, selectedStatuses}: {userId: string, selectedStatuses: Status[]}): Promise<Show[] | null> {
     "use server"
     if (!userId) return null;
+    if (useBackendService) return (await Backend.getWatchlistShows(userId, {statusIds: selectedStatuses.map((status) => status.id), sort: "-updated", limit: 15}))?.map(toShow) ?? null;
 
     let statusesString = "(";
     for (const status of selectedStatuses) {
@@ -167,6 +201,10 @@ export type StaleShowDTO = {
 
 export async function getStaleShows({userId}: {userId: string}): Promise<StaleShowDTO[] | null> {
     if (!userId) return null;
+    if (await useHomeFor(userId)) {
+        const shows = await Backend.getHomeShows("stale");
+        return shows?.map((show) => ({show: toShow(show), updated: new Date(show.viewer?.entry?.updatedAt ?? 0)})) ?? null;
+    }
     
     const supabase = await createClient();
     const allStatuses = await getAllStatuses();
@@ -218,6 +256,16 @@ export type CheckInShowDTO = {
 
 export async function getCheckInShows({userId}: {userId: string}): Promise<CheckInShowDTO[] | null> {
     if (!userId) return null;
+    if (await useHomeFor(userId)) {
+        // The API works out the reason with the same rules as below
+        const items = await Backend.getCheckInShows();
+        return items?.map((item) => ({
+            show: toShow(item.show),
+            updated: new Date(item.show.viewer?.entry?.updatedAt ?? 0),
+            currentSeason: item.show.viewer?.entry?.currentSeason ?? 1,
+            reason: item.reason,
+        })) ?? null;
+    }
     
     const supabase = await createClient();
     const allStatuses = await getAllStatuses();
@@ -301,6 +349,14 @@ export type WatchingNowDTO = {
 /** Shows the user is actively watching (see ActivelyWatchingStatusIds), most recently updated first. */
 export async function getWatchingNow({userId}: {userId: string}): Promise<WatchingNowDTO[] | null> {
     if (!userId) return null;
+    if (useBackendService) {
+        const shows = await Backend.getWatchlistShows(userId, {statusIds: ActivelyWatchingStatusIds, sort: "-updated", limit: 15});
+        return shows?.map((show) => ({
+            show: toShow(show),
+            statusName: show.ownerEntry ? toStatus(show.ownerEntry.status).name : "",
+            currentSeason: show.ownerEntry?.currentSeason ?? null,
+        })) ?? null;
+    }
 
     const supabase = await publicClient();
     const { data: showData } = await supabase
@@ -330,6 +386,7 @@ export async function getWatchingNow({userId}: {userId: string}): Promise<Watchi
  */
 export async function getFriendUpdates({userId, updateLimit}: {userId: string, updateLimit: number}): Promise<UserUpdateTileDTO[] | null> {
     if (!userId) return null;
+    if (useBackendService) return Backend.getFriendUpdates(userId, updateLimit);
 
     const supabase = await publicClient();
     const { data: followData } = await supabase

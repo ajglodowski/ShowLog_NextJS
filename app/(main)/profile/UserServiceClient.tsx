@@ -1,7 +1,14 @@
 import { UserFollowRelationship } from "@/app/models/userFollowRelationship";
 import { createClient } from "@/app/utils/supabase/client";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import { followUserAction, unfollowUserAction } from "@/app/utils/backend/actions";
 
 export async function followUser(userToFollow: string, userFollowing: string): Promise<UserFollowRelationship | null> {
+    if (useBackendService) {
+        // The API follows as the signed-in user and decides whether the follow is pending
+        const state = await followUserAction(userToFollow);
+        return state ? { id: "", followingUserId: userToFollow, followerUserId: userFollowing, pending: state.pending } : null;
+    }
     const supabase = await createClient();
 
     const privateUser = await supabase.from('user').select('private').eq('id', userToFollow).single();
@@ -31,6 +38,10 @@ export async function followUser(userToFollow: string, userFollowing: string): P
 }
 
 export async function unfollowUser(userToUnfollow: string, userUnfollowing: string): Promise<boolean> {
+    if (useBackendService) {
+        await unfollowUserAction(userToUnfollow);
+        return true;
+    }
     const supabase = await createClient();
     const { data: _data, error } = await supabase
         .from('UserFollowRelationship')

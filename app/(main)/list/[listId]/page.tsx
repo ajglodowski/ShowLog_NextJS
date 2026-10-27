@@ -1,6 +1,6 @@
 import { LocalizedDate } from "@/app/components/LocalizedDate";
 import ProfileBubble from "@/app/components/user/ProfileBubble";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { getList } from "./ListService";
 import ListShowsSection from "./components/ListShowsSection";
 function ListNotFound() {

@@ -1,7 +1,7 @@
 import EditShowPage from "@/app/components/editShow/EditShow";
 import { NewShow } from "@/app/models/newShow";
 import { Show } from "@/app/models/show";
-import { getCurrentUserId } from '@/app/utils/supabase/server';
+import { getCurrentUserId } from '@/app/utils/auth/server';
 import { isAdmin } from '@/app/utils/userService';
 import Unauthorized from "@/app/components/Unauthorized";
 export default async function NewShowPage() {

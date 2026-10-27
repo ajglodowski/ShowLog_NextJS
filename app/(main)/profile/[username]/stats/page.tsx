@@ -5,7 +5,7 @@ import TagNetworkChart from "./TagNetworkChart";
 import UserProfileHeader from "../../components/ProfilePage/UserProfileHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { backdropBackground } from "@/app/utils/stylingConstants";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 
 export default async function StatsPage({ params }: { params: Promise<{ username: string }> }) {
     const username = (await params).username;

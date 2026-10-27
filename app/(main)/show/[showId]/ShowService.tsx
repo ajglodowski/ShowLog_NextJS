@@ -10,12 +10,15 @@ import { StatusCount } from "@/app/models/statusCount";
 import { TagCategory } from "@/app/models/tagCategory";
 import { APPLE_TV_SOURCE, getAppleTvShowUrl } from "@/app/utils/appleTv";
 import { createClient, publicClient } from '@/app/utils/supabase/server';
+import { useBackendService } from '@/app/utils/backend/backendConfig';
+import * as Backend from '@/app/utils/backend/BackendService';
 import { cacheLife } from 'next/dist/server/use-cache/cache-life';
 import { cache } from 'react';
 
 export const getShow = cache(async (showId: string): Promise<Show | null> => {
   'use cache'
   cacheLife('hours');
+  if (useBackendService) return Backend.getShow(Number(showId));
   const supabase = await publicClient();
   const { data: showData } = await supabase.from("show").select(ShowPropertiesWithService).match({id: showId}).single();
   if (!showData) return null;
@@ -31,6 +34,7 @@ export const getShow = cache(async (showId: string): Promise<Show | null> => {
 export async function getTags(showId: string): Promise<ShowTag[] | null> {
 	'use cache'
 	cacheLife('days');
+	if (useBackendService) return Backend.getTagsForShow(Number(showId));
 	const supabase = await publicClient();
 	const { data: tagData, error } = await supabase
 		.from("ShowTagRelationship")
@@ -60,6 +64,7 @@ export async function getTags(showId: string): Promise<ShowTag[] | null> {
 export const getAllTags = async function (): Promise<ShowTag[] | null> {
   'use cache'
   cacheLife('days');
+  if (useBackendService) return Backend.getAllTags();
   const supabase = await publicClient();
   const { data: tagData, error } = await supabase
     .from('showTag')
@@ -91,6 +96,7 @@ export const getAllTags = async function (): Promise<ShowTag[] | null> {
 export const getAllTagCategories = async function (): Promise<TagCategory[] | null> {
   'use cache'
   cacheLife('days');
+  if (useBackendService) return Backend.getAllTagCategories();
   const supabase = await publicClient();
   const { data: categoryData, error } = await supabase
     .from('ShowTagCategory')
@@ -113,6 +119,7 @@ export const getAllTagCategories = async function (): Promise<TagCategory[] | nu
 export async function getAppleTvUrl(showId: string): Promise<string | null> {
   'use cache'
   cacheLife('days');
+  if (useBackendService) return Backend.getAppleTvUrl(Number(showId));
   const supabase = await publicClient();
   const { data, error } = await supabase
     .from("ShowExternalReference")
@@ -137,6 +144,7 @@ export const fetchAverageShowColor = async (imageId: string): Promise<string> =>
 export async function getRatingCounts(showId: string): Promise<RatingCounts | null> {
 	'use cache'
 	cacheLife('hours');
+	if (useBackendService) return Backend.getRatingCounts(Number(showId));
 	const supabase = await publicClient();
 	const { data: ratingData } = await supabase.from("showratingcounts").select('rating, count').match({showId: showId});
 	
@@ -158,6 +166,7 @@ export async function getRatingCounts(showId: string): Promise<RatingCounts | nu
 export async function getStatusCounts(showId: string): Promise<StatusCount[] | null> {
 	'use cache'
 	cacheLife('hours');
+	if (useBackendService) return Backend.getStatusCounts(Number(showId));
 	const supabase = await publicClient();
 	const { data: ratingData } = await supabase.from("showstatuscounts").select('status:status(id, name), count').match({showId: showId});
 	if (!ratingData) return null;
@@ -172,6 +181,7 @@ export async function getStatusCounts(showId: string): Promise<StatusCount[] | n
 }
 
 export async function getActorsForShow(showId: number): Promise<Actor[] | null> {
+  if (useBackendService) return Backend.getActorsForShow(showId);
   const supabase = await createClient();
   const { data: actorData } = await supabase.from("ActorShowRelationship").select('actor: actorId (id, name, pictureUrl)').match({showId: showId});
   if (!actorData) return null;
@@ -180,6 +190,8 @@ export async function getActorsForShow(showId: number): Promise<Actor[] | null> 
 }
 
 export async function getSimilarShows(showId: number, limit: number = 10): Promise<number[] | null> {
+  if (useBackendService) return Backend.getSimilarShowIds(showId, limit);
+
   const supabase = await createClient();
 
   try {

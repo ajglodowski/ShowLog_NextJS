@@ -1,6 +1,6 @@
 import Unauthorized from "@/app/components/Unauthorized";
 import { backdropBackground } from "@/app/utils/stylingConstants";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { isAdmin } from "@/app/utils/userService";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ArrowLeft } from "lucide-react";

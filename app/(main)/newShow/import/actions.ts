@@ -1,6 +1,8 @@
 'use server'
 
 import { createClient } from '@/app/utils/supabase/server';
+import { useBackendService } from '@/app/utils/backend/backendConfig';
+import * as Backend from '@/app/utils/backend/BackendService';
 import { ShowLength } from '@/app/models/showLength';
 import { OtherService } from '@/app/models/service';
 import { redirect } from 'next/navigation';
@@ -305,6 +307,33 @@ export type CreateShowPayload = {
 };
 
 export async function createShowFromWikidataAction(payload: CreateShowPayload) {
+    if (useBackendService) {
+        const wikidataRef = payload.externalRefs.find(r => r.source === 'wikidata');
+        if (wikidataRef) {
+            const existingId = await Backend.lookupShowByExternalRef('wikidata', wikidataRef.externalId);
+            if (existingId !== null) return { error: 'Show already exists', showId: existingId };
+        }
+        // Show, services, tags and external references in one transaction
+        const showId = await Backend.createShow({
+            name: payload.name,
+            releaseDate: payload.releaseDate ? payload.releaseDate.slice(0, 10) : null,
+            running: payload.running,
+            totalSeasons: payload.totalSeasons,
+            length: 'None',
+            limitedSeries: false,
+            currentlyAiring: false,
+            serviceIds: payload.serviceIds,
+            tagIds: payload.tagIds,
+            externalRefs: payload.externalRefs,
+        });
+        if (showId === null) return { error: 'Failed to create show' };
+        // Embeddings aren't part of the API yet
+        refreshShowEmbedding(showId).catch((err) => {
+            console.error("Failed to refresh show embedding:", err);
+        });
+        redirect(`/show/${showId}`);
+    }
+
     const supabase = await createClient();
 
     // 1. Dedupe check

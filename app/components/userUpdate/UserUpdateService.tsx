@@ -2,6 +2,9 @@ import { UserUpdate, UserUpdatePropertiesWithShowName } from "@/app/models/userU
 import { createClient, publicClient } from '@/app/utils/supabase/server';
 import { Status } from "@/app/models/status";
 import { cacheLife } from "next/dist/server/use-cache/cache-life";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
+import { toUpdateTile } from "@/app/utils/backend/backendMapping";
 
 export type UserUpdateTileDTO = {
     userUpdate: UserUpdate,
@@ -70,6 +73,12 @@ export async function getUserUpdatesPage({
     const isOwner = viewerUserId === userId;
     const shouldIncludeHidden = isOwner && includeHidden;
 
+    if (useBackendService) {
+        // The API only honours includeHidden for the token's own updates
+        const result = await Backend.getUserUpdatesPage(userId, { page, pageSize, includeHidden: shouldIncludeHidden });
+        return result ? { updates: result.items.map(toUpdateTile), totalCount: result.total } : null;
+    }
+
     // Use auth client for owner (to see hidden), public client otherwise
     const supabase = shouldIncludeHidden ? await createClient() : await publicClient();
 
@@ -122,6 +131,7 @@ export async function getUserUpdatesPage({
 export async function getUserUpdate(updateId: number): Promise<UserUpdateTileDTO|null> { // TODO
     'use cache'
     cacheLife('hours');
+    if (useBackendService) return Backend.getUpdate(updateId);
     const supabase = await publicClient();
     const { data: updateData } = await supabase.from("UserUpdate").select(UserUpdatePropertiesWithShowName).match({id: updateId}).single();
 

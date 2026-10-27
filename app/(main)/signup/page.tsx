@@ -1,22 +1,26 @@
-import { AuthMessage, AuthShell, authHint, authInput, authLabel, authLink, authPrimaryButton } from '@/app/components/auth/AuthShell'
-import { signUp } from '@/app/utils/supabase/AuthService'
-import Link from 'next/link'
+import { AuthMessage, AuthShell, authHint, authInput, authLabel, authPrimaryButton } from '@/app/components/auth/AuthShell'
+import { createProfile } from '@/app/utils/auth/accountActions'
+import { getAuthSession } from '@/app/utils/auth/server'
+import * as Backend from '@/app/utils/backend/BackendService'
+import { redirect } from 'next/navigation'
 
+// The second step of a first sign-in: Google or Apple created the login, this creates the profile.
 export default async function Signup({
   searchParams,
 }: {
   searchParams: Promise<{ message: string }>
 }) {
-  const signUpFunction = signUp
+  const session = await getAuthSession()
+  if (!session) return redirect('/login')
+  if (await Backend.hasAccount()) return redirect('/')
   const message = (await searchParams)?.message
 
   return (
     <AuthShell
-      title="Create account"
-      subtitle="Start keeping track of everything you watch."
-      footer={<>Already have an account? <Link href="/login" className={authLink}>Sign in</Link></>}
+      title="Pick a username"
+      subtitle="It's how friends find you on ShowLog."
     >
-      <form action={signUpFunction} className="grid gap-3">
+      <form action={createProfile} className="grid gap-3">
         <div className="grid gap-1.5">
           <label htmlFor="username" className={authLabel}>Username</label>
           <div className="relative">
@@ -29,6 +33,9 @@ export default async function Signup({
               autoCapitalize="none"
               placeholder="yourusername"
               required
+              minLength={3}
+              maxLength={30}
+              pattern="[A-Za-z0-9_.]+"
               className={`${authInput} pl-8`}
             />
           </div>
@@ -45,53 +52,14 @@ export default async function Signup({
             type="text"
             autoComplete="name"
             placeholder="Your name"
-            className={authInput}
-          />
-        </div>
-
-        <div className="grid gap-1.5">
-          <label htmlFor="email" className={authLabel}>Email</label>
-          <input
-            id="email"
-            name="email"
-            type="email"
-            autoComplete="email"
-            placeholder="you@example.com"
-            required
-            className={authInput}
-          />
-        </div>
-
-        <div className="grid gap-1.5">
-          <div className="flex items-baseline justify-between gap-3">
-            <label htmlFor="password" className={authLabel}>Password</label>
-            <span className={authHint}>At least 8 characters</span>
-          </div>
-          <input
-            id="password"
-            name="password"
-            type="password"
-            autoComplete="new-password"
-            required
-            className={authInput}
-          />
-        </div>
-
-        <div className="grid gap-1.5">
-          <label htmlFor="confirmPassword" className={authLabel}>Confirm password</label>
-          <input
-            id="confirmPassword"
-            name="confirmPassword"
-            type="password"
-            autoComplete="new-password"
-            required
+            defaultValue={session.user.name}
             className={authInput}
           />
         </div>
 
         <AuthMessage message={message} />
 
-        <button type="submit" className={`${authPrimaryButton} mt-1`}>Create account</button>
+        <button type="submit" className={`${authPrimaryButton} mt-1`}>Create profile</button>
       </form>
     </AuthShell>
   )

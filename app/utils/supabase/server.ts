@@ -35,9 +35,3 @@ export async function createClient() {
     }
   )
 }
-
-export async function getCurrentUserId() {
-  const supabase = await createClient()
-  const { data } = await supabase.auth.getClaims()
-  return data?.claims?.sub
-}

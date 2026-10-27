@@ -1,6 +1,6 @@
 import { ActivelyWatchingStatusIds, ComingSoonStatusId, CurrentlyAiringStatusId, WatchlistStatusId } from '@/app/models/status';
 import { statusIcon } from '@/app/components/brand/StatusAndRating';
-import { getCurrentUserId } from '@/app/utils/supabase/server';
+import { getCurrentUserId } from '@/app/utils/auth/server';
 import { ChartNoAxesCombined, History, Hourglass, LucideIcon, MonitorPlay, Play, Repeat, Sparkles, Tv, Users } from 'lucide-react';
 import Link from 'next/link';
 import { ReactNode, Suspense } from 'react';

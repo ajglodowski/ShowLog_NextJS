@@ -9,10 +9,13 @@ import { UserUpdateCategory } from "@/app/models/userUpdateType";
 import { cacheLife } from 'next/cache';
 import { refreshUserEmbedding } from "@/app/utils/recommendations/RecommendationService";
 import { revalidateCurrentUserShowDetails } from "@/app/utils/cacheTags";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
 
 export async function getUserShowData({showId, userId}: {showId: string, userId: string | undefined}): Promise<UserShowData | null> {
 
     if (!userId) return null;
+    if (useBackendService && await Backend.isCurrentUser(userId)) return Backend.getUserShowData(userId, Number(showId));
   
     
     const supabase = await createClient();
@@ -30,7 +33,8 @@ export async function getUserShowData({showId, userId}: {showId: string, userId:
 }
 
 export async function updateCurrentSeason({userId, showId, newSeason}: {showId: string, userId: string, newSeason: number}): Promise<boolean> {
-    
+    // The API acts as the signed-in user, so userId isn't sent
+    if (useBackendService) return Backend.updateWatchlistEntry(Number(showId), {currentSeason: newSeason});
     const supabase = await createClient();
     const { error} = await supabase.from("UserShowDetails").update({currentSeason: newSeason}).match({userId: userId, showId: showId});
     if (error) {
@@ -41,7 +45,7 @@ export async function updateCurrentSeason({userId, showId, newSeason}: {showId: 
 }
 
 export async function updateStatus({userId, showId, newStatus}: {showId: string, userId: string, newStatus: Status}): Promise<boolean> {
-    
+    if (useBackendService) return Backend.updateWatchlistEntry(Number(showId), {statusId: newStatus.id});
     const supabase = await createClient();
     const { error} = await supabase.from("UserShowDetails").update({status: newStatus.id}).match({userId: userId, showId: showId});
     if (error) {
@@ -54,6 +58,7 @@ export async function updateStatus({userId, showId, newStatus}: {showId: string,
 export async function getAllStatuses(): Promise<Status[]|null> {
     'use cache'
     cacheLife('hours');
+    if (useBackendService) return Backend.getAllStatuses();
     const supabase = await publicClient();
     const { data } = await supabase.from("status").select();
     const statuses = data as unknown as Status[];
@@ -62,6 +67,7 @@ export async function getAllStatuses(): Promise<Status[]|null> {
 
 export async function getUserUpdates({showId, userId}: {showId: number, userId: string | undefined}): Promise<UserUpdate[]|null> {
     if (!userId) return null;
+    if (useBackendService) return Backend.getUserUpdatesForShow(userId, showId);
   
     
     const supabase = await createClient();
@@ -85,7 +91,8 @@ export async function getUserUpdates({showId, userId}: {showId: number, userId: 
 }
 
 export async function updateRating({userId, showId, newRating}: {showId: string, userId: string, newRating: Rating | null}): Promise<boolean> {
-    
+    // The on_user_rating_change trigger refreshes the user's embedding
+    if (useBackendService) return Backend.updateWatchlistEntry(Number(showId), {rating: newRating ?? null});
     const supabase = await createClient();
     let error = null;
     if (newRating) {
@@ -108,7 +115,7 @@ export async function updateRating({userId, showId, newRating}: {showId: string,
 }
 
 export async function addToWatchList({userId, showId}: {showId: string, userId: string}): Promise<boolean> {
-    
+    if (useBackendService) return Backend.addToWatchlist(Number(showId));
     const supabase = await createClient();
     const error = (await supabase.from("UserShowDetails").insert({userId: userId, showId: showId, currentSeason: 1, status: 3})).error;
     if (error) {
@@ -119,6 +126,34 @@ export async function addToWatchList({userId, showId}: {showId: string, userId: 
 }
 
 export async function updateUserShowData({updateType, userId, showId, newValue }: {updateType: UserUpdateCategory, userId: string, showId: string, newValue: number | Rating | Status | null | undefined }): Promise<boolean> {
+    if (useBackendService) {
+        // The API writes the UserUpdate row in the same transaction, so there's no insertUpdate
+        let response = true;
+        switch (updateType) {
+            case UserUpdateCategory.AddedToWatchlist:
+                response = await addToWatchList({userId: userId, showId: showId});
+                break;
+            case UserUpdateCategory.ChangedRating:
+            case UserUpdateCategory.RemovedRating:
+                response = await updateRating({userId: userId, showId: showId, newRating: newValue as Rating | null});
+                break;
+            case UserUpdateCategory.ChangedSeason:
+                response = await updateCurrentSeason({userId: userId, showId: showId, newSeason: newValue as number});
+                break;
+            case UserUpdateCategory.RemovedFromWatchlist:
+                // TODO
+                break;
+            case UserUpdateCategory.UpdatedStatus:
+                response = await updateStatus({userId: userId, showId: showId, newStatus: newValue as Status});
+                break;
+            default:
+                response = false;
+                break;
+        }
+        if (response) revalidateCurrentUserShowDetails(userId, showId);
+        return response;
+    }
+
     let response = true;
     let update: UserUpdate | null = null;
     switch (updateType) {
@@ -199,7 +234,7 @@ export async function insertUpdate({update}: {update: UserUpdate}): Promise<bool
 }
 
 export async function toggleUpdateHiddenStatus({updateId}: {updateId: number}): Promise<boolean> {
-    
+    if (useBackendService) return Backend.toggleUpdateHidden(updateId);
     const supabase = await createClient();
     
     // First get the current hidden status

@@ -1,5 +1,5 @@
 import { ProfileRow } from "@/app/components/user/ProfileRow";
-import { createClient } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { getFollowingList, getUserByUsername, getUserFollowRelationship } from "@/app/utils/userService";
 
 export default async function FollowingPage({ params }: { params: Promise<{ username: string }> }) {
@@ -17,9 +17,7 @@ export default async function FollowingPage({ params }: { params: Promise<{ user
     }
     if (!user) return <UserNotFound />;
 
-    const supabase = await createClient();
-    const userData = (await supabase.auth.getUser()).data.user;
-    const currentUserId = userData?.id;
+    const currentUserId = await getCurrentUserId();
 
     const userId = user.id;
     if (user.private) {

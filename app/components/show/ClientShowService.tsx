@@ -4,6 +4,8 @@ import { ShowTag } from "@/app/models/showTag";
 import { createClient } from "@/app/utils/supabase/client";
 import { cache } from "react";
 import { refreshShowEmbedding } from "@/app/utils/recommendations/ShowEmbeddingService";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import { addShowTagAction, findShowsByNameAction, getServicesAction, getShowAction, removeShowTagAction, saveShowAction } from "@/app/utils/backend/actions";
 
 export const getShowFromCache = (showId: string): Show | null => {
     const cacheKey = `show_v2_${showId}`;
@@ -29,6 +31,12 @@ export const getShow = cache(async (showId: string): Promise<Show | null> => {
         return cachedShow;
     }
     
+    if (useBackendService) {
+        const show = await getShowAction(Number(showId));
+        if (show) setShowInCache(showId, show);
+        return show;
+    }
+
     const supabase = createClient();
     const { data: showData } = await supabase.from("show").select(ShowPropertiesWithService).match({id: showId}).single();
     
@@ -48,6 +56,17 @@ export const getShow = cache(async (showId: string): Promise<Show | null> => {
 });
 
 export async function updateShow(show: Show): Promise<boolean> {
+    if (useBackendService) {
+        // Fields and services go in one request; id 0 creates the show
+        const showId = await saveShowAction(show);
+        if (showId === null) return false;
+        // Embeddings aren't part of the API yet
+        refreshShowEmbedding(showId).catch((err) => {
+            console.error("Failed to refresh show embedding:", err);
+        });
+        return true;
+    }
+
     const supabase = createClient();
     const showWithExtras = show as Show & { ShowServiceRelationship?: unknown; service?: { id: number } };
     
@@ -130,11 +149,15 @@ export async function updateShow(show: Show): Promise<boolean> {
 }
 
 export async function addShowTag(showId: string, tag: ShowTag): Promise<boolean> {
-    const supabase = createClient();
-    const { error } = await supabase.from("ShowTagRelationship").insert({showId: showId, tagId: tag.id});
-    if (error) {
-      console.error(error);
-      return false;
+    if (useBackendService) {
+      if (!await addShowTagAction(Number(showId), tag.id)) return false;
+    } else {
+      const supabase = createClient();
+      const { error } = await supabase.from("ShowTagRelationship").insert({showId: showId, tagId: tag.id});
+      if (error) {
+        console.error(error);
+        return false;
+      }
     }
     // Refresh show embedding asynchronously
     refreshShowEmbedding(Number(showId)).catch((err) => {
@@ -144,11 +167,15 @@ export async function addShowTag(showId: string, tag: ShowTag): Promise<boolean>
   }
   
 export async function removeShowTag(showId: string, tag: ShowTag): Promise<boolean> {
-    const supabase = createClient();
-    const { error } = await supabase.from("ShowTagRelationship").delete().match({showId: showId, tagId: tag.id});
-    if (error) {
-      console.error(error);
-      return false;
+    if (useBackendService) {
+      if (!await removeShowTagAction(Number(showId), tag.id)) return false;
+    } else {
+      const supabase = createClient();
+      const { error } = await supabase.from("ShowTagRelationship").delete().match({showId: showId, tagId: tag.id});
+      if (error) {
+        console.error(error);
+        return false;
+      }
     }
     // Refresh show embedding asynchronously
     refreshShowEmbedding(Number(showId)).catch((err) => {
@@ -158,6 +185,7 @@ export async function removeShowTag(showId: string, tag: ShowTag): Promise<boole
 }
 
 export async function getServices(): Promise<Service[] | null> {
+    if (useBackendService) return getServicesAction();
     const supabase = await createClient();
     const { data: serviceData } = await supabase.from("service").select();
     if (!serviceData) return null;
@@ -167,6 +195,7 @@ export async function getServices(): Promise<Service[] | null> {
 
 export async function searchShows(query: string): Promise<{ id: number; name: string }[] | null> {
   'use client'
+  if (useBackendService) return (await findShowsByNameAction(query, 10)).map((show) => ({ id: show.id, name: show.name }));
   const supabase = createClient();
   const { data } = await supabase.from('show').select('id, name').ilike('name', `%${query}%`).limit(10);
   

@@ -7,8 +7,11 @@ import { createClient } from "@/app/utils/supabase/server";
 import { refreshShowEmbedding } from "@/app/utils/recommendations/ShowEmbeddingService";
 import { linkActorToTvmaze } from "@/app/utils/actorPhotos";
 import { after } from "next/server";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import * as Backend from "@/app/utils/backend/BackendService";
 
 export async function getActor( actorId: string ): Promise<Actor | null> {
+    if (useBackendService) return Backend.getActor(Number(actorId));
     const supabase = await createClient();
     const { data: actorData } = await supabase.from("actor").select(ActorParams).match({id: actorId}).single();
     if (!actorData) return null;   
@@ -17,6 +20,7 @@ export async function getActor( actorId: string ): Promise<Actor | null> {
 }
 
 export async function getShowsForActor( actorId: string ): Promise<Show[] | null> {
+    if (useBackendService) return Backend.getShowsForActor(Number(actorId));
     const supabase = await createClient();
     const { data: showData } = await supabase.from("ActorShowRelationship").select(`show: showId (${ShowPropertiesWithService})`).match({ actorId: actorId });
     if (!showData) return null;   
@@ -44,6 +48,12 @@ export type ActorShowUserDetails = {
 export async function getUserDetailsForShows(userId: string, showIds: number[]): Promise<Map<number, ActorShowUserDetails>> {
     const output = new Map<number, ActorShowUserDetails>();
     if (showIds.length === 0) return output;
+    if (useBackendService) {
+        for (const row of await Backend.getWatchlistRows(userId, showIds) ?? []) {
+            output.set(Number(row.showId), { showId: Number(row.showId), rating: row.rating, status: row.status });
+        }
+        return output;
+    }
     const supabase = await createClient();
     const { data, error } = await supabase
         .from("UserShowDetails")
@@ -63,10 +73,14 @@ export async function getUserDetailsForShows(userId: string, showIds: number[]):
 
 export async function addActorToShow(actorId: number, showId: number): Promise<boolean> {
     const supabase = await createClient();
-    const { error } = await supabase.from("ActorShowRelationship").insert({ actorId, showId });
-    if (error) {
-        console.error(error);
-        return false;
+    if (useBackendService) {
+        if (!await Backend.addActorToShow(actorId, showId)) return false;
+    } else {
+        const { error } = await supabase.from("ActorShowRelationship").insert({ actorId, showId });
+        if (error) {
+            console.error(error);
+            return false;
+        }
     }
     // Refresh show embedding asynchronously (fire and forget)
     refreshShowEmbedding(showId).catch((err) => {
@@ -80,11 +94,15 @@ export async function addActorToShow(actorId: number, showId: number): Promise<b
 }
 
 export async function removeActorFromShow(actorId: number, showId: number): Promise<boolean> {
-    const supabase = await createClient();
-    const { error } = await supabase.from("ActorShowRelationship").delete().match({ actorId, showId });
-    if (error) {
-        console.error(error);
-        return false;
+    if (useBackendService) {
+        if (!await Backend.removeActorFromShow(actorId, showId)) return false;
+    } else {
+        const supabase = await createClient();
+        const { error } = await supabase.from("ActorShowRelationship").delete().match({ actorId, showId });
+        if (error) {
+            console.error(error);
+            return false;
+        }
     }
     // Refresh show embedding asynchronously (fire and forget)
     refreshShowEmbedding(showId).catch((err) => {
@@ -97,6 +115,7 @@ export async function removeActorFromShow(actorId: number, showId: number): Prom
  * Find an actor by exact name match (case-insensitive)
  */
 export async function findActorByNameExactCI(name: string): Promise<Actor | null> {
+    if (useBackendService) return Backend.findActorByName(name);
     const supabase = await createClient();
     // Use ilike without wildcards for case-insensitive exact match
     const { data: actorData } = await supabase
@@ -113,6 +132,8 @@ export async function findActorByNameExactCI(name: string): Promise<Actor | null
  * Create a new actor with the given name
  */
 export async function createActor(name: string): Promise<Actor | null> {
+    // POST /actors is find-or-create, so an existing actor with this name comes back instead
+    if (useBackendService) return Backend.findOrCreateActor(name);
     const supabase = await createClient();
     const { data: actorData, error } = await supabase
         .from("actor")

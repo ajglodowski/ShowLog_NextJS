@@ -36,17 +36,27 @@ Common traits:
 
 - **Server-side Supabase access** via `app/utils/supabase/server.ts`
   - `publicClient()` uses the anon key for public reads (views, counts, etc.).
-  - `createClient()` creates a cookie-aware Supabase server client for authenticated reads/writes.
+  - `createClient()` creates a cookie-aware Supabase server client. Sessions are Better Auth's now, so it reads as anonymous; only the `useBackendService = false` fallbacks use it.
 - **Client-side Supabase access** via `app/utils/supabase/client.ts` for browser interactions.
 - **Caching**: many fetchers use `cache()` + `'use cache'`/`cacheLife()` to avoid re-fetching stable data.
 
 ### Auth flow
 
-- **Signup logic** lives in `app/utils/supabase/AuthService.ts` (server action).
-  - Creates the Supabase Auth user, then inserts a matching row into the `user` table.
-  - Includes username validation + uniqueness checks.
-- **Email redirect callback** is handled by `app/(main)/auth/callback/route.ts`, which exchanges the auth code for a session.
-- **Session refresh / route protection (optional middleware)**: `app/utils/supabase/middleware.ts` exposes `updateSession(request)`, which can be wired into a Next.js `middleware.ts` to refresh cookies and redirect unauthenticated users to `/login`.
+Sign-in is [Better Auth](https://better-auth.com), self-hosted on the ShowLog API Worker under
+`https://api.showlog.tv/api/auth` (`ShowLog_API/src/betterAuth.ts`). Google and Apple are the only
+providers; there are no passwords.
+
+- **Sign-in** (`app/(main)/login`): `SocialSignInClient` calls Better Auth from the browser
+  (`app/utils/auth/authClient.ts`), the provider redirects back through the API, and the API sets
+  the session cookie on `.showlog.tv` before landing on `/auth/finish`.
+- **First sign-in**: `/auth/finish` sends anyone without a profile to `/signup` to pick a username
+  (`createProfile` in `app/utils/auth/accountActions.ts` → `POST /account`).
+- **Server side** (`app/utils/auth/server.ts`): `getCurrentUserId()` and `getAccessToken()` forward
+  the session cookie to `GET /api/auth/token` for a 15-minute API access token, reused across
+  requests until shortly before it expires. They read cookies, so keep them out of `'use cache'`.
+- **Route protection**: `proxy.ts` redirects to `/login` when the session cookie is missing.
+- **Local development**: run `ShowLog_API` with `wrangler dev` and set
+  `NEXT_PUBLIC_SHOWLOG_API_URL=http://localhost:8787`.
 
 ### Images and media
 
@@ -75,7 +85,7 @@ Images are stored in **Cloudflare R2** and served directly from custom domains, 
   - `show/[showId]/...`: show pages and related services
   - `profile/[username]/...`: profiles + stats
   - `list/[listId]/...`: lists
-  - `search/`, `discoverShows/`, `watchlist/`, `login/`, `signup/`, `resetPassword/`, `updatePassword/`
+  - `search/`, `discoverShows/`, `watchlist/`, `login/`, `signup/` (username step), `auth/finish/`
 - **UI components**: `app/components/...` and `components/ui/...` (shadcn/Radix)
 - **Domain models**: `app/models/...` (typed DTOs)
 - **Supabase helpers**: `app/utils/supabase/...`

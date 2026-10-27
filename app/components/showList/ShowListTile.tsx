@@ -2,7 +2,6 @@ import { getListData, getListEntries } from "@/app/(main)/list/[listId]/ListServ
 import { getShowImageUrl } from "@/app/utils/imageUrls";
 import ProfileBubble from "@/app/components/user/ProfileBubble";
 import { Lock } from "lucide-react";
-import { cacheLife } from "next/dist/server/use-cache/cache-life";
 import Image from "next/image";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -21,10 +20,9 @@ export default async function ShowsListTile({listId}: {listId: number}) {
 // Each poster steps this far right of the one before it, and they run off the card's right edge by design
 const POSTER_STEP = 30;
 
+// Not 'use cache': the ShowLog API only returns a private list with its owner's token, which
+// comes from the session cookie
 async function ShowListTileContent({listId}: {listId: number}) {
-
-    'use cache'
-    cacheLife('minutes');
 
     const listData = await getListData(listId);
     const listEntries = await getListEntries(listId, 5);

@@ -3,6 +3,7 @@ import { ShowWithAnalytics } from '@/app/models/show';
 import { ShowSearchType } from '@/app/models/showSearchType';
 import { UserShowDataWithUserInfo } from '@/app/models/userShowData';
 import { getShowMatchesForCurrentUser } from '@/app/utils/recommendations/RecommendationService';
+import { useBackendService } from '@/app/utils/backend/backendConfig';
 import { Skeleton } from '@/components/ui/skeleton';
 import Divider from '../Divider';
 import ShowRow from '../show/ShowRow/ShowRow';
@@ -285,7 +286,10 @@ export default async function ShowSearchShows({
     let matchScores: Map<number, number> = new Map();
     if (filteredShows && currentUserId && filters.sortBy?.split('-')[0] === 'match') {
         const sortDirection = filters.sortBy.split('-')[1] || 'desc';
-        matchScores = await getShowMatchesForCurrentUser(filteredShows.map((show) => show.id));
+        // Shows from the ShowLog API already carry the viewer's match
+        matchScores = useBackendService
+            ? new Map(filteredShows.flatMap((show) => show.matchPercent == null ? [] : [[show.id, show.matchPercent / 100] as const]))
+            : await getShowMatchesForCurrentUser(filteredShows.map((show) => show.id));
         filteredShows = [...filteredShows].sort((a, b) => {
             const aScore = matchScores.get(a.id);
             const bScore = matchScores.get(b.id);

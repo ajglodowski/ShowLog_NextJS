@@ -7,6 +7,8 @@ import { Show, ShowPropertiesWithService } from "@/app/models/show";
 import { ShowList } from "@/app/models/showList";
 import { ShowTag } from "@/app/models/showTag";
 import { UserBasicInfo } from "@/app/models/user";
+import { useBackendService } from "@/app/utils/backend/backendConfig";
+import { findShowsByNameAction, searchAllAction } from "@/app/utils/backend/actions";
 
 export type SearchResultType = 'show' | 'user' | 'actor' | 'tag' | 'list';
 
@@ -137,6 +139,7 @@ async function searchLists(supabase: ReturnType<typeof createClient>, query: str
 export async function searchShowsByName({searchQuery}: {searchQuery: string}): Promise<Show[]> {
     const query = searchQuery.trim();
     if (query.length === 0) return [];
+    if (useBackendService) return findShowsByNameAction(query, 5);
     const results = await searchShows(createClient(), query);
     return results.flatMap(result => result.type === 'show' ? [result.data] : []);
 }
@@ -150,6 +153,21 @@ export async function searchAll({searchQuery}: {searchQuery: string}): Promise<S
     }
 
     const query = searchQuery.trim();
+
+    if (useBackendService) {
+        // GET /search runs all five searches in one request
+        const found = await searchAllAction(query, 5);
+        if (!found) return [];
+        const results: SearchResult[] = [
+            ...found.shows.map((data) => ({ type: 'show' as const, data })),
+            ...found.users.map((data) => ({ type: 'user' as const, data })),
+            ...found.actors.map((data) => ({ type: 'actor' as const, data })),
+            ...found.tags.map((data) => ({ type: 'tag' as const, data })),
+            ...found.lists.map((data) => ({ type: 'list' as const, data })),
+        ];
+        console.log(`Search took ${performance.now() - start} milliseconds`);
+        return results;
+    }
 
     // Run all searches in parallel
     const [showResults, userResults, actorResults, tagResults, listResults] = await Promise.all([

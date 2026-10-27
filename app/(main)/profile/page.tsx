@@ -1,4 +1,4 @@
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import UserProfile, { ProfileMessage } from "./components/ProfilePage/UserProfile";
 import { getUser } from "@/app/utils/userService";
 import { profilePrimaryButton } from "./components/ProfilePage/profileStyles";

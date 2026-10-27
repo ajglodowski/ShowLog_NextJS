@@ -1,6 +1,6 @@
 import Home from "./components/home/Home";
 import LandingPage from "./components/LandingPage";
-import { getCurrentUserId } from "./utils/supabase/server";
+import { getCurrentUserId } from "./utils/auth/server";
 
 export default async function Index() {
   const currentUserId = await getCurrentUserId();

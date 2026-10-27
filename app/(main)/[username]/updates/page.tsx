@@ -3,7 +3,7 @@ import UpdatesPaginationControls from "@/app/components/userUpdate/UpdatesPagina
 import UserUpdateRow, { LoadingUserUpdateRow } from "@/app/components/userUpdate/UserUpdateRow";
 import { getUserUpdatesPage } from "@/app/components/userUpdate/UserUpdateService";
 import { backdropBackground } from "@/app/utils/stylingConstants";
-import { getCurrentUserId } from "@/app/utils/supabase/server";
+import { getCurrentUserId } from "@/app/utils/auth/server";
 import { getUserByUsername } from "@/app/utils/userService";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Clock, Frown } from "lucide-react";
