@@ -63,7 +63,11 @@
       "typescript": "$typescript"
     },
     "@typescript-eslint/typescript-estree": {
-      "typescript": "$typescript"
+      "typescript": "$typescript",
+      "minimatch": {
+        ".": "11.0.4",
+        "@isaacs/nonrecursive-glob-match": "1.0.3"
+      }
     },
     "@typescript-eslint/parser": {
       "typescript": "$typescript"
