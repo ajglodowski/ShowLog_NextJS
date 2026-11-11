@@ -801,6 +801,12 @@ export interface components {
             name: string;
             pictureUrl: string | null;
             shows: components["schemas"]["ShowSummary"][];
+            /** @description Each tag on the actor's shows, with how many of them have it; most common first */
+            tagCounts: components["schemas"]["TagCount"][];
+        };
+        TagCount: {
+            tag: components["schemas"]["Tag"];
+            count: number;
         };
         CreateActor: {
             name: string;
@@ -1105,6 +1111,8 @@ export interface operations {
                 userId?: string;
                 /** @description Show name search */
                 q?: string;
+                /** @description Only these shows, e.g. to fetch a page of rows with include=friends */
+                ids?: string;
                 serviceIds?: string;
                 /** @description Shows with any of these tags */
                 tagIds?: string;

@@ -22,7 +22,7 @@ interface ShowPageContentProps {
   show: Show;
   showId: string;
   currentUserId: string | undefined;
-  userIsAdmin: boolean;
+  userIsAdmin: Promise<boolean>;
   ratingCounts: RatingCounts | null;
   statusCounts: StatusCount[] | null;
 }

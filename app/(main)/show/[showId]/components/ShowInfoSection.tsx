@@ -10,7 +10,11 @@ import { LoadingShowTagsSection, ShowTagsSection } from './ShowTagsSection';
 interface ShowInfoSectionProps {
   show: Show;
   showId: string;
-  isAdmin: boolean;
+  isAdmin: Promise<boolean>;
+}
+
+async function AdminOnly({ isAdmin, children }: { isAdmin: Promise<boolean>; children: ReactNode }) {
+  return (await isAdmin) ? children : null;
 }
 
 const airingLabel = (show: Show) => {
@@ -35,12 +39,14 @@ export default function ShowInfoSection({ show, showId, isAdmin }: ShowInfoSecti
     <div className={`${showPanel} grid gap-4`}>
       <div className="flex min-h-[30px] items-center justify-between gap-3">
         <h2 className={showPanelTitle}>Details</h2>
-        {isAdmin && (
-          <Link href={`/editShow/${showId}`} className={showHeaderButton}>
-            <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden="true" />
-            Edit show
-          </Link>
-        )}
+        <Suspense fallback={null}>
+          <AdminOnly isAdmin={isAdmin}>
+            <Link href={`/editShow/${showId}`} className={showHeaderButton}>
+              <Pencil className="h-3.5 w-3.5" strokeWidth={1.8} aria-hidden="true" />
+              Edit show
+            </Link>
+          </AdminOnly>
+        </Suspense>
       </div>
 
       <dl className="grid grid-cols-2 gap-x-4 gap-y-3.5 sm:grid-cols-3 lg:grid-cols-6">

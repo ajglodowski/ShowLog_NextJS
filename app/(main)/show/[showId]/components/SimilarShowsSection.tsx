@@ -22,9 +22,9 @@ const SimilarShowsContent = async ({showId}: {showId: number}) => {
     return (
         <ScrollArea className="w-full whitespace-nowrap">
             <div className="flex gap-3">
-                {similarShows.map((similarId) => (
-                    <div key={similarId} className="flex-shrink-0">
-                        <ShowTile showId={similarId.toString()} />
+                {similarShows.map(({ id, show }) => (
+                    <div key={id} className="flex-shrink-0">
+                        {show ? <ShowTile showDto={show} /> : <ShowTile showId={id.toString()} />}
                     </div>
                 ))}
             </div>

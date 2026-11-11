@@ -189,8 +189,11 @@ export async function getActorsForShow(showId: number): Promise<Actor[] | null> 
   return actors;
 }
 
-export async function getSimilarShows(showId: number, limit: number = 10): Promise<number[] | null> {
-  if (useBackendService) return Backend.getSimilarShowIds(showId, limit);
+// The API returns the shows themselves; the Supabase RPC only their ids, which each tile then fetches
+export type SimilarShow = { id: number; show?: Show };
+
+export async function getSimilarShows(showId: number, limit: number = 10): Promise<SimilarShow[] | null> {
+  if (useBackendService) return (await Backend.getSimilarShows(showId, limit))?.map((show) => ({ id: show.id, show })) ?? null;
 
   const supabase = await createClient();
 
@@ -206,8 +209,7 @@ export async function getSimilarShows(showId: number, limit: number = 10): Promi
     }
 
     if (data && Array.isArray(data)) {
-      const showIds = data.map((item: { similar_show_id: number }) => item.similar_show_id);
-      return showIds;
+      return data.map((item: { similar_show_id: number }) => ({ id: item.similar_show_id }));
     } else {
       console.warn('No similar shows found or unexpected data format for showId:', showId);
       return [];

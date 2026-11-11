@@ -26,9 +26,11 @@ export default async function ShowPage({ params }: { params: Promise<{ showId: s
 
   // User Data
   const currentUserId = await getCurrentUserId();
+  // Uncached (GET /account), and only the admin controls need it, so they await it in their own
+  // Suspense boundaries rather than holding up the page
+  const userIsAdmin = isAdmin(currentUserId);
 
-  const [userIsAdmin, showData, ratingCounts, statusCounts] = await Promise.all([
-    isAdmin(currentUserId),
+  const [showData, ratingCounts, statusCounts] = await Promise.all([
     getShow(showId),
     getRatingCounts(showId),
     getStatusCounts(showId),

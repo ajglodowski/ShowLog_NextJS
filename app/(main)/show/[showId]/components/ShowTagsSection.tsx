@@ -1,12 +1,13 @@
 import { getAllTags, getAllTagCategories, getTags } from "../ShowService";
 import ShowTagsSectionContent from "./ShowTagsSectionContent";
 
-export async function ShowTagsSection({showId, isAdmin}: {showId: string, isAdmin: boolean} ) {
+export async function ShowTagsSection({showId, isAdmin: adminPromise}: {showId: string, isAdmin: Promise<boolean>} ) {
     
-    const [currentTags, allTags, tagCategories] = await Promise.all([
+    const [currentTags, allTags, tagCategories, isAdmin] = await Promise.all([
         getTags(showId),
         getAllTags(),
         getAllTagCategories(),
+        adminPromise,
     ]);
 
     return (

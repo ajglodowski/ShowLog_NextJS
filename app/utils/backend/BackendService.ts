@@ -135,10 +135,10 @@ export async function getActorsForShow(showId: number): Promise<Actor[] | null> 
     return attempt(null, async () => (await send<{ actors: API["Actor"][] }>(`shows/${showId}/cast`, { auth: "public" })).actors.map(toActor));
 }
 
-export async function getSimilarShowIds(showId: number, limit: number): Promise<number[] | null> {
+export async function getSimilarShows(showId: number, limit: number): Promise<ShowWithAnalytics[] | null> {
     return attempt(null, async () => {
         const result = await send<API["ShowListing"]>(`shows/${showId}/similar`, { auth: "public", query: { limit: Math.min(limit, 50) } });
-        return result.items.map((show) => show.id);
+        return result.items.map(toShow);
     });
 }
 
@@ -230,8 +230,46 @@ export type ShowSearchQuery = {
     /** Admin only; the API answers 403 for anyone else. */
     missingImage?: boolean | null;
     statusIds?: number[];
+    /** The watchlist owner's (outside scope=watchlist, the viewer's) rating; `none` for unrated. */
+    ratings?: string[];
+    /** Whether the watchlist owner (outside scope=watchlist, the viewer) has the show. */
+    addedToWatchlist?: boolean;
+    ids?: number[];
+    include?: "friends";
     sort?: "name" | "-name" | "-weekly" | "-monthly" | "-yearly" | "-rating" | "rating" | "-updated" | "updated";
 };
+
+/** One page of GET /shows, with the viewer's token. */
+export async function searchShowsPage(query: ShowSearchQuery, page: number, pageSize: number): Promise<API["ShowSearchResults"]> {
+    return send<API["ShowSearchResults"]>("shows", { query: { ...query, page, pageSize } });
+}
+
+/** A row's people: the signed-in viewer's entry on the show, and the people they follow who have it. */
+export type ViewerAndFriends = { entry?: UserShowDataWithUserInfo; friends: UserShowDataWithUserInfo[] };
+
+export function toViewerAndFriends(viewer: API["UserSummary"], item: API["ShowSearchItem"]): ViewerAndFriends {
+    return {
+        entry: item.viewer?.entry ? toUserShowDataWithUserInfo(viewer, item.id, item.viewer.entry) : undefined,
+        friends: (item.friends ?? []).map((friend) => toUserShowDataWithUserInfo(friend.user, item.id, friend.entry)),
+    };
+}
+
+/**
+ * ViewerAndFriends for each of `showIds`, in one request per 100 shows, so a list of ShowRows
+ * needn't look each row up. Reads the token, so never call it from a 'use cache' scope. Empty
+ * when signed out; null when the request fails.
+ */
+export async function getViewerAndFriends(showIds: number[]): Promise<Map<number, ViewerAndFriends> | null> {
+    return attempt(null, async () => {
+        const viewerId = await getCurrentUserId();
+        if (!viewerId || showIds.length === 0) return new Map<number, ViewerAndFriends>();
+        const [items, viewer] = await Promise.all([
+            allPages<API["ShowSearchItem"]>("shows", { query: { ids: showIds, include: "friends" } }),
+            getUserProfile(viewerId),
+        ]);
+        return new Map(items.map((item) => [item.id, toViewerAndFriends(viewer, item)]));
+    });
+}
 
 /** Every page of GET /shows. Sent with the viewer's token, so each item carries viewer.matchPercent. */
 export const searchAllShows = cache(async (query: ShowSearchQuery, limit?: number): Promise<API["ShowSearchItem"][]> => {
@@ -429,7 +467,11 @@ export async function updateWatchlistEntry(showId: number, body: API["UpdateWatc
 
 type HomeSection = keyof API["Home"];
 
-const getHomeSection = cache(async (section: HomeSection) => send<API["Home"]>("home", { query: { sections: section } }));
+// Except stale and checkIn: the API reads both from one query, so they share a request
+const homeRequests: Partial<Record<HomeSection, string>> = { stale: "stale,checkIn", checkIn: "stale,checkIn" };
+
+const getHomeSections = cache(async (sections: string) => send<API["Home"]>("home", { query: { sections } }));
+const getHomeSection = (section: HomeSection) => getHomeSections(homeRequests[section] ?? section);
 
 export async function getHomeShows(section: Exclude<HomeSection, "checkIn" | "yourUpdates" | "friendUpdates">): Promise<API["ShowSummary"][] | null> {
     return attempt(null, async () => (await getHomeSection(section))[section] ?? []);
@@ -464,7 +506,7 @@ export async function hasEmbedding(): Promise<boolean> {
 
 // MARK: - Users
 
-async function getUserProfile(userId: string): Promise<API["UserProfile"]> {
+export async function getUserProfile(userId: string): Promise<API["UserProfile"]> {
     'use cache'
     cacheLife('minutes');
     return fetchUserProfile(userId);

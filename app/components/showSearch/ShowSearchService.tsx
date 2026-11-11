@@ -45,7 +45,7 @@ function backendSort(sortBy: SortOption | undefined): { sort: Backend.ShowSearch
 // Service IDs a show must match at least one of, or null when no service filtering applies.
 // "My Services" combines with an explicit service selection by intersection, so the result
 // can be an empty array (nothing matches). It is ignored when the user has no saved services.
-async function getServiceFilterIds(filters: ShowSearchFiltersType): Promise<number[] | null> {
+export async function getServiceFilterIds(filters: ShowSearchFiltersType): Promise<number[] | null> {
     const selectedIds = filters.service.map((service) => service.id);
     const myServiceIds = filters.myServices ? await getCurrentUserServiceIds() : [];
 
