@@ -1,5 +1,6 @@
 import { ShowSearchType } from "@/app/models/showSearchType";
-import ShowSearchCurrentUserFilters, { defaultCurrentUserFilters } from "./ShowSearchCurrentUserFilters";
+import ShowSearchCurrentUserFilters from "./ShowSearchCurrentUserFilters";
+import { defaultCurrentUserFilters } from "../currentUserFilters";
 import ShowSearchCurrentUserFiltersRow from "./ShowSearchCurrentUserFiltersRow";
 import ShowSearchFilterButtonSkeleton from "./ShowSearchFilterButtonSkeleton";
 import ShowSearchTagsButtonSkeleton from "./ShowSearchFilterButtonSkeleton copy";

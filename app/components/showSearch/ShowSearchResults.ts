@@ -7,7 +7,7 @@ import { useBackendService } from '@/app/utils/backend/backendConfig';
 import * as Backend from '@/app/utils/backend/BackendService';
 import { toAPILength, toShow, toUserShowDataWithUserInfo } from '@/app/utils/backend/backendMapping';
 import { cache } from 'react';
-import { CurrentUserFilters, defaultCurrentUserFilters } from './ShowSearchHeader/ShowSearchCurrentUserFilters';
+import { CurrentUserFilters, defaultCurrentUserFilters } from './currentUserFilters';
 import { SortOption } from './ShowSearchHeader/SortButton';
 import { fetchShows, fetchUsersWatchlist, filterWatchlist, getServiceFilterIds, getUserShowData } from './ShowSearchService';
 import { ShowSearchShowsProps } from './types';
@@ -101,16 +101,9 @@ async function pageQuery(request: ShowSearchRequest & { watchlistOwnerFilters: C
     // filteredSearch matches the name as typed, the API trims it
     if (searchResults !== searchResults.trim()) return null;
 
-    let sort: Backend.ShowSearchQuery["sort"];
-    if (filters.sortBy) {
-        sort = apiSorts[filters.sortBy];
-        if (!sort) return null;
-    } else if (!isWatchlist) {
-        sort = "name";
-    } else if (searchResults.length > 0 || userFiltersApply || (isViewingOtherUserWatchlist && !isDefault(watchlistOwnerFilters))) {
-        // filteredSearch sorts filtered watchlists by name; unfiltered ones keep the API's order
-        sort = "name";
-    }
+    // Without a chosen sort, filteredSearch lists everything (watchlists too) by name
+    const sort = filters.sortBy ? apiSorts[filters.sortBy] : "name";
+    if (!sort) return null;
 
     const serviceIds = await getServiceFilterIds(filters);
     if (serviceIds && serviceIds.length === 0) return "empty";
@@ -233,9 +226,11 @@ async function filteredSearch({
     // Filter shows based on search and user filters if necessary
     let filteredShows = shows;
     
-    if (searchResults.length > 0 || 
-        JSON.stringify(currentUserFilters) !== JSON.stringify(defaultCurrentUserFilters) ||
-        (isViewingOtherUserWatchlist && JSON.stringify(watchlistOwnerFilters) !== JSON.stringify(defaultCurrentUserFilters))) {
+    // This used to run only when a filter was set, but the defaults it compared against came from a
+    // "use client" module, so on the server it always ran: every list got the sort below,
+    // alphabetical when none was chosen. It runs always now on purpose, to keep that order. Each
+    // filter inside is a no-op when unset.
+    {
         if (shows) {
             filteredShows = [...shows];
             

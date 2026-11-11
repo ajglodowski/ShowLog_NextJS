@@ -13,21 +13,11 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useOptimistic, useTransition, useState } from "react";
 import { ShowSearchFiltersType } from "./ShowSearchHeader";
 import { StatusIcon } from "@/app/utils/StatusIcon";
+import { CurrentUserFilters, defaultCurrentUserFilters } from "../currentUserFilters";
 
-export type CurrentUserFilters = {
-    addedToWatchlist?: boolean;
-    ratings: RatingFilter[];
-    statuses: Status[];
-    searchType?: ShowSearchType;
-    userId?: string;
-    currentUserId?: string;
-}
-
-export const defaultCurrentUserFilters: CurrentUserFilters = {
-    addedToWatchlist: undefined,
-    ratings: [],
-    statuses: []
-}
+// Defined in ../currentUserFilters so server modules get the real object
+export type { CurrentUserFilters };
+export { defaultCurrentUserFilters };
 
 type ShowSearchCurrentUserFiltersProps = {
     filters: CurrentUserFilters;

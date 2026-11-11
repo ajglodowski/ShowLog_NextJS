@@ -1,7 +1,7 @@
 'use server';
 import { Suspense } from 'react';
 import { parseCurrentUserFilters, parseFiltersFromSearchParams, parseWatchlistOwnerFilters } from './ShowSearchFilterParsing';
-import { defaultCurrentUserFilters, CurrentUserFilters } from './ShowSearchHeader/ShowSearchCurrentUserFilters';
+import { defaultCurrentUserFilters, CurrentUserFilters } from './currentUserFilters';
 import ShowSearchHeader, { ShowSearchFiltersType } from './ShowSearchHeader/ShowSearchHeader';
 import ShowSearchHeaderLoading from './ShowSearchHeader/ShowSearchHeaderLoading';
 import ShowSearchShows from './ShowSearchShows';

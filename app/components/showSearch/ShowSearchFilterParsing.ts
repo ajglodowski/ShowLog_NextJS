@@ -3,7 +3,7 @@ import { AirDate } from "@/app/models/airDate";
 import { RatingFilter, RatingFilterOptions } from "@/app/models/rating";
 import { ShowLength } from "@/app/models/showLength";
 import { ShowSearchProps } from "./types";
-import { CurrentUserFilters, defaultCurrentUserFilters } from "./ShowSearchHeader/ShowSearchCurrentUserFilters";
+import { CurrentUserFilters, defaultCurrentUserFilters } from "./currentUserFilters";
 import { defaultFilters, ShowSearchFiltersType } from "./ShowSearchHeader/ShowSearchHeader";
 import { SortOption } from "./ShowSearchHeader/SortButton";
 import { getServices } from "./ShowSearchService";
